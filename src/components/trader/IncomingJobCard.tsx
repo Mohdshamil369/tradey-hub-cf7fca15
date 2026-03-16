@@ -22,7 +22,6 @@ export interface IncomingJobData {
   distance: string;
   price: number | null;
   timeWindow: string;
-  urgency: string | null;
   postedAgo: string;
   description: string;
   hasVoiceNote?: boolean;

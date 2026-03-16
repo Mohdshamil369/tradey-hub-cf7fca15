@@ -49,7 +49,6 @@ interface Job {
   inspectionFee?: number;
   timeWindow: string;
   description: string;
-  urgency: string | null;
   postedAgo: string;
   status: JobStatus;
   hasVoiceNote?: boolean;
@@ -84,7 +83,6 @@ const initialJobs: Job[] = [
     price: 65, 
     timeWindow: "Today, 14:00 – 16:00", 
     description: "Kitchen tap is dripping constantly. Standard single-lever mixer tap. I have the replacement part already.", 
-    urgency: "Urgent", 
     postedAgo: "5 min ago", 
     status: "incoming", 
     hasVoiceNote: true, 
@@ -104,7 +102,6 @@ const initialJobs: Job[] = [
     price: null, 
     timeWindow: "Mon, 10:00 – 12:00", 
     description: "Complete bathroom renovation including tiling, plumbing, and fixtures. Approx 6m² bathroom. Looking for a high-end finish.", 
-    urgency: null, 
     postedAgo: "1 hour ago", 
     status: "incoming", 
     hasVoiceNote: true, 
@@ -125,25 +122,24 @@ const initialJobs: Job[] = [
     inspectionFee: 45,
     timeWindow: "Fri, 10:00 – 12:00", 
     description: "There is some dampness on the living room wall. Need a professional to check the source and provide a solution.", 
-    urgency: null, 
     postedAgo: "15 min ago", 
     status: "incoming", 
     hasVoiceNote: false, 
     customerRequest: { expectedDuration: "1 hour", photos: ["/placeholder.svg"] },
     customerData: { rating: 4.5, reviews: 8, isVerified: false, memberSince: "Feb 2025" }
   },
-  { id: "j2", type: "catA", category: "fixed", title: "Light Switch Replacement", icon: "💡", customer: "Mark T.", location: "De Pijp", distance: "4.1 km", price: 55, timeWindow: "Tomorrow, 09:00 – 11:00", description: "2 light switches need replacing in the hallway. Standard switches.", urgency: null, postedAgo: "12 min ago", status: "incoming", hasVoiceNote: false, customerRequest: { expectedDuration: "30 min – 1 hour" }, customerData: { rating: 4.2, reviews: 5, isVerified: true, memberSince: "Nov 2024" } },
-  { id: "j4", type: "catA", category: "fixed", title: "Drain Unblocking", icon: "🚿", customer: "David K.", location: "Oud-West", distance: "3.0 km", price: 75, timeWindow: "Today, 10:00 – 12:00", description: "Kitchen sink is completely blocked. Tried plunger, no luck.", urgency: null, postedAgo: "", status: "active", crew: [
+  { id: "j2", type: "catA", category: "fixed", title: "Light Switch Replacement", icon: "💡", customer: "Mark T.", location: "De Pijp", distance: "4.1 km", price: 55, timeWindow: "Tomorrow, 09:00 – 11:00", description: "2 light switches need replacing in the hallway. Standard switches.", postedAgo: "12 min ago", status: "incoming", hasVoiceNote: false, customerRequest: { expectedDuration: "30 min – 1 hour" }, customerData: { rating: 4.2, reviews: 5, isVerified: true, memberSince: "Nov 2024" } },
+  { id: "j4", type: "catA", category: "fixed", title: "Drain Unblocking", icon: "🚿", customer: "David K.", location: "Oud-West", distance: "3.0 km", price: 75, timeWindow: "Today, 10:00 – 12:00", description: "Kitchen sink is completely blocked. Tried plunger, no luck.", postedAgo: "", status: "active", crew: [
     { id: "m1", name: "Jan V.", avatar: "JV", status: "arrived", updatedAt: "2 min ago" },
     { id: "m2", name: "Pieter D.", avatar: "PD", status: "en_route", updatedAt: "8 min ago" },
   ] },
-  { id: "j5", type: "catA", category: "fixed", title: "Wall Painting (1 room)", icon: "🎨", customer: "Hannah P.", location: "Amstelveen", distance: "8.5 km", price: 120, timeWindow: "14 Mar, 09:00 – 14:00", description: "Living room walls need repainting. White to light grey.", urgency: null, postedAgo: "", status: "active", crew: [
+  { id: "j5", type: "catA", category: "fixed", title: "Wall Painting (1 room)", icon: "🎨", customer: "Hannah P.", location: "Amstelveen", distance: "8.5 km", price: 120, timeWindow: "14 Mar, 09:00 – 14:00", description: "Living room walls need repainting. White to light grey.", postedAgo: "", status: "active", crew: [
     { id: "m3", name: "Lena K.", avatar: "LK", status: "working", updatedAt: "15 min ago" },
     { id: "m4", name: "Tom B.", avatar: "TB", status: "arrived", updatedAt: "5 min ago" },
     { id: "m5", name: "Sara M.", avatar: "SM", status: "en_route", updatedAt: "12 min ago" },
   ] },
   {
-    id: "j6", type: "catA", category: "fixed", title: "Toilet Repair", icon: "🔧", customer: "Lisa M.", location: "Oost", distance: "5.2 km", price: 55, timeWindow: "10 Mar, 11:00", description: "Flush mechanism not working properly.", urgency: null, postedAgo: "", status: "completed",
+    id: "j6", type: "catA", category: "fixed", title: "Toilet Repair", icon: "🔧", customer: "Lisa M.", location: "Oost", distance: "5.2 km", price: 55, timeWindow: "10 Mar, 11:00", description: "Flush mechanism not working properly.", postedAgo: "", status: "completed",
     completedDate: "10 Mar 2025", duration: "1h 45m",
     assignment: {
       type: "group", groupName: "Plumbing Squad",
@@ -154,7 +150,7 @@ const initialJobs: Job[] = [
     },
   },
   {
-    id: "j7", type: "catA", category: "fixed", title: "Boiler Service", icon: "🔥", customer: "Peter W.", location: "Centrum", distance: "1.5 km", price: 95, timeWindow: "8 Mar, 10:00", description: "Annual boiler service and safety check.", urgency: null, postedAgo: "", status: "completed",
+    id: "j7", type: "catA", category: "fixed", title: "Boiler Service", icon: "🔥", customer: "Peter W.", location: "Centrum", distance: "1.5 km", price: 95, timeWindow: "8 Mar, 10:00", description: "Annual boiler service and safety check.", postedAgo: "", status: "completed",
     completedDate: "8 Mar 2025", duration: "2h 10m",
     assignment: {
       type: "individual",
@@ -162,7 +158,7 @@ const initialJobs: Job[] = [
     },
   },
   {
-    id: "j8", type: "catA", category: "fixed", title: "Kitchen Tiling", icon: "🧱", customer: "Anna J.", location: "Westerpark", distance: "3.8 km", price: 210, timeWindow: "5 Mar, 09:00 – 15:00", description: "Re-tile kitchen backsplash, approx 4m².", urgency: null, postedAgo: "", status: "completed",
+    id: "j8", type: "catA", category: "fixed", title: "Kitchen Tiling", icon: "🧱", customer: "Anna J.", location: "Westerpark", distance: "3.8 km", price: 210, timeWindow: "5 Mar, 09:00 – 15:00", description: "Re-tile kitchen backsplash, approx 4m².", postedAgo: "", status: "completed",
     completedDate: "5 Mar 2025", duration: "5h 30m",
     assignment: {
       type: "individuals",

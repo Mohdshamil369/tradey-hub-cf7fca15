@@ -35,7 +35,6 @@ interface IncomingJob {
   distance: string;
   price: number | null;
   timeWindow: string;
-  urgency: string | null;
   postedAgo: string;
   description: string;
   hasVoiceNote: boolean;
@@ -53,7 +52,6 @@ const initialIncomingJobs: IncomingJob[] = [
     distance: "2.3 km",
     price: 65,
     timeWindow: "Today, 14:00 – 16:00",
-    urgency: "Urgent",
     postedAgo: "5 min ago",
     description: "Kitchen tap is dripping constantly, it's a single-lever mixer tap. Tried tightening it but no luck. Need it fixed ASAP please!",
     hasVoiceNote: true,
@@ -69,7 +67,6 @@ const initialIncomingJobs: IncomingJob[] = [
     distance: "4.1 km",
     price: 55,
     timeWindow: "Tomorrow, 09:00 – 11:00",
-    urgency: null,
     postedAgo: "12 min ago",
     description: "Two light switches in the hallway need replacing. Standard dimmer switches preferred. The current ones are loose and sparking a little.",
     hasVoiceNote: false,
@@ -84,7 +81,6 @@ const initialIncomingJobs: IncomingJob[] = [
     distance: "1.8 km",
     price: null,
     timeWindow: "Flexible",
-    urgency: null,
     postedAgo: "1 hour ago",
     description: "Complete bathroom renovation including re-tiling floors and walls, new shower unit, vanity, and toilet. Room is approx 6m². Happy to discuss details.",
     hasVoiceNote: true,
@@ -397,6 +393,18 @@ const TraderHome = () => {
 
         {/* Today's Schedule */}
         <div>
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-primary" />
+              <h3 className="font-bold text-foreground">Today's Schedule</h3>
+            </div>
+            <button 
+              onClick={() => setScheduleView(scheduleView === "cards" ? "calendar" : "cards")} 
+              className="text-xs font-semibold text-primary"
+            >
+              {scheduleView === "cards" ? "Calendar view" : "Card view"}
+            </button>
+          </div>
           {scheduleJobs.length === 0 ? (
             <div className="flex flex-col items-center rounded-2xl bg-card p-8 border border-dashed border-border text-center">
               <Calendar className="mb-2 h-8 w-8 text-muted-foreground/30" />
