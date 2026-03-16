@@ -8,6 +8,7 @@ import {
   Bell, TrendingUp, Clock, MapPin, Star, CheckCircle2,
   Zap, Briefcase, PoundSterling, Users, Calendar,
   MessageCircle, ChevronDown, X, LayoutGrid, CalendarDays,
+  Search, ChevronRight,
 } from "lucide-react";
 import IncomingJobCard from "@/components/trader/IncomingJobCard";
 import SwipeableJobStack from "@/components/trader/SwipeableJobStack";
@@ -155,6 +156,7 @@ const TraderHome = () => {
   const [scheduleJobs, setScheduleJobs] = useState(isNewUser ? [] : activeJobs);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [scheduleView, setScheduleView] = useState<"cards" | "calendar" | "empty">("cards");
+  const [locationDropdownOpen, setLocationDropdownOpen] = useState(false);
 
   const displayEarnings = isNewUser ? {
     thisWeek: 0,
@@ -269,14 +271,51 @@ const TraderHome = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground font-heading">{firstName} 👋</h1>
-            <button
-              onClick={() => navigate("/profile/address")}
-              className="flex items-center gap-1.5 mt-0.5"
-            >
-              <MapPin className="h-3.5 w-3.5 text-primary" />
-              <span className="text-[12px] font-semibold text-muted-foreground truncate">Amsterdam Centrum</span>
-              <ChevronDown className="h-3 w-3 text-muted-foreground/60 shrink-0" />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setLocationDropdownOpen(!locationDropdownOpen)}
+                className="flex items-center gap-1.5 mt-0.5"
+              >
+                <MapPin className="h-3.5 w-3.5 text-primary" />
+                <span className="text-[12px] font-semibold text-muted-foreground truncate">Amsterdam Centrum</span>
+                <ChevronDown className={`h-3 w-3 text-muted-foreground/60 shrink-0 transition-transform ${locationDropdownOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {locationDropdownOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-30" 
+                    onClick={() => setLocationDropdownOpen(false)}
+                  />
+                  <div className="absolute left-0 top-full mt-2 w-56 rounded-2xl bg-card border border-border shadow-xl z-40 p-2 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="p-3 border-b border-border/50">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Saved Addresses</p>
+                      <div className="space-y-2">
+                        <button className="flex items-center gap-2 w-full text-left p-2 rounded-xl hover:bg-muted text-xs font-semibold">
+                          <MapPin className="h-3.5 w-3.5 text-primary" /> Home
+                        </button>
+                        <button className="flex items-center gap-2 w-full text-left p-2 rounded-xl hover:bg-muted text-xs font-semibold">
+                          <Briefcase className="h-3.5 w-3.5 text-primary" /> Office
+                        </button>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setLocationDropdownOpen(false);
+                        navigate("/profile/service-area");
+                      }}
+                      className="flex items-center justify-between w-full p-3 text-xs font-bold text-primary hover:bg-primary/5 rounded-xl mt-1 transition-colors group"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Search className="h-3.5 w-3.5" />
+                        Edit service area
+                      </span>
+                      <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {/* Messages icon — agency only */}

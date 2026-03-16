@@ -60,6 +60,7 @@ import WorkerDetail from "./pages/trader/WorkerDetail";
 import MemberPayouts from "./pages/trader/MemberPayouts";
 import Payouts from "./pages/profile/Payouts";
 import CompanyTax from "./pages/profile/CompanyTax";
+import ServiceAreaSelection from "./pages/profile/ServiceAreaSelection";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -158,6 +159,7 @@ const App = () => (
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/profile/details" element={<ProtectedRoute><MyDetails /></ProtectedRoute>} />
             <Route path="/profile/address" element={<ProtectedRoute><Address /></ProtectedRoute>} />
+            <Route path="/profile/service-area" element={<ProtectedRoute><ServiceAreaSelection /></ProtectedRoute>} />
             <Route path="/profile/security" element={<ProtectedRoute><Security /></ProtectedRoute>} />
             <Route path="/profile/security/password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
             <Route path="/profile/security/2fa" element={<ProtectedRoute><TwoFactorAuth /></ProtectedRoute>} />
