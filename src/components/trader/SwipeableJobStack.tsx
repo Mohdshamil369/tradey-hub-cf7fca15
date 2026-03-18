@@ -117,11 +117,7 @@ const SwipeableJobStack = ({
           >
             <IncomingJobCard
               job={topJob}
-              expanded={isExpanded}
-              onToggleExpand={() => onToggleExpand(topJob.id)}
-              onAccept={() => onAccept(topJob.id)}
-              onDecline={() => onDecline(topJob.id)}
-              onPlayVoice={() => onPlayVoice(topJob.customer)}
+              onViewDetail={() => onViewDetail(topJob.id)}
               viewMode={viewMode}
             />
           </div>
