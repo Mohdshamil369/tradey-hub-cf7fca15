@@ -320,6 +320,10 @@ const TraderJobs = () => {
   const [jobs, setJobs] = useState(initialJobs);
   const [companyJobList, setCompanyJobList] = useState(companyJobs);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  
+  // Quote detail sheet state
+  const [selectedQuote, setSelectedQuote] = useState<SentQuoteData | null>(null);
+  const [isQuoteDetailOpen, setIsQuoteDetailOpen] = useState(false);
   const [sentQuotes, setSentQuotes] = useState(initialSentQuotes);
   
   // Detail sheet state
