@@ -605,12 +605,6 @@ const TraderJobs = () => {
                     </button>
                   );
                 })}
-              <>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
               </>
             )}
           </div>
