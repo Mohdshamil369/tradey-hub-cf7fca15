@@ -1,10 +1,10 @@
 import React from "react";
 import { Drawer } from "vaul";
 import { 
-  X, MapPin, Clock, Star, Mic, Play, 
+  MapPin, Clock, Star, Play, 
   Image as ImageIcon, Info, ChevronRight, 
-  CheckCircle2, Send, ShieldCheck, Timer,
-  PoundSterling, MessageCircle
+  ShieldCheck, Timer,
+  MessageCircle, XCircle
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Avatar from "boring-avatars";
@@ -29,6 +29,15 @@ export interface JobDetailData {
     reviews: number;
     isVerified: boolean;
     memberSince: string;
+    jobsCompleted?: number;
+    responseRate?: string;
+    repeatHireRate?: string;
+    recentReview?: {
+      workerName: string;
+      text: string;
+      rating: number;
+      date: string;
+    };
   };
   media?: {
     photos?: string[];
@@ -46,8 +55,17 @@ interface JobDetailSheetProps {
   onAction: (jobId: string, action: string, data?: any) => void;
 }
 
+const categoryConfig: Record<JobCategory, { label: string; emoji: string; className: string }> = {
+  fixed: { label: "Fixed Rate", emoji: "⚡", className: "bg-primary/10 text-primary" },
+  estimate: { label: "Estimate Required", emoji: "📝", className: "bg-blue-500/10 text-blue-600" },
+  inspection: { label: "Site Inspection", emoji: "🔍", className: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]" },
+};
+
 const JobDetailSheet = ({ job, isOpen, onOpenChange, onAction }: JobDetailSheetProps) => {
   if (!job) return null;
+
+  const cat = categoryConfig[job.category];
+  const showMessageCTA = job.category !== "fixed";
 
   const renderFooter = () => {
     switch (job.category) {
@@ -55,10 +73,11 @@ const JobDetailSheet = ({ job, isOpen, onOpenChange, onAction }: JobDetailSheetP
         return (
           <div className="flex gap-3 p-4 bg-background border-t border-border">
             <button
-              onClick={() => onOpenChange(false)}
-              className="flex-1 rounded-2xl border border-border py-4 text-sm font-bold text-muted-foreground active:bg-muted"
+              onClick={() => { onAction(job.id, "decline"); onOpenChange(false); }}
+              className="flex-1 flex items-center justify-center gap-1.5 rounded-2xl border border-border py-4 text-sm font-bold text-muted-foreground active:bg-muted"
             >
-              Close
+              <XCircle className="h-4 w-4" />
+              Decline
             </button>
             <button
               onClick={() => onAction(job.id, "accept")}
@@ -72,16 +91,16 @@ const JobDetailSheet = ({ job, isOpen, onOpenChange, onAction }: JobDetailSheetP
         return (
           <div className="flex gap-3 p-4 bg-background border-t border-border">
             <button
-              onClick={() => onOpenChange(false)}
-              className="flex-1 rounded-2xl border border-border py-4 text-sm font-bold text-muted-foreground active:bg-muted"
+              onClick={() => { onAction(job.id, "decline"); onOpenChange(false); }}
+              className="flex-1 flex items-center justify-center gap-1.5 rounded-2xl border border-border py-4 text-sm font-bold text-muted-foreground active:bg-muted"
             >
+              <XCircle className="h-4 w-4" />
               Decline
             </button>
             <button
               onClick={() => onAction(job.id, "send_estimate")}
-              className="flex-[2] rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              className="flex-[2] rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
             >
-              <Send className="h-4 w-4" />
               Send Estimate
             </button>
           </div>
@@ -89,22 +108,25 @@ const JobDetailSheet = ({ job, isOpen, onOpenChange, onAction }: JobDetailSheetP
       case "inspection":
         return (
           <div className="flex flex-col gap-3 p-4 bg-background border-t border-border">
-            <div className="flex items-center justify-between px-2 mb-1">
-              <span className="text-xs text-muted-foreground font-medium">Inspection Fee</span>
-              <span className="text-sm font-bold text-foreground">£{job.inspectionFee?.toFixed(2)}</span>
-            </div>
+            {job.inspectionFee && (
+              <div className="flex items-center justify-between px-2 mb-1">
+                <span className="text-xs text-muted-foreground font-medium">Inspection Fee</span>
+                <span className="text-sm font-bold text-foreground">£{job.inspectionFee.toFixed(2)}</span>
+              </div>
+            )}
             <div className="flex gap-3">
               <button
-                onClick={() => onOpenChange(false)}
-                className="flex-1 rounded-2xl border border-border py-4 text-sm font-bold text-muted-foreground active:bg-muted"
+                onClick={() => { onAction(job.id, "decline"); onOpenChange(false); }}
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-2xl border border-border py-4 text-sm font-bold text-muted-foreground active:bg-muted"
               >
-                Close
+                <XCircle className="h-4 w-4" />
+                Decline
               </button>
               <button
                 onClick={() => onAction(job.id, "approve_inspection")}
                 className="flex-[2] rounded-2xl bg-[hsl(25,90%,55%)] py-4 text-sm font-bold text-white shadow-lg shadow-orange-500/20 active:scale-[0.98] transition-all"
               >
-                Approve Inspection
+                Request Inspection
               </button>
             </div>
           </div>
@@ -122,38 +144,38 @@ const JobDetailSheet = ({ job, isOpen, onOpenChange, onAction }: JobDetailSheetP
           <div className="mx-auto mt-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
           
           <ScrollArea className="flex-1 overflow-y-auto px-6 pt-6 pb-2">
-            {/* Header Section */}
-            <div className="flex items-start justify-between mb-8">
-              <div className="flex gap-4">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[22px] bg-accent text-[32px] shadow-sm">
-                  {job.icon}
+            {/* Header */}
+            <div className="flex items-start gap-4 mb-6">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[22px] bg-accent text-[32px] shadow-sm">
+                {job.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${cat.className}`}>
+                    {cat.emoji} {cat.label}
+                  </span>
                 </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                      job.category === "fixed" ? "bg-primary/10 text-primary" :
-                      job.category === "estimate" ? "bg-blue-500/10 text-blue-600" :
-                      "bg-orange-500/10 text-orange-600"
-                    }`}>
-                      {job.category === "fixed" ? "Fixed Quote" : job.category === "estimate" ? "Estimate Required" : "Site Inspection"}
-                    </span>
-                    <span className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-3 w-3" /> 2h ago
-                    </span>
-                  </div>
-                  <h2 className="text-2xl font-bold text-foreground leading-tight">{job.title}</h2>
-                  <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-primary" />{job.distance}</span>
-                    <span className="w-1 h-1 rounded-full bg-border" />
-                    <span className="flex items-center gap-1"><Timer className="h-3.5 w-3.5 text-primary" />{job.timeWindow}</span>
-                  </div>
+                <h2 className="text-xl font-bold text-foreground leading-tight">{job.title}</h2>
+                <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-primary" />{job.distance}</span>
+                  <span className="w-1 h-1 rounded-full bg-border" />
+                  <span className="flex items-center gap-1"><Timer className="h-3.5 w-3.5 text-primary" />{job.timeWindow}</span>
                 </div>
               </div>
             </div>
 
-            {/* Customer Section */}
-            <div className="rounded-[28px] bg-accent/30 p-5 mb-8 border border-border/50">
-              <div className="flex items-center justify-between mb-4">
+            {/* Location */}
+            <div className="rounded-2xl bg-accent/30 p-4 mb-6 border border-border/50 flex items-center gap-3">
+              <MapPin className="h-5 w-5 text-primary shrink-0" />
+              <div>
+                <p className="text-xs font-bold text-foreground">Location</p>
+                <p className="text-[11px] text-muted-foreground">{job.location}</p>
+              </div>
+            </div>
+
+            {/* Customer Section with ratings */}
+            <div className="rounded-[28px] bg-accent/30 p-5 mb-6 border border-border/50">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="h-12 w-12 rounded-full overflow-hidden ring-2 ring-background">
                     <Avatar name={job.customer.name} variant="beam" size={48} colors={["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7"]} />
@@ -171,40 +193,74 @@ const JobDetailSheet = ({ job, isOpen, onOpenChange, onAction }: JobDetailSheetP
                     <Star className="h-4 w-4 fill-primary text-primary" />
                     <span className="text-sm font-bold text-foreground">{job.customer.rating}</span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground font-medium underline cursor-pointer">{job.customer.reviews} reviews</p>
+                  <p className="text-[11px] text-muted-foreground font-medium">{job.customer.reviews} worker reviews</p>
                 </div>
               </div>
+
+              {/* Customer quality stats */}
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="rounded-xl bg-background/60 p-2.5 text-center">
+                  <p className="text-sm font-bold text-foreground">{job.customer.jobsCompleted ?? 12}</p>
+                  <p className="text-[9px] text-muted-foreground font-medium">Jobs Done</p>
+                </div>
+                <div className="rounded-xl bg-background/60 p-2.5 text-center">
+                  <p className="text-sm font-bold text-foreground">{job.customer.responseRate ?? "95%"}</p>
+                  <p className="text-[9px] text-muted-foreground font-medium">Response</p>
+                </div>
+                <div className="rounded-xl bg-background/60 p-2.5 text-center">
+                  <p className="text-sm font-bold text-foreground">{job.customer.repeatHireRate ?? "40%"}</p>
+                  <p className="text-[9px] text-muted-foreground font-medium">Repeat Hire</p>
+                </div>
+              </div>
+
+              {/* Recent worker review about this customer */}
+              {job.customer.recentReview && (
+                <div className="rounded-xl bg-background/60 p-3 mb-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="flex">
+                      {Array.from({ length: job.customer.recentReview.rating }).map((_, i) => (
+                        <Star key={i} className="h-3 w-3 fill-primary text-primary" />
+                      ))}
+                    </div>
+                    <span className="text-[10px] text-muted-foreground">by {job.customer.recentReview.workerName}</span>
+                  </div>
+                  <p className="text-[11px] text-foreground leading-relaxed">"{job.customer.recentReview.text}"</p>
+                  <p className="text-[9px] text-muted-foreground mt-1">{job.customer.recentReview.date}</p>
+                </div>
+              )}
+
+              {/* Action buttons */}
               <div className="flex gap-2">
                 <button 
-                  onClick={() => toast.info("Viewing customer profile...")}
+                  onClick={() => toast.info("Full customer profile coming soon")}
                   className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-background/50 border border-border py-2 text-[11px] font-bold text-foreground active:bg-background transition-colors"
                 >
                   <Info className="h-3.5 w-3.5" />
-                  Details
+                  Full Profile
                 </button>
-                <button 
-                  onClick={() => toast.info("Chat feature coming soon!")}
-                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-background/50 border border-border py-2 text-[11px] font-bold text-foreground active:bg-background transition-colors"
-                >
-                  <MessageCircle className="h-3.5 w-3.5" />
-                  Chat
-                </button>
+                {showMessageCTA && (
+                  <button 
+                    onClick={() => toast.info("Chat feature coming soon!")}
+                    className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-background/50 border border-border py-2 text-[11px] font-bold text-foreground active:bg-background transition-colors"
+                  >
+                    <MessageCircle className="h-3.5 w-3.5" />
+                    Message
+                  </button>
+                )}
               </div>
             </div>
 
             {/* Job Description */}
-            <div className="mb-8">
-              <h3 className="text-xs font-bold uppercase tracking-[2px] text-muted-foreground mb-3 px-1">Description</h3>
+            <div className="mb-6">
+              <h3 className="text-xs font-bold uppercase tracking-[2px] text-muted-foreground mb-3 px-1">Job Details</h3>
               <div className="rounded-[24px] bg-card p-5 border border-border border-dashed">
-                <p className="text-sm text-foreground leading-relaxed">
-                  {job.description}
-                </p>
+                <p className="text-sm text-foreground leading-relaxed">{job.description}</p>
               </div>
             </div>
 
             {/* Media Section */}
             {(job.media?.voiceNote || (job.media?.photos && job.media.photos.length > 0)) && (
-              <div className="mb-8">
+              <div className="mb-6">
                 <h3 className="text-xs font-bold uppercase tracking-[2px] text-muted-foreground mb-3 px-1">Attachments</h3>
                 <div className="flex flex-col gap-4">
                   {/* Voice Note */}
@@ -245,7 +301,7 @@ const JobDetailSheet = ({ job, isOpen, onOpenChange, onAction }: JobDetailSheetP
               </div>
             )}
 
-            {/* Extra Info */}
+            {/* Secure payment badge */}
             <div className="mb-10 p-5 rounded-[24px] bg-muted/30 border border-border flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-xl bg-background flex items-center justify-center">

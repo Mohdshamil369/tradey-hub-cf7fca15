@@ -3,17 +3,14 @@ import IncomingJobCard, { IncomingJobData, JobCardViewMode } from "./IncomingJob
 
 interface SwipeableJobStackProps {
   jobs: IncomingJobData[];
-  expandedId: string | null;
-  onToggleExpand: (id: string) => void;
-  onAccept: (id: string) => void;
+  onViewDetail: (id: string) => void;
   onDecline: (id: string) => void;
-  onPlayVoice: (customer: string) => void;
   onViewAll: () => void;
   viewMode?: JobCardViewMode;
 }
 
 const SwipeableJobStack = ({
-  jobs, expandedId, onToggleExpand, onAccept, onDecline, onPlayVoice, onViewAll, viewMode = "agency",
+  jobs, onViewDetail, onDecline, onViewAll, viewMode = "agency",
 }: SwipeableJobStackProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeX, setSwipeX] = useState(0);
@@ -79,14 +76,13 @@ const SwipeableJobStack = ({
 
   const topJob = visibleJobs[0];
   const behindJob = visibleJobs[1];
-  const isExpanded = expandedId === topJob?.id;
 
   return (
     <div>
       {/* Card stack — top card is in flow, behind card peeks below */}
       <div className="relative">
         {/* Behind card (if exists) — peek below */}
-        {behindJob && !isExpanded && (
+        {behindJob && (
           <div
             className="absolute left-2 right-2 top-2 z-0"
             style={{
@@ -95,10 +91,7 @@ const SwipeableJobStack = ({
           >
             <IncomingJobCard
               job={behindJob}
-              expanded={false}
-              onToggleExpand={() => {}}
-              onAccept={() => {}}
-              onDecline={() => {}}
+              onViewDetail={() => {}}
               viewMode={viewMode}
             />
           </div>
@@ -123,18 +116,14 @@ const SwipeableJobStack = ({
           >
             <IncomingJobCard
               job={topJob}
-              expanded={isExpanded}
-              onToggleExpand={() => onToggleExpand(topJob.id)}
-              onAccept={() => onAccept(topJob.id)}
-              onDecline={() => onDecline(topJob.id)}
-              onPlayVoice={() => onPlayVoice(topJob.customer)}
+              onViewDetail={() => onViewDetail(topJob.id)}
               viewMode={viewMode}
             />
           </div>
         )}
 
         {/* Behind card shadow hint */}
-        {behindJob && !isExpanded && (
+        {behindJob && (
           <div className="h-2" />
         )}
       </div>

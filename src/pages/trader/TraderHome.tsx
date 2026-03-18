@@ -415,14 +415,7 @@ const TraderHome = () => {
                 <IncomingJobCard
                   key={job.id}
                   job={job}
-                  expanded={expandedId === job.id}
-                  onToggleExpand={() => setExpandedId(expandedId === job.id ? null : job.id)}
-                  onAccept={() => {
-                    setJobs((prev) => prev.filter((j) => j.id !== job.id));
-                    if (job.type !== "catB") toast.success("Job accepted! ✅");
-                  }}
-                  onDecline={() => declineJob(job.id)}
-                  onPlayVoice={() => playVoiceNote(job.customer)}
+                  onViewDetail={() => toast.info("Navigate to Jobs tab for full details")}
                   viewMode={isIndividual ? "individual" : "agency"}
                 />
               ))}

@@ -479,6 +479,9 @@ const TraderJobs = () => {
         toast.success("Inspection approved! We've notified the customer.");
         acceptJob(jobId);
         break;
+      case "decline":
+        declineJob(jobId);
+        break;
       default:
         console.warn("Unknown job action:", action);
     }
@@ -772,32 +775,7 @@ const TraderJobs = () => {
                   ) : (
                     <IncomingJobCard
                       job={job}
-                      expanded={false}
-                      onToggleExpand={() => openJobDetail(job)}
-                      onAccept={() => {
-                        if (isIndividual && job.type === "catB") {
-                          setSentQuotes(prev => [{
-                            id: crypto.randomUUID(),
-                            jobTitle: job.title,
-                            icon: job.icon,
-                            customer: job.customer,
-                            location: job.location,
-                            distance: job.distance,
-                            sentAt: "Just now",
-                            quoteTotal: job.price ?? 0,
-                            materialsCount: 0,
-                            labourHours: 2,
-                            labourRate: 45,
-                            status: "pending" as const,
-                          }, ...prev]);
-                          setJobs((prev) => prev.filter((j) => j.id !== job.id));
-                          toast.success(`Quote sent to ${job.customer}`);
-                        } else {
-                          handleDispatch(job.id, job.type === "catB");
-                        }
-                      }}
-                      onDecline={() => declineJob(job.id)}
-                      onPlayVoice={() => toast(`🎧 Playing voice note from ${job.customer} (demo)`)}
+                      onViewDetail={() => openJobDetail(job)}
                       viewMode={isIndividual ? "individual" : "agency"}
                     />
                   )}
