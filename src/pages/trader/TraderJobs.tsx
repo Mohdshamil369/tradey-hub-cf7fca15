@@ -502,6 +502,20 @@ const TraderJobs = () => {
         job={selectedJob}
         onAction={handleDetailAction}
       />
+      {/* Quote Detail Sheet */}
+      <QuoteDetailSheet
+        quote={selectedQuote}
+        isOpen={isQuoteDetailOpen}
+        onOpenChange={setIsQuoteDetailOpen}
+        isAgency={isAgencyProfile}
+        onRemind={(id) => toast(`Reminder sent to ${sentQuotes.find(q => q.id === id)?.customer}`)}
+        onWithdraw={(id) => {
+          setSentQuotes(prev => prev.map(q => q.id === id ? { ...q, status: "declined" as const } : q));
+          toast("Quote withdrawn");
+        }}
+        onRequote={(id) => toast("Requote flow would open here")}
+        onViewJob={(id) => toast("Navigating to active job...")}
+      />
       {/* Sticky header + tabs */}
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md">
         <div className="px-4 pt-6 pb-1">
