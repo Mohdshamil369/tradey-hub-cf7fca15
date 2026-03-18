@@ -3,17 +3,14 @@ import IncomingJobCard, { IncomingJobData, JobCardViewMode } from "./IncomingJob
 
 interface SwipeableJobStackProps {
   jobs: IncomingJobData[];
-  expandedId: string | null;
-  onToggleExpand: (id: string) => void;
-  onAccept: (id: string) => void;
+  onViewDetail: (id: string) => void;
   onDecline: (id: string) => void;
-  onPlayVoice: (customer: string) => void;
   onViewAll: () => void;
   viewMode?: JobCardViewMode;
 }
 
 const SwipeableJobStack = ({
-  jobs, expandedId, onToggleExpand, onAccept, onDecline, onPlayVoice, onViewAll, viewMode = "agency",
+  jobs, onViewDetail, onDecline, onViewAll, viewMode = "agency",
 }: SwipeableJobStackProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeX, setSwipeX] = useState(0);
