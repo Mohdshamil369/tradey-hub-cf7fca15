@@ -561,15 +561,18 @@ const TraderJobs = () => {
             ) : (
               <>
                 {sentQuotes.map((quote) => {
-                  const isExpanded = expandedId === quote.id;
                   const sc = statusConfig[quote.status];
 
                   return (
-                    <div key={quote.id} className="rounded-2xl bg-card overflow-hidden border border-border">
-                      <button
-                        onClick={() => setExpandedId(isExpanded ? null : quote.id)}
-                        className="w-full px-4 py-3.5 text-left"
-                      >
+                    <button
+                      key={quote.id}
+                      onClick={() => {
+                        setSelectedQuote(quote);
+                        setIsQuoteDetailOpen(true);
+                      }}
+                      className="w-full rounded-2xl bg-card overflow-hidden border border-border text-left active:scale-[0.98] transition-transform"
+                    >
+                      <div className="px-4 py-3.5">
                         <div className="flex gap-3">
                           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-xl mt-0.5">
                             {quote.icon}
@@ -577,7 +580,7 @@ const TraderJobs = () => {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
                               <h4 className="text-[14px] font-bold text-foreground truncate leading-snug">{quote.jobTitle}</h4>
-                              <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 mt-0.5 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
+                              <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5 -rotate-90" />
                             </div>
                             <div className="mt-1 flex items-center gap-2 text-[11.5px] text-muted-foreground">
                               <span className="truncate">{quote.customer}</span>
@@ -592,127 +595,17 @@ const TraderJobs = () => {
                             </div>
                           </div>
                         </div>
-                      </button>
-
-                      {isExpanded && (
-                        <div className="border-t border-border bg-muted/30">
-                          {/* Breakdown as a clean summary card */}
-                          <div className="px-4 py-3 space-y-2.5">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Quote Breakdown</p>
-                            
-                            <div className="rounded-xl bg-accent/40 p-3 space-y-2">
-                              {/* Materials line */}
-                              <div className="flex items-center justify-between text-[11px]">
-                                <span className="flex items-center gap-2 text-muted-foreground">
-                                  <FileText className="h-3.5 w-3.5 text-primary" />
-                                  Materials ({quote.materialsCount} items)
-                                </span>
-                                <span className="font-semibold text-foreground">
-                                  £{(quote.quoteTotal - (quote.labourHours && quote.labourRate ? quote.labourHours * quote.labourRate : 0)).toFixed(2)}
-                                </span>
-                              </div>
-
-                              {/* Agency: labour roles with pay rates */}
-                              {isAgencyProfile && quote.labourTypes && quote.labourTypes.map((lt, i) => (
-                                <div key={i} className="flex items-center justify-between text-[11px]">
-                                  <span className="flex items-center gap-2 text-muted-foreground">
-                                    <Users className="h-3.5 w-3.5 text-primary" />
-                                    {lt.count}× {lt.role} ({lt.hours}h × £{lt.rate}/hr)
-                                  </span>
-                                  <span className="font-semibold text-foreground">£{(lt.count * lt.hours * lt.rate).toFixed(2)}</span>
-                                </div>
-                              ))}
-
-                              {/* Individual: labour hours */}
-                              {isIndividual && quote.labourHours && quote.labourRate && (
-                                <div className="flex items-center justify-between text-[11px]">
-                                  <span className="flex items-center gap-2 text-muted-foreground">
-                                    <Clock className="h-3.5 w-3.5 text-primary" />
-                                    Labour ({quote.labourHours}h × £{quote.labourRate}/hr)
-                                  </span>
-                                  <span className="font-semibold text-foreground">£{(quote.labourHours * quote.labourRate).toFixed(2)}</span>
-                                </div>
-                              )}
-
-                              {/* Total */}
-                              <div className="border-t border-border pt-2 flex items-center justify-between">
-                                <span className="text-xs font-bold text-foreground">Total</span>
-                                <span className="text-sm font-extrabold text-primary flex items-center gap-0.5">
-                                  <PoundSterling className="h-3.5 w-3.5" />
-                                  {quote.quoteTotal.toFixed(2)}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Assignment info — agency only */}
-                          {isAgencyProfile && quote.assignedTo && (
-                            <div className="px-4 py-3 border-t border-border">
-                              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Assigned To</p>
-                              <div className="flex items-center gap-2">
-                                {quote.assignedTo.type === "group" ? (
-                                  <UsersRound className="h-4 w-4 text-primary" />
-                                ) : (
-                                  <Users className="h-4 w-4 text-primary" />
-                                )}
-                                <span className="text-xs font-semibold text-foreground">{quote.assignedTo.name}</span>
-                                <span className="text-[10px] text-muted-foreground">· {quote.assignedTo.memberCount} workers</span>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Actions */}
-                          <div className="px-4 py-3 border-t border-border flex gap-2">
-                            {quote.status === "pending" && (
-                              <>
-                                <button
-                                  onClick={() => toast(`Reminder sent to ${quote.customer}`)}
-                                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-xs font-bold text-muted-foreground active:bg-muted"
-                                >
-                                  <Send className="h-3.5 w-3.5" />
-                                  Remind
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setSentQuotes(prev => prev.map(q => q.id === quote.id ? { ...q, status: "declined" as const } : q));
-                                    toast("Quote withdrawn");
-                                  }}
-                                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-destructive/20 py-2.5 text-xs font-bold text-destructive active:bg-destructive/5"
-                                >
-                                  <X className="h-3.5 w-3.5" />
-                                  Withdraw
-                                </button>
-                              </>
-                            )}
-                            {quote.status === "declined" && (
-                              <button
-                                onClick={() => toast("Requote flow would open here")}
-                                className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-primary py-2.5 text-xs font-bold text-primary-foreground active:scale-95"
-                              >
-                                <RotateCcw className="h-3.5 w-3.5" />
-                                Send New Quote
-                              </button>
-                            )}
-                            {quote.status === "accepted" && (
-                              <button
-                                onClick={() => toast("Navigating to active job...")}
-                                className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-primary py-2.5 text-xs font-bold text-primary-foreground active:scale-95"
-                              >
-                                <Eye className="h-3.5 w-3.5" />
-                                View Job
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Footer — only when collapsed */}
-                      {!isExpanded && (
-                        <div className="flex items-center justify-between border-t border-border px-4 py-2.5">
-                          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <MapPin className="h-3.5 w-3.5" />{quote.distance}
-                          </span>
-                          <span className="text-[15px] font-extrabold text-primary">£{quote.quoteTotal.toFixed(0)}</span>
+                      </div>
+                      <div className="flex items-center justify-between border-t border-border px-4 py-2.5">
+                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <MapPin className="h-3.5 w-3.5" />{quote.distance}
+                        </span>
+                        <span className="text-[15px] font-extrabold text-primary">£{quote.quoteTotal.toFixed(0)}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              <>
                         </div>
                       )}
                     </div>
