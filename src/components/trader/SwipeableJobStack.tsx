@@ -92,10 +92,7 @@ const SwipeableJobStack = ({
           >
             <IncomingJobCard
               job={behindJob}
-              expanded={false}
-              onToggleExpand={() => {}}
-              onAccept={() => {}}
-              onDecline={() => {}}
+              onViewDetail={() => {}}
               viewMode={viewMode}
             />
           </div>
