@@ -23,7 +23,7 @@ export interface SentQuoteData {
   labourRate?: number;
   labourTypes?: { role: string; count: number; hours: number; rate: number }[];
   status: "pending" | "accepted" | "declined" | "expired";
-  assignedTo?: { type: "group" | "individual"; name: string; memberCount: number };
+  assignedTo?: { type: "group" | "individual" | "individuals"; name: string; memberCount: number };
 }
 
 interface QuoteDetailSheetProps {
