@@ -76,14 +76,13 @@ const SwipeableJobStack = ({
 
   const topJob = visibleJobs[0];
   const behindJob = visibleJobs[1];
-  const isExpanded = expandedId === topJob?.id;
 
   return (
     <div>
       {/* Card stack — top card is in flow, behind card peeks below */}
       <div className="relative">
         {/* Behind card (if exists) — peek below */}
-        {behindJob && !isExpanded && (
+        {behindJob && (
           <div
             className="absolute left-2 right-2 top-2 z-0"
             style={{
