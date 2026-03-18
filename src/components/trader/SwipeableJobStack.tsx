@@ -123,7 +123,7 @@ const SwipeableJobStack = ({
         )}
 
         {/* Behind card shadow hint */}
-        {behindJob && !isExpanded && (
+        {behindJob && (
           <div className="h-2" />
         )}
       </div>
