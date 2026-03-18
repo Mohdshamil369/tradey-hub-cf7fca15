@@ -17,6 +17,7 @@ import CollaborativeQuote from "@/components/trader/CollaborativeQuote";
 import WorkerQuoteRequest from "@/components/trader/WorkerQuoteRequest";
 
 import JobDetailSheet, { type JobDetailData, type JobCategory } from "@/components/trader/JobDetailSheet";
+import QuoteDetailSheet, { type SentQuoteData } from "@/components/trader/QuoteDetailSheet";
 
 type JobStatus = "incoming" | "quotes" | "active" | "completed";
 
