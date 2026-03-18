@@ -479,6 +479,9 @@ const TraderJobs = () => {
         toast.success("Inspection approved! We've notified the customer.");
         acceptJob(jobId);
         break;
+      case "decline":
+        declineJob(jobId);
+        break;
       default:
         console.warn("Unknown job action:", action);
     }
