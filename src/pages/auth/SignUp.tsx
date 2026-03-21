@@ -29,10 +29,6 @@ const SignUp = () => {
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     const raw = getRawPhone();
-    if (!name.trim()) {
-      toast.error("Please enter your name");
-      return;
-    }
     if (raw.length < 9) {
       toast.error("Please enter a valid Dutch phone number");
       return;

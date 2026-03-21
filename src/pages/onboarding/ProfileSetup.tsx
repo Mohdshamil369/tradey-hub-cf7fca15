@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, User, MapPin, Calendar } from "lucide-react";
+import { ArrowLeft, User, MapPin, Calendar, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 const ProfileSetup = () => {
