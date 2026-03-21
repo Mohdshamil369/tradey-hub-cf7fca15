@@ -59,7 +59,9 @@ const categoryConfig: Record<JobCategory, { label: string; emoji: string; classN
 const JobDetail = () => {
   const navigate = useNavigate();
   const { jobId } = useParams();
-  const [activeTab, setActiveTab] = useState<"details" | "quotes" | "attachments">("details");
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") === "quotes" ? "quotes" : "details";
+  const [activeTab, setActiveTab] = useState<"details" | "quotes" | "attachments">(initialTab as any);
   const [showQuoteSheet, setShowQuoteSheet] = useState(false);
 
   // In a real app, fetch from store/API. For now, read from sessionStorage.
