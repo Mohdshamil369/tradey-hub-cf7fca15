@@ -88,7 +88,7 @@ const SignUp = () => {
       }
     } else {
       toast.success("Account created!");
-      navigate("/onboarding/trader-profile", { replace: true });
+      setSignupDone(true);
     }
   };
 
