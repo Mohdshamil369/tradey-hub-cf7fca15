@@ -142,6 +142,7 @@ const App = () => (
 
             {/* Trader routes */}
             <Route path="/trader/jobs" element={<ProtectedRoute><TraderJobs /></ProtectedRoute>} />
+            <Route path="/trader/jobs/:jobId" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
             <Route path="/trader/services" element={<ProtectedRoute><TraderServicesManage /></ProtectedRoute>} />
             <Route path="/trader/earnings" element={<ProtectedRoute><TraderEarnings /></ProtectedRoute>} />
             <Route path="/trader/teams" element={<ProtectedRoute><TraderTeams /></ProtectedRoute>} />
