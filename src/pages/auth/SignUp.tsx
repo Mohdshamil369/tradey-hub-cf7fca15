@@ -101,14 +101,14 @@ const SignUp = () => {
 
         <div className="flex h-full flex-col px-6 pt-14">
           <button
-            onClick={() => (step === "otp" ? setStep("phone") : navigate("/welcome"))}
-            className="mb-6 flex h-10 w-10 items-center justify-center rounded-xl bg-muted"
-          >
+            onClick={() => step === "otp" ? setStep("phone") : navigate("/welcome")}
+            className="mb-6 flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+            
             <ArrowLeft className="h-5 w-5 text-foreground" />
           </button>
 
-          {step === "phone" ? (
-            <>
+          {step === "phone" ?
+          <>
               <div className="mb-5 flex items-center gap-2">
                 <img src={logo} alt="truFindo" className="h-8 w-auto" />
                 <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">trade</span>
@@ -130,13 +130,13 @@ const SignUp = () => {
                   <Phone className="h-5 w-5 text-muted-foreground" />
                   <span className="text-sm font-semibold text-foreground">+31</span>
                   <input
-                    type="tel"
-                    placeholder="6 12 34 56 78"
-                    value={phone}
-                    onChange={(e) => setPhone(formatPhone(e.target.value))}
-                    maxLength={14}
-                    className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-                  />
+                  type="tel"
+                  placeholder="6 12 34 56 78"
+                  value={phone}
+                  onChange={(e) => setPhone(formatPhone(e.target.value))}
+                  maxLength={14}
+                  className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground" />
+                
                 </div>
 
                 <label className="flex items-start gap-3 text-xs text-muted-foreground">
@@ -149,10 +149,10 @@ const SignUp = () => {
                 </label>
 
                 <button
-                  type="submit"
-                  disabled={loading}
-                  className="mt-2 w-full rounded-2xl border-2 border-primary bg-primary/5 py-4 text-base font-bold text-primary transition-all active:scale-[0.98] disabled:opacity-50"
-                >
+                type="submit"
+                disabled={loading}
+                className="mt-2 w-full rounded-2xl border-2 border-primary bg-primary/5 py-4 text-base font-bold text-primary transition-all active:scale-[0.98] disabled:opacity-50">
+                
                   {loading ? "Sending code..." : "Send Verification Code"}
                 </button>
 
@@ -167,9 +167,9 @@ const SignUp = () => {
                   </p>
                 </div>
               </form>
-            </>
-          ) : (
-            <>
+            </> :
+
+          <>
               <h1 className="mb-1 text-2xl font-bold text-foreground font-heading">Verify Phone</h1>
               <p className="mb-8 text-sm text-muted-foreground">
                 Enter the 6-digit code sent to{" "}
@@ -188,47 +188,47 @@ const SignUp = () => {
               </div>
 
               <div className="flex justify-center gap-3 mb-8">
-                {otp.map((digit, i) => (
-                  <input
-                    key={i}
-                    id={`otp-${i}`}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(i, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                    className={`h-14 w-11 rounded-xl border-2 bg-card text-center text-xl font-bold text-foreground outline-none transition-all ${
-                      digit ? "border-primary" : "border-border"
-                    } focus:border-primary`}
-                  />
-                ))}
+                {otp.map((digit, i) =>
+              <input
+                key={i}
+                id={`otp-${i}`}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleOtpChange(i, e.target.value)}
+                onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                className={`h-14 w-11 rounded-xl border-2 bg-card text-center text-xl font-bold text-foreground outline-none transition-all ${
+                digit ? "border-primary" : "border-border"} focus:border-primary`
+                } />
+
+              )}
               </div>
 
               <button
-                onClick={() => toast.success("Code resent!")}
-                className="mb-6 self-center text-sm font-semibold text-primary"
-              >
+              onClick={() => toast.success("Code resent!")}
+              className="mb-6 self-center text-sm font-semibold text-primary">
+              
                 Resend code
               </button>
 
               <div className="mt-auto pb-12">
                 <button
-                  onClick={handleVerify}
-                  disabled={loading}
-                  className="w-full rounded-2xl border-2 border-primary bg-primary/5 py-4 text-base font-bold text-primary transition-all active:scale-[0.98] disabled:opacity-50"
-                >
+                onClick={handleVerify}
+                disabled={loading}
+                className="w-full rounded-2xl border-2 border-primary py-4 text-base font-bold text-primary transition-all active:scale-[0.98] disabled:opacity-50 bg-blue-200 hover:bg-blue-100">
+                
                   {loading ? "Verifying..." : "Verify & Create Account"}
                 </button>
               </div>
             </>
-          )}
+          }
         </div>
 
         <div className="absolute bottom-2 left-1/2 z-50 h-[5px] w-[134px] -translate-x-1/2 rounded-full bg-foreground/30" />
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default SignUp;
