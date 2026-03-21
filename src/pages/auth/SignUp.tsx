@@ -216,7 +216,7 @@ const SignUp = () => {
                 <button
                   onClick={handleVerify}
                   disabled={loading}
-                  className="w-full rounded-2xl bg-primary py-4 text-base font-bold text-primary-foreground transition-all active:scale-[0.98] disabled:opacity-50"
+                  className="w-full rounded-2xl border-2 border-primary bg-primary/5 py-4 text-base font-bold text-primary transition-all active:scale-[0.98] disabled:opacity-50"
                 >
                   {loading ? "Verifying..." : "Verify & Create Account"}
                 </button>
