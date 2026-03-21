@@ -579,6 +579,16 @@ const TraderJobs = () => {
                             isVerified: true,
                             memberSince: "Recently",
                           },
+                          quote: {
+                            total: quote.quoteTotal,
+                            status: quote.status,
+                            sentAt: quote.sentAt,
+                            materialsCount: quote.materialsCount,
+                            labourHours: quote.labourHours,
+                            labourRate: quote.labourRate,
+                            labourTypes: quote.labourTypes,
+                            assignedTo: quote.assignedTo,
+                          },
                         };
                         sessionStorage.setItem(`job_detail_${quote.id}`, JSON.stringify(detailData));
                         navigate(`/trader/jobs/${quote.id}?tab=quotes`);

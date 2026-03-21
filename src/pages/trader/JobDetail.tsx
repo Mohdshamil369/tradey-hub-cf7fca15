@@ -48,6 +48,16 @@ export interface JobDetailPageData {
       duration: string;
     };
   };
+  quote?: {
+    total: number;
+    status: "pending" | "accepted" | "declined" | "expired";
+    sentAt: string;
+    materialsCount: number;
+    labourHours?: number;
+    labourRate?: number;
+    labourTypes?: { role: string; count: number; rate: number; hours: number }[];
+    assignedTo?: { type: "group" | "individuals"; name: string; memberCount: number };
+  };
 }
 
 const categoryConfig: Record<JobCategory, { label: string; emoji: string; className: string }> = {
@@ -252,35 +262,96 @@ const JobDetail = () => {
     </div>
   );
 
-  const renderQuotesTab = () => (
-    <div className="flex flex-col items-center justify-center py-12 gap-4">
-      <div className="h-16 w-16 rounded-2xl bg-accent flex items-center justify-center">
-        <FileText className="h-8 w-8 text-muted-foreground/50" />
+  const renderQuotesTab = () => {
+    if (job.quote) {
+      return (
+        <div className="flex flex-col gap-4 pb-4">
+          <div className="rounded-[24px] border border-border bg-card p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[2px] text-muted-foreground">Quote Status</p>
+                <h3 className="mt-2 text-lg font-bold text-foreground">£{job.quote.total.toFixed(0)}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">Sent {job.quote.sentAt}</p>
+              </div>
+              <span className="rounded-full bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-primary">
+                {job.quote.status}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-[20px] border border-border bg-accent/30 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-muted-foreground">Materials</p>
+              <p className="mt-2 text-2xl font-extrabold text-foreground">{job.quote.materialsCount}</p>
+              <p className="text-xs text-muted-foreground">items included</p>
+            </div>
+            <div className="rounded-[20px] border border-border bg-accent/30 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-muted-foreground">Labour</p>
+              <p className="mt-2 text-2xl font-extrabold text-foreground">{job.quote.labourHours ?? 0}h</p>
+              <p className="text-xs text-muted-foreground">estimated time</p>
+            </div>
+          </div>
+
+          {!!job.quote.labourTypes?.length && (
+            <div>
+              <h3 className="mb-3 px-1 text-xs font-bold uppercase tracking-[2px] text-muted-foreground">Team & Rates</h3>
+              <div className="flex flex-col gap-3">
+                {job.quote.labourTypes.map((line, index) => (
+                  <div key={`${line.role}-${index}`} className="rounded-[20px] border border-border bg-card p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-bold text-foreground">{line.role}</p>
+                        <p className="text-xs text-muted-foreground">{line.count} worker{line.count > 1 ? "s" : ""} × {line.hours}h</p>
+                      </div>
+                      <p className="text-sm font-bold text-primary">£{line.rate}/hr</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {job.quote.assignedTo && (
+            <div className="rounded-[20px] border border-border bg-muted/30 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-muted-foreground">Assigned To</p>
+              <p className="mt-2 text-sm font-bold text-foreground">{job.quote.assignedTo.name}</p>
+              <p className="text-xs text-muted-foreground">{job.quote.assignedTo.memberCount} member{job.quote.assignedTo.memberCount > 1 ? "s" : ""}</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col items-center justify-center py-12 gap-4">
+        <div className="h-16 w-16 rounded-2xl bg-accent flex items-center justify-center">
+          <FileText className="h-8 w-8 text-muted-foreground/50" />
+        </div>
+        <div className="text-center">
+          <p className="text-sm font-bold text-foreground mb-1">
+            {job.category === "inspection" ? "Create Inspection Quote" : "Create an Estimate"}
+          </p>
+          <p className="text-xs text-muted-foreground max-w-[240px] mx-auto">
+            {job.category === "inspection"
+              ? "Set your inspection fee and add any material/labour costs after visiting the site."
+              : "Add materials, labour costs, and notes to send a detailed estimate to the customer."
+            }
+          </p>
+        </div>
+        <button
+          onClick={() => setShowQuoteSheet(true)}
+          className={`mt-2 flex items-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-bold shadow-lg active:scale-[0.98] transition-all ${
+            job.category === "inspection"
+              ? "bg-[hsl(25,90%,55%)] text-white shadow-orange-500/20"
+              : "bg-primary text-primary-foreground shadow-primary/20"
+          }`}
+        >
+          <FileText className="h-4 w-4" />
+          {job.category === "inspection" ? "Create Inspection Quote" : "Create Estimate"}
+        </button>
       </div>
-      <div className="text-center">
-        <p className="text-sm font-bold text-foreground mb-1">
-          {job.category === "inspection" ? "Create Inspection Quote" : "Create an Estimate"}
-        </p>
-        <p className="text-xs text-muted-foreground max-w-[240px] mx-auto">
-          {job.category === "inspection"
-            ? "Set your inspection fee and add any material/labour costs after visiting the site."
-            : "Add materials, labour costs, and notes to send a detailed estimate to the customer."
-          }
-        </p>
-      </div>
-      <button
-        onClick={() => setShowQuoteSheet(true)}
-        className={`mt-2 flex items-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-bold shadow-lg active:scale-[0.98] transition-all ${
-          job.category === "inspection"
-            ? "bg-[hsl(25,90%,55%)] text-white shadow-orange-500/20"
-            : "bg-primary text-primary-foreground shadow-primary/20"
-        }`}
-      >
-        <FileText className="h-4 w-4" />
-        {job.category === "inspection" ? "Create Inspection Quote" : "Create Estimate"}
-      </button>
-    </div>
-  );
+    );
+  };
 
   const renderAttachmentsTab = () => {
     const hasPhotos = job.media?.photos && job.media.photos.length > 0;
