@@ -498,13 +498,6 @@ const TraderJobs = () => {
 
   return (
     <MobileLayout role="trader">
-      {/* Detail Sheet */}
-      <JobDetailSheet 
-        isOpen={isDetailOpen}
-        onOpenChange={setIsDetailOpen}
-        job={selectedJob}
-        onAction={handleDetailAction}
-      />
       {/* Quote Detail Sheet */}
       <QuoteDetailSheet
         quote={selectedQuote}
