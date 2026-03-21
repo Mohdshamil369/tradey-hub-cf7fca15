@@ -425,7 +425,8 @@ const TraderJobs = () => {
   };
 
   const openJobDetail = (job: Job) => {
-    setSelectedJob({
+    // Store job data in sessionStorage for the detail page
+    const detailData = {
       id: job.id,
       category: job.category,
       title: job.title,
@@ -436,6 +437,7 @@ const TraderJobs = () => {
       timeWindow: job.timeWindow,
       price: job.price ?? undefined,
       inspectionFee: job.inspectionFee,
+      postedAgo: job.postedAgo,
       customer: {
         name: job.customer,
         rating: job.customerData?.rating ?? 5.0,
@@ -450,8 +452,9 @@ const TraderJobs = () => {
           duration: job.voiceDuration || "0:15",
         } : undefined,
       }
-    });
-    setIsDetailOpen(true);
+    };
+    sessionStorage.setItem(`job_detail_${job.id}`, JSON.stringify(detailData));
+    navigate(`/trader/jobs/${job.id}`);
   };
 
   const handleDetailAction = (jobId: string, action: string, data?: any) => {
