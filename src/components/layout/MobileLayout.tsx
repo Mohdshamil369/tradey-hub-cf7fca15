@@ -8,7 +8,7 @@ export interface MobileLayoutProps {
   hideNav?: boolean;
 }
 
-const MobileLayout = ({ children, role }: MobileLayoutProps) => {
+const MobileLayout = ({ children, role, hideNav = false }: MobileLayoutProps) => {
   const { profile } = useAuth();
   const effectiveRole = "trader";
   const traderType = profile?.trader_type ?? "individual";
