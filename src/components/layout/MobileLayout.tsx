@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export interface MobileLayoutProps {
   children: ReactNode;
   role?: "customer" | "trader";
+  hideNav?: boolean;
 }
 
 const MobileLayout = ({ children, role }: MobileLayoutProps) => {
