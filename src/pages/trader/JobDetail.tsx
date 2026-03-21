@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ArrowLeft, MapPin, Clock, Star, Play, Info, ChevronRight,
   ShieldCheck, Timer, MessageCircle, XCircle, FileText,
-  Image, Mic, ClipboardList,
+  Image, Mic, ClipboardList, Package, Wrench, Ban, RotateCcw, Plus,
 } from "lucide-react";
 import Avatar from "boring-avatars";
 import { toast } from "sonner";
