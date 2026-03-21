@@ -29,10 +29,6 @@ const SignUp = () => {
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     const raw = getRawPhone();
-    if (!name.trim()) {
-      toast.error("Please enter your name");
-      return;
-    }
     if (raw.length < 9) {
       toast.error("Please enter a valid Dutch phone number");
       return;
@@ -121,16 +117,6 @@ const SignUp = () => {
               </div>
 
               <form onSubmit={handleSendOtp} className="flex flex-1 flex-col gap-4">
-                <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
-                  <User className="h-5 w-5 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Full name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-                  />
-                </div>
 
                 <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
                   <Phone className="h-5 w-5 text-muted-foreground" />
