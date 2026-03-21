@@ -563,8 +563,25 @@ const TraderJobs = () => {
                     <button
                       key={quote.id}
                       onClick={() => {
-                        setSelectedQuote(quote);
-                        setIsQuoteDetailOpen(true);
+                        const detailData = {
+                          id: quote.id,
+                          category: "estimate" as const,
+                          title: quote.jobTitle,
+                          icon: quote.icon,
+                          description: `Quote sent to ${quote.customer} — ${quote.materialsCount} materials, total £${quote.quoteTotal}`,
+                          location: quote.location,
+                          distance: quote.distance,
+                          timeWindow: quote.sentAt,
+                          customer: {
+                            name: quote.customer,
+                            rating: 4.5,
+                            reviews: 0,
+                            isVerified: true,
+                            memberSince: "Recently",
+                          },
+                        };
+                        sessionStorage.setItem(`job_detail_${quote.id}`, JSON.stringify(detailData));
+                        navigate(`/trader/jobs/${quote.id}?tab=quotes`);
                       }}
                       className="w-full rounded-2xl bg-card overflow-hidden border border-border text-left active:scale-[0.98] transition-transform"
                     >
