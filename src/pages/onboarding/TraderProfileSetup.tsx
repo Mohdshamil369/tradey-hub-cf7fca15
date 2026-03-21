@@ -375,14 +375,17 @@ const TraderProfileSetup = () => {
           <div className="flex flex-1 flex-col gap-3.5 overflow-y-auto pb-4">
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Full name *</label>
-                <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
-                  <User className="h-5 w-5 text-muted-foreground" />
+                <div className="flex items-center gap-3 rounded-2xl border-2 border-primary/40 bg-primary/5 px-4 py-3.5 ring-1 ring-primary/20">
+                  <User className="h-5 w-5 text-primary" />
                   <input
-                  type="text" placeholder="John Smith" value={fullName}
+                  type="text" placeholder="Enter your legal full name" value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground" />
-                
+                  className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground font-medium" />
                 </div>
+                <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-primary/80">
+                  <Shield className="h-3.5 w-3.5 shrink-0" />
+                  Required for legal verification — please ensure this matches your official ID
+                </p>
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Business name</label>
