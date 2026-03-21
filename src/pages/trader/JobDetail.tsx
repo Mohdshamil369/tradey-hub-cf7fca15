@@ -48,6 +48,16 @@ export interface JobDetailPageData {
       duration: string;
     };
   };
+  quote?: {
+    total: number;
+    status: "pending" | "accepted" | "declined" | "expired";
+    sentAt: string;
+    materialsCount: number;
+    labourHours?: number;
+    labourRate?: number;
+    labourTypes?: { role: string; count: number; rate: number; hours: number }[];
+    assignedTo?: { type: "group" | "individuals"; name: string; memberCount: number };
+  };
 }
 
 const categoryConfig: Record<JobCategory, { label: string; emoji: string; className: string }> = {
