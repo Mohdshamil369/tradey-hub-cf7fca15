@@ -20,10 +20,10 @@ const MobileLayout = ({ children, role, hideNav = false }: MobileLayoutProps) =>
           <div className="h-[34px] w-[126px] rounded-b-[1.2rem] bg-foreground/90" />
         </div>
         <div className="relative flex h-full flex-col overflow-hidden rounded-[2.5rem]" style={{ transform: "translateZ(0)" }}>
-          <main className="flex-1 overflow-y-auto pb-28 pt-2">
+          <main className={`flex-1 overflow-y-auto ${hideNav ? 'pb-2' : 'pb-28'} pt-2`}>
             {children}
           </main>
-          <BottomNav role={effectiveRole} traderType={traderType} />
+          {!hideNav && <BottomNav role={effectiveRole} traderType={traderType} />}
         </div>
         <div className="absolute bottom-2 left-1/2 z-50 h-[5px] w-[134px] -translate-x-1/2 rounded-full bg-foreground/30" />
       </div>
