@@ -321,7 +321,7 @@ const TraderProfileSetup = () => {
     } else if (step > 0 && step < 4) {
       setStep(step - 1);
     } else if (step === 0) {
-      navigate("/onboarding/role");
+      navigate("/auth/signup");
     }
   };
 

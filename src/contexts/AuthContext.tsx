@@ -106,7 +106,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         street: null,
         city: null,
         postcode: null,
-        onboarding_status: "profile_setup",
+        onboarding_status: "role_selection",
         kyc_status: "verified",
         avatar_url: null,
         trader_type: "individual",
@@ -159,6 +159,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user) return { error: "Not authenticated" };
+    
+    // Handle dummy users — update local state directly
+    if (user.id.startsWith("dummy-user-")) {
+      setProfile((prev) => prev ? { ...prev, ...updates } : prev);
+      return { error: null };
+    }
+    
     const { error } = await supabase
       .from("profiles")
       .update(updates)
