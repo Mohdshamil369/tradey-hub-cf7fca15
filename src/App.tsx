@@ -46,6 +46,7 @@ import ProfileSetup from "./pages/onboarding/ProfileSetup";
 import TraderProfileSetup from "./pages/onboarding/TraderProfileSetup";
 import TraderHome from "./pages/trader/TraderHome";
 import TraderJobs from "./pages/trader/TraderJobs";
+import JobDetail from "./pages/trader/JobDetail";
 import TraderServicesManage from "./pages/trader/TraderServices";
 import TraderEarnings from "./pages/trader/TraderEarnings";
 import TraderTeams from "./pages/trader/TraderTeams";
