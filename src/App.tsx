@@ -46,6 +46,7 @@ import ProfileSetup from "./pages/onboarding/ProfileSetup";
 import TraderProfileSetup from "./pages/onboarding/TraderProfileSetup";
 import TraderHome from "./pages/trader/TraderHome";
 import TraderJobs from "./pages/trader/TraderJobs";
+import JobDetail from "./pages/trader/JobDetail";
 import TraderServicesManage from "./pages/trader/TraderServices";
 import TraderEarnings from "./pages/trader/TraderEarnings";
 import TraderTeams from "./pages/trader/TraderTeams";
@@ -141,6 +142,7 @@ const App = () => (
 
             {/* Trader routes */}
             <Route path="/trader/jobs" element={<ProtectedRoute><TraderJobs /></ProtectedRoute>} />
+            <Route path="/trader/jobs/:jobId" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
             <Route path="/trader/services" element={<ProtectedRoute><TraderServicesManage /></ProtectedRoute>} />
             <Route path="/trader/earnings" element={<ProtectedRoute><TraderEarnings /></ProtectedRoute>} />
             <Route path="/trader/teams" element={<ProtectedRoute><TraderTeams /></ProtectedRoute>} />
