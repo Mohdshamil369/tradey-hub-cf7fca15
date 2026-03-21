@@ -382,10 +382,12 @@ const TraderProfileSetup = () => {
                   onChange={(e) => setFullName(e.target.value)}
                   className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground font-medium" />
                 </div>
-                <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-primary/80">
-                  <Shield className="h-3.5 w-3.5 shrink-0" />
-                  Required for legal verification — please ensure this matches your official ID
-                </p>
+                <div className="mt-1.5 flex items-center gap-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 px-3 py-2">
+                  <Shield className="h-3.5 w-3.5 shrink-0 text-amber-600" />
+                  <p className="text-[11px] font-semibold text-amber-700">
+                    Required for legal verification — please ensure this matches your official ID
+                  </p>
+                </div>
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Business name</label>
