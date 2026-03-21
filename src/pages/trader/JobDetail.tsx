@@ -57,6 +57,8 @@ export interface JobDetailPageData {
     labourRate?: number;
     labourTypes?: { role: string; count: number; rate: number; hours: number }[];
     assignedTo?: { type: "group" | "individuals"; name: string; memberCount: number };
+    materials?: { description: string; quantity: number; unitPrice: number }[];
+    message?: string;
   };
 }
 
