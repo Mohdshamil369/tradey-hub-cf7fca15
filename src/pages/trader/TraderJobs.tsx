@@ -588,6 +588,12 @@ const TraderJobs = () => {
                             labourRate: quote.labourRate,
                             labourTypes: quote.labourTypes,
                             assignedTo: quote.assignedTo,
+                            materials: Array.from({ length: quote.materialsCount }, (_, i) => ({
+                              description: `Material item ${i + 1}`,
+                              quantity: Math.floor(Math.random() * 5) + 1,
+                              unitPrice: Math.floor(Math.random() * 80) + 10,
+                            })),
+                            message: "Includes all materials and labour. Price valid for 14 days.",
                           },
                         };
                         sessionStorage.setItem(`job_detail_${quote.id}`, JSON.stringify(detailData));
