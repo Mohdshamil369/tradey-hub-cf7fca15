@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, Phone, User, ShieldCheck } from "lucide-react";
@@ -8,12 +8,20 @@ import logo from "@/assets/logo.svg";
 
 const SignUp = () => {
   const navigate = useNavigate();
-  const { signUp } = useAuth();
+  const { signUp, session } = useAuth();
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
+  const [signupDone, setSignupDone] = useState(false);
+
+  // Navigate after session state has propagated
+  useEffect(() => {
+    if (signupDone && session) {
+      navigate("/onboarding/trader-profile", { replace: true });
+    }
+  }, [signupDone, session, navigate]);
 
   const formatPhone = (value: string) => {
     const digits = value.replace(/\D/g, "");
