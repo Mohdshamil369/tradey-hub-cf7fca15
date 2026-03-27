@@ -60,6 +60,14 @@ const SignUp = () => {
       const next = document.getElementById(`otp-${index + 1}`);
       next?.focus();
     }
+    // Auto-verify when all 6 digits entered
+    if (value && index === 5) {
+      const complete = [...otp];
+      complete[index] = value;
+      if (complete.every((d) => d !== "")) {
+        setTimeout(() => handleVerify(), 100);
+      }
+    }
   };
 
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
@@ -68,6 +76,26 @@ const SignUp = () => {
       prev?.focus();
     }
   };
+
+  const [countdown, setCountdown] = useState(30);
+  const [canResend, setCanResend] = useState(false);
+
+  useEffect(() => {
+    if (step !== "otp") return;
+    setCountdown(30);
+    setCanResend(false);
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setCanResend(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [step]);
 
   const handleVerify = async () => {
     const code = otp.join("");
@@ -205,22 +233,31 @@ const SignUp = () => {
               )}
               </div>
 
-              <button
-              onClick={() => toast.success("Code resent!")}
-              className="mb-6 self-center text-sm font-semibold text-primary">
-              
-                Resend code
-              </button>
-
-              <div className="mt-auto pb-12">
+              {loading && (
+                <p className="mb-4 text-center text-sm font-semibold text-muted-foreground">Verifying...</p>
+              )}
+              {canResend ? (
                 <button
-                onClick={handleVerify}
-                disabled={loading}
-                className="w-full rounded-2xl bg-primary py-4 text-base font-bold text-primary-foreground transition-all active:scale-[0.98] disabled:opacity-50">
-                
-                  {loading ? "Verifying..." : "Verify & Create Account"}
+                  onClick={() => {
+                    toast.success("Code resent!");
+                    setCountdown(30);
+                    setCanResend(false);
+                    const interval = setInterval(() => {
+                      setCountdown((prev) => {
+                        if (prev <= 1) { clearInterval(interval); setCanResend(true); return 0; }
+                        return prev - 1;
+                      });
+                    }, 1000);
+                  }}
+                  className="mb-6 self-center text-sm font-semibold text-primary"
+                >
+                  Resend code
                 </button>
-              </div>
+              ) : (
+                <p className="mb-6 self-center text-sm text-muted-foreground">
+                  Resend code in <span className="font-bold text-foreground">{countdown}s</span>
+                </p>
+              )}
             </>
           }
         </div>
