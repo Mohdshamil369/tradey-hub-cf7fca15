@@ -6,7 +6,7 @@ import {
   ArrowLeft, MapPin, Clock, Star, Play, Info, ChevronRight, ChevronLeft,
   ShieldCheck, Timer, MessageCircle, XCircle, FileText,
   Image, Mic, ClipboardList, Package, Wrench, Ban, RotateCcw, Plus,
-  Camera, Calendar, User, Briefcase, Heart,
+  Camera, Calendar, User, Briefcase, Bookmark,
   Image as ImageIcon,
 } from "lucide-react";
 import Avatar from "boring-avatars";
@@ -589,8 +589,11 @@ const JobDetail = () => {
               <ArrowLeft className="h-4 w-4 text-foreground" />
             </button>
             <div className="flex gap-2">
-              <button className="flex h-8 w-8 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm shadow-sm">
-                <Heart className="h-4 w-4 text-foreground" />
+              <button
+                onClick={() => toast.success("Job saved!")}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm shadow-sm active:bg-background"
+              >
+                <Bookmark className="h-4 w-4 text-foreground" />
               </button>
             </div>
           </div>

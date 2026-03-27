@@ -28,6 +28,7 @@ import ProfilePlaceholder from "./pages/profile/ProfilePlaceholder";
 import NotificationPreferences from "./pages/profile/NotificationPreferences";
 import LanguageRegion from "./pages/profile/LanguageRegion";
 import SavedTraders from "./pages/profile/SavedTraders";
+import SavedItems from "./pages/profile/SavedItems";
 import HelpCentre from "./pages/profile/HelpCentre";
 import GiveFeedback from "./pages/profile/GiveFeedback";
 import Legal from "./pages/profile/Legal";
@@ -172,6 +173,7 @@ const App = () => (
             <Route path="/profile/notifications" element={<ProtectedRoute><NotificationPreferences /></ProtectedRoute>} />
             <Route path="/profile/language" element={<ProtectedRoute><LanguageRegion /></ProtectedRoute>} />
             <Route path="/profile/favourites" element={<ProtectedRoute><SavedTraders /></ProtectedRoute>} />
+            <Route path="/profile/saved-items" element={<ProtectedRoute><SavedItems /></ProtectedRoute>} />
             <Route path="/profile/help" element={<ProtectedRoute><HelpCentre /></ProtectedRoute>} />
             <Route path="/profile/feedback" element={<ProtectedRoute><GiveFeedback /></ProtectedRoute>} />
             <Route path="/profile/legal" element={<ProtectedRoute><Legal /></ProtectedRoute>} />
