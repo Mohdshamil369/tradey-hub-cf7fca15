@@ -9,6 +9,8 @@ import { Wrench, Lightning, PaintBrush, Hammer, Broom, Snowflake, Bathtub, House
 import { catAServices } from "@/data/services";
 import { useAddressStore } from "@/stores/addressStore";
 import { serviceIconMap, iconMap, getCategoryColors, getServiceColors } from "@/lib/icons";
+import LocationSheet from "@/components/home/LocationSheet";
+import { useState } from "react";
 
 const topCategories: { id: string; label: string; icon: Icon }[] = [
   { id: "plumbing", label: "Plumbing", icon: Wrench },
@@ -28,6 +30,7 @@ const Index = () => {
   const { profile } = useAuth();
   const { addresses } = useAddressStore();
   const defaultAddress = addresses.find((a) => a.isDefault) || addresses[0];
+  const [locationOpen, setLocationOpen] = useState(false);
 
   return (
     <MobileLayout>
@@ -38,7 +41,7 @@ const Index = () => {
             tru<span className="text-primary">Findo</span>
           </h1>
           <button
-            onClick={() => navigate("/profile/address")}
+            onClick={() => setLocationOpen(true)}
             className="flex items-center gap-1 mt-0.5 transition-all active:opacity-70"
           >
             <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
@@ -171,6 +174,8 @@ const Index = () => {
         {/* Saved Traders */}
         <SavedTradersList />
       </div>
+
+      <LocationSheet open={locationOpen} onOpenChange={setLocationOpen} />
     </MobileLayout>
   );
 };
