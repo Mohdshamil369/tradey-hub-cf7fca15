@@ -1,4 +1,4 @@
-import { MapPin, Clock, Eye, Camera, Calendar, Timer, PoundSterling, Image as ImageIcon } from "lucide-react";
+import { MapPin, Clock, Eye, Camera, Calendar, PoundSterling, Image as ImageIcon, X, Car } from "lucide-react";
 import { useState } from "react";
 
 export interface CustomerRequestMeta {
@@ -31,13 +31,20 @@ export interface IncomingJobData {
 
 export type JobCardViewMode = "individual" | "agency" | "agency-worker";
 
+export interface NearbyScheduleItem {
+  time: string;
+  title: string;
+  location?: string;
+  distanceFromJob?: string;
+  driveTime?: string;
+}
+
 interface IncomingJobCardProps {
   job: IncomingJobData;
   onViewDetail: () => void;
   viewMode?: JobCardViewMode;
   onRequestPhotos?: (id: string) => void;
-  /** Worker's existing schedule items near this job's time */
-  nearbySchedule?: { time: string; title: string }[];
+  nearbySchedule?: NearbyScheduleItem[];
 }
 
 const categoryConfig: Record<JobCategory, { label: string; emoji: string; className: string }> = {
@@ -53,11 +60,11 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
   const estDuration = job.customerRequest?.expectedDuration || job.estimatedDuration;
   const estBudget = job.customerRequest?.expectedBudget;
   const [photoRequested, setPhotoRequested] = useState(false);
+  const [showSchedule, setShowSchedule] = useState(false);
+  const hasSchedule = nearbySchedule && nearbySchedule.length > 0;
 
   return (
-    <div
-      className="rounded-2xl bg-card overflow-hidden border border-border"
-    >
+    <div className="rounded-2xl bg-card overflow-hidden border border-border relative">
       {/* Title row */}
       <div className="px-4 pt-3.5 pb-2">
         <div className="flex items-start gap-3">
@@ -79,7 +86,7 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
       </div>
 
       {/* Photo area */}
-      <div className="mx-4 mb-2.5 relative rounded-xl overflow-hidden bg-muted border border-border h-[120px]">
+      <div className="mx-4 mb-2.5 relative rounded-xl overflow-hidden bg-muted/50 border border-border/40 h-[120px]">
         {hasPhotos ? (
           <div className="flex h-full">
             {photos.slice(0, 3).map((src, i) => (
@@ -93,11 +100,10 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-full gap-1.5">
-            <ImageIcon className="h-8 w-8 text-muted-foreground/30" />
-            <p className="text-[10px] text-muted-foreground/50 font-medium">No photos available</p>
+            <ImageIcon className="h-8 w-8 text-muted-foreground/20" />
+            <p className="text-[10px] text-muted-foreground/40 font-medium">No photos available</p>
           </div>
         )}
-        {/* Request Photos button */}
         {!hasPhotos && (
           <button
             onClick={(e) => {
@@ -114,9 +120,8 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
         )}
       </div>
 
-      {/* Details grid */}
-      <div className="mx-4 mb-2.5 grid grid-cols-3 gap-px rounded-xl overflow-hidden border border-border bg-border">
-        {/* Price / Quote */}
+      {/* Details grid — subtle dividers */}
+      <div className="mx-4 mb-2.5 grid grid-cols-3 gap-px rounded-xl overflow-hidden border border-border/30 bg-border/30">
         <div className="bg-card flex flex-col items-center justify-center py-2.5 px-1">
           {job.price ? (
             <>
@@ -135,29 +140,27 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
             </>
           )}
         </div>
-        {/* Est. Duration */}
         <div className="bg-card flex flex-col items-center justify-center py-2.5 px-1">
           <span className="text-[12px] font-bold text-foreground">{estDuration || "—"}</span>
           <span className="text-[9px] text-muted-foreground font-medium mt-0.5">Est. Duration</span>
         </div>
-        {/* Distance */}
         <div className="bg-card flex flex-col items-center justify-center py-2.5 px-1">
           <span className="text-[12px] font-bold text-foreground">{job.distance}</span>
           <span className="text-[9px] text-muted-foreground font-medium mt-0.5">Distance</span>
         </div>
       </div>
 
-      {/* Secondary details row */}
-      <div className="mx-4 mb-2.5 grid grid-cols-2 gap-px rounded-xl overflow-hidden border border-border bg-border">
+      {/* Secondary details — subtle dividers */}
+      <div className="mx-4 mb-2.5 grid grid-cols-2 gap-px rounded-xl overflow-hidden border border-border/30 bg-border/30">
         <div className="bg-card flex items-center gap-2 py-2 px-3">
-          <Calendar className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
+          <Calendar className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
           <div className="min-w-0">
             <p className="text-[11px] font-semibold text-foreground truncate">{job.timeWindow}</p>
             <p className="text-[9px] text-muted-foreground">Requested Time</p>
           </div>
         </div>
         <div className="bg-card flex items-center gap-2 py-2 px-3">
-          <MapPin className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
+          <MapPin className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
           <div className="min-w-0">
             <p className="text-[11px] font-semibold text-foreground truncate">{job.location}</p>
             <p className="text-[9px] text-muted-foreground">Location</p>
@@ -166,36 +169,30 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
       </div>
 
       {estBudget && (
-        <div className="mx-4 mb-2.5 flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
-          <PoundSterling className="h-3.5 w-3.5 text-muted-foreground/70" />
+        <div className="mx-4 mb-2.5 flex items-center gap-2 rounded-xl border border-border/30 bg-card px-3 py-2">
+          <PoundSterling className="h-3.5 w-3.5 text-muted-foreground/50" />
           <p className="text-[11px] text-muted-foreground">
             Customer budget: <span className="font-bold text-foreground">£{estBudget}</span>
           </p>
         </div>
       )}
 
-      {/* Nearby schedule — helps worker plan */}
-      {nearbySchedule && nearbySchedule.length > 0 && (
-        <div className="mx-4 mb-2.5 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2">
-          <p className="text-[10px] font-bold text-primary mb-1.5 flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            Your Nearby Schedule
-          </p>
-          <div className="flex flex-col gap-1">
-            {nearbySchedule.map((s, i) => (
-              <div key={i} className="flex items-center gap-2 text-[10px]">
-                <span className="font-semibold text-foreground w-[90px] shrink-0">{s.time}</span>
-                <span className="text-muted-foreground truncate">{s.title}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Footer — View CTA */}
-      <div className="flex items-center justify-between border-t border-border px-4 py-2.5">
-        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-          <span>{job.postedAgo || "Just now"}</span>
+      {/* Footer — Schedule button + View CTA */}
+      <div className="flex items-center justify-between border-t border-border/40 px-4 py-2.5">
+        <div className="flex items-center gap-2">
+          {hasSchedule && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowSchedule(true);
+              }}
+              className="flex items-center gap-1.5 rounded-lg border border-border/40 bg-muted/50 px-2.5 py-1.5 text-[10px] font-semibold text-muted-foreground active:opacity-70"
+            >
+              <Clock className="h-3 w-3" />
+              My Schedule
+            </button>
+          )}
+          <span className="text-[11px] text-muted-foreground">{job.postedAgo || "Just now"}</span>
         </div>
         <button
           onClick={onViewDetail}
@@ -205,6 +202,64 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
           View
         </button>
       </div>
+
+      {/* Schedule bottom sheet */}
+      {showSchedule && (
+        <>
+          <div
+            className="absolute inset-0 z-40 bg-foreground/40"
+            onClick={() => setShowSchedule(false)}
+          />
+          <div className="absolute inset-x-0 bottom-0 z-50 rounded-t-3xl bg-background shadow-2xl border-t border-border/40 animate-in slide-in-from-bottom duration-200">
+            {/* Handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="h-1 w-10 rounded-full bg-muted-foreground/20" />
+            </div>
+
+            <div className="flex items-center justify-between px-5 pb-3">
+              <h3 className="text-sm font-bold text-foreground">Your Nearby Schedule</h3>
+              <button onClick={() => setShowSchedule(false)} className="rounded-full p-1 active:bg-muted">
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+
+            {/* Job reference */}
+            <div className="mx-5 mb-3 rounded-xl bg-primary/5 border border-primary/15 px-3 py-2">
+              <p className="text-[10px] font-bold text-primary mb-0.5">This Job</p>
+              <p className="text-[11px] font-semibold text-foreground">{job.timeWindow} · {job.location}</p>
+            </div>
+
+            {/* Schedule items */}
+            <div className="px-5 pb-6 flex flex-col gap-2 max-h-[260px] overflow-y-auto">
+              {nearbySchedule!.map((s, i) => (
+                <div key={i} className="rounded-xl border border-border/30 bg-card px-3.5 py-3">
+                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                    <p className="text-[12px] font-bold text-foreground">{s.title}</p>
+                    <span className="text-[11px] font-semibold text-primary shrink-0">{s.time}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1">
+                    {s.location && (
+                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                        <MapPin className="h-3 w-3" />{s.location}
+                      </span>
+                    )}
+                    {s.distanceFromJob && (
+                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                        <MapPin className="h-3 w-3" />{s.distanceFromJob} from this job
+                      </span>
+                    )}
+                    {s.driveTime && (
+                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                        <Car className="h-3 w-3" />{s.driveTime} drive
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
