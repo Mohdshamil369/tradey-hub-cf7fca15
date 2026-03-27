@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, createContext, useContext, useState, useCallback } from "react";
 import BottomNav from "./BottomNav";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -6,9 +6,10 @@ export interface MobileLayoutProps {
   children: ReactNode;
   role?: "customer" | "trader";
   hideNav?: boolean;
+  overlay?: ReactNode;
 }
 
-const MobileLayout = ({ children, role, hideNav = false }: MobileLayoutProps) => {
+const MobileLayout = ({ children, role, hideNav = false, overlay }: MobileLayoutProps) => {
   const { profile } = useAuth();
   const effectiveRole = "trader";
   const traderType = profile?.trader_type ?? "individual";
@@ -24,6 +25,8 @@ const MobileLayout = ({ children, role, hideNav = false }: MobileLayoutProps) =>
             {children}
           </main>
           {!hideNav && <BottomNav role={effectiveRole} traderType={traderType} />}
+          {/* Overlay slot — renders above everything, inside the device frame */}
+          {overlay}
         </div>
         <div className="absolute bottom-2 left-1/2 z-50 h-[5px] w-[134px] -translate-x-1/2 rounded-full bg-foreground/30" />
       </div>
