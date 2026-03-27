@@ -64,7 +64,6 @@ const SignUp = () => {
       setTimeout(() => handleVerifyWithCode(newOtp.join("")), 150);
     }
   };
-  };
 
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
