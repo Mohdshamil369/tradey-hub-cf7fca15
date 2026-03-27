@@ -19,6 +19,7 @@ export interface IncomingJobData {
   distance: string;
   price: number | null;
   timeWindow: string;
+  estimatedDuration?: string;
   postedAgo: string;
   description: string;
   hasVoiceNote?: boolean;
@@ -72,7 +73,8 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual" }: Incomin
 
             <div className="mt-1 flex items-center gap-2 text-[11.5px] text-muted-foreground">
               <span className="inline-flex items-center gap-1 truncate">
-                <Clock className="h-3 w-3 shrink-0 text-muted-foreground/70" />{job.timeWindow}
+                <Clock className="h-3 w-3 shrink-0 text-muted-foreground/70" />
+                {job.estimatedDuration || job.timeWindow}
               </span>
             </div>
 
