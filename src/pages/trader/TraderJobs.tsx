@@ -295,21 +295,25 @@ const initialSentQuotes: SentQuote[] = [
 
 const avatarPalette = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7"];
 
-// Mock schedule data for workers to see their nearby bookings
-const mockNearbySchedules: Record<string, { time: string; title: string }[]> = {
+// Mock schedule data with rich details for nearby bookings
+import type { NearbyScheduleItem } from "@/components/trader/IncomingJobCard";
+
+const mockNearbySchedules: Record<string, NearbyScheduleItem[]> = {
   "j1": [
-    { time: "12:00 – 13:00", title: "Lunch break" },
-    { time: "16:30 – 17:30", title: "Boiler check — Oud-West" },
+    { time: "12:00 – 13:00", title: "Lunch break", location: "Home", distanceFromJob: "4.2 km", driveTime: "12 min" },
+    { time: "16:30 – 17:30", title: "Boiler check", location: "Oud-West, Bilderdijkstraat", distanceFromJob: "1.8 km", driveTime: "7 min" },
   ],
   "j3": [
-    { time: "Mon 08:00–09:30", title: "Pipe fitting — Centrum" },
-    { time: "Mon 13:00–15:00", title: "Free slot" },
+    { time: "Mon 08:00–09:30", title: "Pipe fitting", location: "Centrum, Damrak", distanceFromJob: "2.1 km", driveTime: "9 min" },
+    { time: "Mon 13:00–15:00", title: "Valve replacement", location: "De Pijp, Ferdinand Bol", distanceFromJob: "0.8 km", driveTime: "4 min" },
   ],
   "j9": [
-    { time: "Fri 08:30–09:30", title: "Morning commute" },
-    { time: "Fri 12:00–14:00", title: "Kitchen install — Oost" },
+    { time: "Fri 08:30–09:30", title: "Drain clearing", location: "Oost, Linnaeusstraat", distanceFromJob: "1.2 km", driveTime: "5 min" },
+    { time: "Fri 12:00–14:00", title: "Kitchen install", location: "Oost, Middenweg", distanceFromJob: "0.5 km", driveTime: "3 min" },
   ],
-  "j2": [],
+  "j2": [
+    { time: "Tomorrow 07:30–08:30", title: "Morning prep", location: "Workshop, Sloterdijk", distanceFromJob: "6.3 km", driveTime: "18 min" },
+  ],
 };
 
 const statusConfig: Record<SentQuote["status"], { label: string; className: string }> = {
