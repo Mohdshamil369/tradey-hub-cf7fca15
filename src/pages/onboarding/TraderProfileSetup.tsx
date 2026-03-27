@@ -693,8 +693,8 @@ const TraderProfileSetup = () => {
 
           })()}
 
-          {/* Step 2: Document upload — one at a time */}
           {step === 2 && currentDoc &&
+          <>
           <div className="flex flex-1 flex-col overflow-y-auto pb-4">
               {/* Document sub-step progress */}
               <div className="mb-4 flex gap-1">
@@ -1023,6 +1023,7 @@ const TraderProfileSetup = () => {
                 </div>
               </>
             )}
+          </>
           }
 
           {/* Step 3: App Permissions */}
