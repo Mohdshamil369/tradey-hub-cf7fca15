@@ -357,6 +357,9 @@ const TraderJobs = () => {
   const [collabQuoteJobId, setCollabQuoteJobId] = useState<string | null>(null);
   const [collabMembers, setCollabMembers] = useState<{ id: string; name: string; role: string }[]>([]);
 
+  // Schedule bottom sheet state
+  const [scheduleJob, setScheduleJob] = useState<Job | null>(null);
+
   const [dispatchJobId, setDispatchJobId] = useState<string | null>(null);
   const [assignStep, setAssignStep] = useState<"choose" | "select-members" | "confirm">("choose");
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
@@ -736,7 +739,7 @@ const TraderJobs = () => {
                       onViewDetail={() => openJobDetail(job)}
                       viewMode={isIndividual ? "individual" : "agency"}
                       onRequestPhotos={(id) => toast.success("Photo request sent to customer!")}
-                      nearbySchedule={mockNearbySchedules[job.id]}
+                      onShowSchedule={() => setScheduleJob(job)}
                     />
                   )}
                 </div>
