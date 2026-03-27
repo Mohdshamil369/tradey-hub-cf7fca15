@@ -50,12 +50,8 @@ const SignIn = () => {
       next?.focus();
     }
     // Auto-verify when all 6 digits entered
-    if (value && index === 5) {
-      const complete = [...otp];
-      complete[index] = value;
-      if (complete.every((d) => d !== "")) {
-        setTimeout(() => handleVerify(), 100);
-      }
+    if (newOtp.every((d) => d !== "")) {
+      setTimeout(() => handleVerifyWithCode(newOtp.join("")), 150);
     }
   };
 
@@ -86,12 +82,8 @@ const SignIn = () => {
     return () => clearInterval(interval);
   }, [step]);
 
-  const handleVerify = async () => {
-    const code = otp.join("");
-    if (code.length < 6) {
-      toast.error("Please enter the full 6-digit code");
-      return;
-    }
+  const handleVerifyWithCode = async (code: string) => {
+    if (code.length < 6) return;
     setLoading(true);
     const raw = getRawPhone();
     const fakeEmail = `+31${raw}@phone.trufindo.app`;
