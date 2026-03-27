@@ -1,7 +1,7 @@
 import MobileLayout from "@/components/layout/MobileLayout";
 import { ArrowLeft, Plus, MapPin, Trash2, CheckCircle2, Pencil, X, Save, Home, Building2, Star } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAddressStore, SavedAddress } from "@/stores/addressStore";
 
@@ -15,8 +15,9 @@ type FormMode = null | "add" | "edit";
 
 const Address = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { addresses, addAddress, updateAddress, removeAddress, setDefault } = useAddressStore();
-  const [formMode, setFormMode] = useState<FormMode>(null);
+  const [formMode, setFormMode] = useState<FormMode>(searchParams.get("mode") === "add" ? "add" : null);
   const [editId, setEditId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({ label: "Home", street: "", city: "", postcode: "" });
