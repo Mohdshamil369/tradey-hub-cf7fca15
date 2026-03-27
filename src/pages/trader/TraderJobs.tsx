@@ -295,6 +295,23 @@ const initialSentQuotes: SentQuote[] = [
 
 const avatarPalette = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7"];
 
+// Mock schedule data for workers to see their nearby bookings
+const mockNearbySchedules: Record<string, { time: string; title: string }[]> = {
+  "j1": [
+    { time: "12:00 – 13:00", title: "Lunch break" },
+    { time: "16:30 – 17:30", title: "Boiler check — Oud-West" },
+  ],
+  "j3": [
+    { time: "Mon 08:00–09:30", title: "Pipe fitting — Centrum" },
+    { time: "Mon 13:00–15:00", title: "Free slot" },
+  ],
+  "j9": [
+    { time: "Fri 08:30–09:30", title: "Morning commute" },
+    { time: "Fri 12:00–14:00", title: "Kitchen install — Oost" },
+  ],
+  "j2": [],
+};
+
 const statusConfig: Record<SentQuote["status"], { label: string; className: string }> = {
   pending: { label: "Awaiting Response", className: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]" },
   accepted: { label: "Accepted", className: "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]" },
