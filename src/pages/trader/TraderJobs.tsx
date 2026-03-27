@@ -920,40 +920,6 @@ const TraderJobs = () => {
             );
           })}
 
-          {/* Company-assigned jobs — only in incoming tab */}
-          {activeTab === "incoming" && isIndividual && companyJobList.length > 0 && (
-            <>
-              <div className="flex items-center gap-2 mt-4 mb-1">
-                <Building2 className="h-4 w-4 text-primary" />
-                <h3 className="text-sm font-bold text-foreground">From Your Company</h3>
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
-                  {companyJobList.length}
-                </span>
-              </div>
-              {companyJobList.map((cj) => (
-                <CompanyJobCard
-                  key={cj.id}
-                  job={cj}
-                  expanded={expandedId === cj.id}
-                  onToggleExpand={() => setExpandedId(expandedId === cj.id ? null : cj.id)}
-                  onAccept={() => {
-                    setCompanyJobList((prev) => prev.filter((j) => j.id !== cj.id));
-                    toast.success(`Accepted company job from ${cj.companyName}! 🏢`);
-                  }}
-                  onDecline={() => {
-                    setCompanyJobList((prev) => prev.filter((j) => j.id !== cj.id));
-                    toast("Company job declined");
-                  }}
-                  onSubmitEstimate={(data) => {
-                    setCompanyJobList((prev) => prev.filter((j) => j.id !== cj.id));
-                    toast.success(`Estimate sent to ${cj.companyName}: £${data.grandTotal.toFixed(2)}`, {
-                      description: `${data.materials.length} item(s) + ${data.labourHours}h labour`,
-                    });
-                  }}
-                />
-              ))}
-            </>
-          )}
         </div>
       </div>
 
