@@ -88,7 +88,7 @@ const initialJobs: Job[] = [
     status: "incoming", 
     hasVoiceNote: true, 
     voiceDuration: "0:23", 
-    customerRequest: { expectedDuration: "1–2 hours", expectedBudget: 80, photos: ["/placeholder.svg"] },
+    customerRequest: { expectedDuration: "1–2 hours", expectedBudget: 80, photos: [jobTapImg, jobTapImg] },
     customerData: { rating: 4.8, reviews: 12, isVerified: true, memberSince: "Jan 2024" }
   },
   { 
@@ -107,7 +107,7 @@ const initialJobs: Job[] = [
     status: "incoming", 
     hasVoiceNote: true, 
     voiceDuration: "1:12", 
-    customerRequest: { expectedDuration: "2–3 days", expectedBudget: 1200, photos: ["/placeholder.svg", "/placeholder.svg", "/placeholder.svg"] },
+    customerRequest: { expectedDuration: "2–3 days", expectedBudget: 1200, photos: [jobBathroomImg, jobBathroomImg, jobBathroomImg] },
     customerData: { rating: 4.9, reviews: 34, isVerified: true, memberSince: "Mar 2023" }
   },
   { 
@@ -126,7 +126,7 @@ const initialJobs: Job[] = [
     postedAgo: "15 min ago", 
     status: "incoming", 
     hasVoiceNote: false, 
-    customerRequest: { expectedDuration: "1 hour", photos: ["/placeholder.svg"] },
+    customerRequest: { expectedDuration: "1 hour" },
     customerData: { rating: 4.5, reviews: 8, isVerified: false, memberSince: "Feb 2025" }
   },
   { id: "j2", type: "catA", category: "fixed", title: "Light Switch Replacement", icon: "💡", customer: "Mark T.", location: "De Pijp", distance: "4.1 km", price: 55, timeWindow: "Tomorrow, 09:00 – 11:00", description: "2 light switches need replacing in the hallway. Standard switches.", postedAgo: "12 min ago", status: "incoming", hasVoiceNote: false, customerRequest: { expectedDuration: "30 min – 1 hour" }, customerData: { rating: 4.2, reviews: 5, isVerified: true, memberSince: "Nov 2024" } },
