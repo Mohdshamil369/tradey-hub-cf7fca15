@@ -471,6 +471,66 @@ const JobDetail = () => {
     );
   };
 
+  const renderAttachmentsTab = () => {
+    if (!hasPhotos && !hasVoice) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12 gap-3">
+          <div className="h-14 w-14 rounded-2xl bg-accent flex items-center justify-center">
+            <Image className="h-7 w-7 text-muted-foreground/50" />
+          </div>
+          <p className="text-sm font-semibold text-foreground">No attachments</p>
+          <p className="text-[11px] text-muted-foreground">The customer hasn't added any photos or voice notes</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col gap-4 pb-4">
+        {/* Voice note */}
+        {hasVoice && (
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground mb-2 px-1">Voice Note</h3>
+            <div className="rounded-xl bg-primary/5 p-3 border border-primary/10">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => toast.info("Playing voice note...")}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md active:scale-95 transition-transform"
+                >
+                  <Play className="h-4 w-4 fill-current ml-0.5" />
+                </button>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-bold text-foreground">Customer Voice Message</p>
+                  <div className="flex items-center gap-0.5 h-4 mt-0.5">
+                    {[4, 7, 3, 9, 6, 8, 4, 7, 5, 8, 3, 6, 9, 4, 7].map((h, i) => (
+                      <div key={i} className="flex-1 rounded-full bg-primary/30" style={{ height: `${h * 1.5}px` }} />
+                    ))}
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold text-primary font-mono">{job.media!.voiceNote!.duration}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Photos grid */}
+        {hasPhotos && (
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground mb-2 px-1">
+              Photos ({photos.length})
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              {photos.map((photo, i) => (
+                <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-border/30">
+                  <img src={photo} alt={`Job photo ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderFooter = () => {
     switch (job.category) {
       case "fixed":
