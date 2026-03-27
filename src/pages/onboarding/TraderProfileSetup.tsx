@@ -142,6 +142,10 @@ const TraderProfileSetup = () => {
   const [city, setCity] = useState(profile?.city || "");
   const [postcode, setPostcode] = useState(profile?.postcode || "");
   const [yearsExperience, setYearsExperience] = useState("");
+  const [isBusinessRegistered, setIsBusinessRegistered] = useState(false);
+  const [gstNumber, setGstNumber] = useState("");
+  const [irdNumber, setIrdNumber] = useState("");
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
 
   // Step 1 - Services (category list → subpage with expandable service types)
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
