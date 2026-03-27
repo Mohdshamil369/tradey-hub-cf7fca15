@@ -230,7 +230,7 @@ const TraderProfileSetup = () => {
   const currentDoc = step === 2 ? requiredDocuments[docSubStep] : null;
 
   const canContinue = () => {
-    if (step === 0) return fullName.trim() && city.trim() && postcode.trim();
+    if (step === 0) return fullName.trim() && city.trim() && postcode.trim() && irdNumber.trim() && disclaimerAccepted;
     if (step === 1) return selectedServices.length > 0;
     if (step === 2) return true; // temporarily allow skipping docs
     if (step === 3) return true; // permissions are optional
