@@ -99,6 +99,21 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
                   </div>
                 </>
               )}
+              {/* Request more photos when only 1-2 */}
+              {photos.length <= 2 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPhotoRequested(true);
+                    onRequestPhotos?.(job.id);
+                  }}
+                  disabled={photoRequested}
+                  className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-foreground/70 px-1.5 py-0.5 text-[7px] font-bold text-background active:opacity-80 disabled:opacity-50"
+                >
+                  <Camera className="h-2 w-2" />
+                  {photoRequested ? "Requested" : "More Photos"}
+                </button>
+              )
             </>
           ) : (
             <div className="relative flex items-center justify-center h-full">
