@@ -142,6 +142,10 @@ const TraderProfileSetup = () => {
   const [city, setCity] = useState(profile?.city || "");
   const [postcode, setPostcode] = useState(profile?.postcode || "");
   const [yearsExperience, setYearsExperience] = useState("");
+  const [isBusinessRegistered, setIsBusinessRegistered] = useState(false);
+  const [gstNumber, setGstNumber] = useState("");
+  const [irdNumber, setIrdNumber] = useState("");
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
 
   // Step 1 - Services (category list → subpage with expandable service types)
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
@@ -212,6 +216,7 @@ const TraderProfileSetup = () => {
   // Step 2 - Documents
   const [docSubStep, setDocSubStep] = useState(0);
   const [uploadedDocs, setUploadedDocs] = useState<Record<string, {fileName: string;uploadedAt: string;}>>({});
+  const [previewDocId, setPreviewDocId] = useState<string | null>(null);
 
   const mandatoryDocs = requiredDocuments.filter((d) => d.mandatory);
   const optionalDocs = requiredDocuments.filter((d) => !d.mandatory);
@@ -225,7 +230,7 @@ const TraderProfileSetup = () => {
   const currentDoc = step === 2 ? requiredDocuments[docSubStep] : null;
 
   const canContinue = () => {
-    if (step === 0) return fullName.trim() && city.trim() && postcode.trim();
+    if (step === 0) return fullName.trim() && city.trim() && postcode.trim() && irdNumber.trim() && disclaimerAccepted;
     if (step === 1) return selectedServices.length > 0;
     if (step === 2) return true; // temporarily allow skipping docs
     if (step === 3) return true; // permissions are optional
@@ -444,6 +449,80 @@ const TraderProfileSetup = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Business Registration */}
+              <div className="rounded-2xl border border-border bg-card p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-xs font-semibold text-foreground">Is your business registered?</label>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Select if you have a registered business</p>
+                  </div>
+                  <button
+                    onClick={() => setIsBusinessRegistered(!isBusinessRegistered)}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ${
+                      isBusinessRegistered ? "bg-primary" : "bg-muted"
+                    }`}
+                  >
+                    <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform duration-200 mt-0.5 ${
+                      isBusinessRegistered ? "translate-x-5 ml-0.5" : "translate-x-0.5"
+                    }`} />
+                  </button>
+                </div>
+
+                {isBusinessRegistered && (
+                  <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">GST Number *</label>
+                    <div className="flex items-center gap-3 rounded-2xl border border-border bg-background px-4 py-3.5">
+                      <Building2 className="h-5 w-5 text-muted-foreground" />
+                      <input
+                        type="text"
+                        placeholder="e.g. 123-456-789"
+                        value={gstNumber}
+                        onChange={(e) => setGstNumber(e.target.value)}
+                        className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* IRD Number */}
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">IRD Number *</label>
+                <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
+                  <FileText className="h-5 w-5 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="e.g. 12-345-678"
+                    value={irdNumber}
+                    onChange={(e) => setIrdNumber(e.target.value)}
+                    className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                  />
+                </div>
+                <p className="mt-1.5 text-[11px] text-muted-foreground">
+                  Your Inland Revenue Department number is required for tax purposes
+                </p>
+              </div>
+
+              {/* Disclaimer */}
+              <div className="rounded-2xl border border-border bg-card p-4">
+                <button
+                  onClick={() => setDisclaimerAccepted(!disclaimerAccepted)}
+                  className="flex items-start gap-3 w-full text-left"
+                >
+                  <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 mt-0.5 transition-all ${
+                    disclaimerAccepted ? "border-primary bg-primary" : "border-muted-foreground/40"
+                  }`}>
+                    {disclaimerAccepted && <CheckCircle2 className="h-3.5 w-3.5 text-primary-foreground" />}
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-foreground">I agree to the disclaimer *</p>
+                    <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                      I confirm that the information provided is accurate and complete. I understand that providing false or misleading information may result in account suspension. I consent to identity verification and background checks as required by truFindo's terms of service.
+                    </p>
+                  </div>
+                </button>
+              </div>
             </div>
           }
 
@@ -646,18 +725,28 @@ const TraderProfileSetup = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="text-base font-bold text-foreground">{currentDoc.label}</h3>
+                      {docPreviewExamples[currentDoc.id] && (
+                        <button
+                          onClick={() => setPreviewDocId(previewDocId === currentDoc.id ? null : currentDoc.id)}
+                          className="flex h-5 w-5 items-center justify-center rounded-full bg-muted hover:bg-primary/10 transition-colors"
+                          title="View example"
+                        >
+                          <Eye className="h-3 w-3 text-muted-foreground" />
+                        </button>
+                      )}
                       {currentDoc.mandatory && !isDocFullyUploaded(currentDoc) &&
                     <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[9px] font-bold text-destructive">
                           Required
                         </span>
                     }
-                      {currentDoc.hasFrontBack
-
-
-
-                    }
+                      {currentDoc.hasFrontBack}
                     </div>
                     <p className="mt-0.5 text-xs text-muted-foreground">{currentDoc.description}</p>
+                    {previewDocId === currentDoc.id && (
+                      <div className="mt-2 rounded-xl bg-muted/40 border border-border/50 px-3 py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <p className="text-[11px] text-foreground/70 leading-relaxed">{docPreviewExamples[currentDoc.id]}</p>
+                      </div>
+                    )}
                   </div>
                   {isDocFullyUploaded(currentDoc) &&
                 <CheckCircle2 className="h-6 w-6 shrink-0 text-primary" />
@@ -708,20 +797,7 @@ const TraderProfileSetup = () => {
                   </div>
                 )}
 
-                {/* Document preview example */}
-                {docPreviewExamples[currentDoc.id] && (
-                  <div className="rounded-2xl border-2 border-dashed border-border/60 bg-muted/20 p-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted">
-                        <Eye className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Example Preview</p>
-                        <p className="mt-0.5 text-xs text-foreground/70">{docPreviewExamples[currentDoc.id]}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {/* Document preview — shown on info icon click */}
 
                 {/* Info box */}
                 <div className="rounded-2xl border border-border bg-card p-4">
