@@ -387,12 +387,13 @@ const JobDetail = () => {
           </div>
 
           {/* Assignment */}
-          {q.assignedTo
-
-
-
-
-
+          {q.assignedTo && typeof q.assignedTo === "object" && "name" in q.assignedTo && (
+            <div className="rounded-xl border border-border bg-card p-3.5">
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-muted-foreground mb-1.5">Assigned To</p>
+              <p className="text-sm font-semibold text-foreground">{(q.assignedTo as any).name}</p>
+              <p className="text-[11px] text-muted-foreground">{(q.assignedTo as any).type} • {(q.assignedTo as any).memberCount} members</p>
+            </div>
+          )}
           }
 
           {/* Message/Notes */}
