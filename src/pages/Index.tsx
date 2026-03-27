@@ -30,6 +30,7 @@ const Index = () => {
   const { profile } = useAuth();
   const { addresses } = useAddressStore();
   const defaultAddress = addresses.find((a) => a.isDefault) || addresses[0];
+  const [locationOpen, setLocationOpen] = useState(false);
 
   return (
     <MobileLayout>
