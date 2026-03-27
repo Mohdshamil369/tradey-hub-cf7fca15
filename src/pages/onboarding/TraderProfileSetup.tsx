@@ -986,6 +986,43 @@ const TraderProfileSetup = () => {
                 </div>
               </div>
             </div>
+
+            {/* Document preview bottom sheet */}
+            {previewSide && (
+              <>
+                <div
+                  className="absolute inset-0 z-40 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+                  onClick={() => setPreviewSide(null)}
+                />
+                <div className="absolute inset-x-0 bottom-0 z-50 rounded-t-3xl bg-background shadow-2xl animate-in slide-in-from-bottom duration-300">
+                  <div className="flex justify-center pt-3 pb-1">
+                    <div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
+                  </div>
+                  <div className="flex items-center justify-between px-5 pb-3">
+                    <h3 className="text-base font-bold text-foreground font-heading">
+                      {previewSide === "front" ? "Front Side" : "Back Side"} — Example
+                    </h3>
+                    <button onClick={() => setPreviewSide(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+                      <X className="h-4 w-4 text-muted-foreground" />
+                    </button>
+                  </div>
+                  <div className="px-5 pb-8">
+                    <div className="rounded-2xl border border-border overflow-hidden bg-muted/30">
+                      <img
+                        src={previewSide === "front" ? docPreviewFront : docPreviewBack}
+                        alt={`${previewSide} side example`}
+                        className="w-full h-auto object-contain"
+                      />
+                    </div>
+                    <p className="mt-3 text-xs text-muted-foreground text-center">
+                      {previewSide === "front"
+                        ? "Ensure your full name, photo, and document number are clearly visible"
+                        : "Ensure the barcode and all text on the back are clearly visible"}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
           }
 
           {/* Step 3: App Permissions */}
