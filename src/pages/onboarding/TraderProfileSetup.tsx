@@ -728,28 +728,13 @@ const TraderProfileSetup = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="text-base font-bold text-foreground">{currentDoc.label}</h3>
-                      {docPreviewExamples[currentDoc.id] && (
-                        <button
-                          onClick={() => setPreviewDocId(previewDocId === currentDoc.id ? null : currentDoc.id)}
-                          className="flex h-5 w-5 items-center justify-center rounded-full bg-muted hover:bg-primary/10 transition-colors"
-                          title="View example"
-                        >
-                          <Eye className="h-3 w-3 text-muted-foreground" />
-                        </button>
-                      )}
                       {currentDoc.mandatory && !isDocFullyUploaded(currentDoc) &&
                     <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[9px] font-bold text-destructive">
                           Required
                         </span>
                     }
-                      {currentDoc.hasFrontBack}
                     </div>
                     <p className="mt-0.5 text-xs text-muted-foreground">{currentDoc.description}</p>
-                    {previewDocId === currentDoc.id && (
-                      <div className="mt-2 rounded-xl bg-muted/40 border border-border/50 px-3 py-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                        <p className="text-[11px] text-foreground/70 leading-relaxed">{docPreviewExamples[currentDoc.id]}</p>
-                      </div>
-                    )}
                   </div>
                   {isDocFullyUploaded(currentDoc) &&
                 <CheckCircle2 className="h-6 w-6 shrink-0 text-primary" />
