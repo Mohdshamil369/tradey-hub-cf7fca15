@@ -449,6 +449,80 @@ const TraderProfileSetup = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Business Registration */}
+              <div className="rounded-2xl border border-border bg-card p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-xs font-semibold text-foreground">Is your business registered?</label>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Select if you have a registered business</p>
+                  </div>
+                  <button
+                    onClick={() => setIsBusinessRegistered(!isBusinessRegistered)}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ${
+                      isBusinessRegistered ? "bg-primary" : "bg-muted"
+                    }`}
+                  >
+                    <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform duration-200 mt-0.5 ${
+                      isBusinessRegistered ? "translate-x-5 ml-0.5" : "translate-x-0.5"
+                    }`} />
+                  </button>
+                </div>
+
+                {isBusinessRegistered && (
+                  <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">GST Number *</label>
+                    <div className="flex items-center gap-3 rounded-2xl border border-border bg-background px-4 py-3.5">
+                      <Building2 className="h-5 w-5 text-muted-foreground" />
+                      <input
+                        type="text"
+                        placeholder="e.g. 123-456-789"
+                        value={gstNumber}
+                        onChange={(e) => setGstNumber(e.target.value)}
+                        className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* IRD Number */}
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">IRD Number *</label>
+                <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
+                  <FileText className="h-5 w-5 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="e.g. 12-345-678"
+                    value={irdNumber}
+                    onChange={(e) => setIrdNumber(e.target.value)}
+                    className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                  />
+                </div>
+                <p className="mt-1.5 text-[11px] text-muted-foreground">
+                  Your Inland Revenue Department number is required for tax purposes
+                </p>
+              </div>
+
+              {/* Disclaimer */}
+              <div className="rounded-2xl border border-border bg-card p-4">
+                <button
+                  onClick={() => setDisclaimerAccepted(!disclaimerAccepted)}
+                  className="flex items-start gap-3 w-full text-left"
+                >
+                  <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 mt-0.5 transition-all ${
+                    disclaimerAccepted ? "border-primary bg-primary" : "border-muted-foreground/40"
+                  }`}>
+                    {disclaimerAccepted && <CheckCircle2 className="h-3.5 w-3.5 text-primary-foreground" />}
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-foreground">I agree to the disclaimer *</p>
+                    <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                      I confirm that the information provided is accurate and complete. I understand that providing false or misleading information may result in account suspension. I consent to identity verification and background checks as required by truFindo's terms of service.
+                    </p>
+                  </div>
+                </button>
+              </div>
             </div>
           }
 
