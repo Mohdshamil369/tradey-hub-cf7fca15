@@ -1023,6 +1023,7 @@ const TraderProfileSetup = () => {
                 </div>
               </>
             )}
+            </div>
           }
 
           {/* Step 3: App Permissions */}
