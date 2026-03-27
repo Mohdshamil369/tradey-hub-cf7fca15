@@ -113,7 +113,7 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
                   <Camera className="h-2 w-2" />
                   {photoRequested ? "Requested" : "More Photos"}
                 </button>
-              )
+              )}
             </>
           ) : (
             <div className="relative flex items-center justify-center h-full">
