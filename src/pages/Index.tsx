@@ -174,6 +174,8 @@ const Index = () => {
         {/* Saved Traders */}
         <SavedTradersList />
       </div>
+
+      <LocationSheet open={locationOpen} onOpenChange={setLocationOpen} />
     </MobileLayout>
   );
 };
