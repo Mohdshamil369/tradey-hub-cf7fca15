@@ -5,12 +5,14 @@ import {
   ArrowLeft, User, MapPin, Building2, Camera, FileText, Shield,
   CheckCircle2, ChevronRight, Upload, AlertTriangle, Fingerprint,
   CreditCard, HardHat, Scale, ClipboardCheck, ChevronDown,
-  Bell, MapPinned, Mic, PartyPopper, Sparkles, Eye } from
+  Bell, MapPinned, Mic, PartyPopper, Sparkles, Eye, X } from
 "lucide-react";
 import { toast } from "sonner";
 import { serviceCategories, catAServices, catBServices, getAllServices } from "@/data/services";
 import { categoryServiceTypes } from "@/data/serviceTypes";
 import { EmojiIcon, getEmojiIconColors, categoryIconMap, categoryColorMap, iconMap } from "@/lib/icons";
+import docPreviewFront from "@/assets/doc-preview-front.png";
+import docPreviewBack from "@/assets/doc-preview-back.png";
 
 const mainSteps = ["Details", "Services", "Documents", "Permissions", "Done"];
 
@@ -217,6 +219,7 @@ const TraderProfileSetup = () => {
   const [docSubStep, setDocSubStep] = useState(0);
   const [uploadedDocs, setUploadedDocs] = useState<Record<string, {fileName: string;uploadedAt: string;}>>({});
   const [previewDocId, setPreviewDocId] = useState<string | null>(null);
+  const [previewSide, setPreviewSide] = useState<"front" | "back" | null>(null);
 
   const mandatoryDocs = requiredDocuments.filter((d) => d.mandatory);
   const optionalDocs = requiredDocuments.filter((d) => !d.mandatory);
@@ -690,8 +693,8 @@ const TraderProfileSetup = () => {
 
           })()}
 
-          {/* Step 2: Document upload — one at a time */}
           {step === 2 && currentDoc &&
+          <>
           <div className="flex flex-1 flex-col overflow-y-auto pb-4">
               {/* Document sub-step progress */}
               <div className="mb-4 flex gap-1">
@@ -725,28 +728,13 @@ const TraderProfileSetup = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="text-base font-bold text-foreground">{currentDoc.label}</h3>
-                      {docPreviewExamples[currentDoc.id] && (
-                        <button
-                          onClick={() => setPreviewDocId(previewDocId === currentDoc.id ? null : currentDoc.id)}
-                          className="flex h-5 w-5 items-center justify-center rounded-full bg-muted hover:bg-primary/10 transition-colors"
-                          title="View example"
-                        >
-                          <Eye className="h-3 w-3 text-muted-foreground" />
-                        </button>
-                      )}
                       {currentDoc.mandatory && !isDocFullyUploaded(currentDoc) &&
                     <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[9px] font-bold text-destructive">
                           Required
                         </span>
                     }
-                      {currentDoc.hasFrontBack}
                     </div>
                     <p className="mt-0.5 text-xs text-muted-foreground">{currentDoc.description}</p>
-                    {previewDocId === currentDoc.id && (
-                      <div className="mt-2 rounded-xl bg-muted/40 border border-border/50 px-3 py-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                        <p className="text-[11px] text-foreground/70 leading-relaxed">{docPreviewExamples[currentDoc.id]}</p>
-                      </div>
-                    )}
                   </div>
                   {isDocFullyUploaded(currentDoc) &&
                 <CheckCircle2 className="h-6 w-6 shrink-0 text-primary" />
@@ -821,9 +809,20 @@ const TraderProfileSetup = () => {
                   const uploaded = uploadedDocs[key];
                   return (
                     <div key={side}>
-                          <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                            {side === "front" ? "📄 Front Side" : "📄 Back Side"}
-                          </p>
+                          <div className="mb-1.5 flex items-center justify-between">
+                            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                              {side === "front" ? "📄 Front Side" : "📄 Back Side"}
+                            </p>
+                            {currentDoc.hasFrontBack && (
+                              <button
+                                onClick={() => setPreviewSide(side)}
+                                className="flex items-center gap-1 text-[10px] font-semibold text-primary active:opacity-70"
+                              >
+                                <Eye className="h-3 w-3" />
+                                Preview
+                              </button>
+                            )}
+                          </div>
                           {uploaded ?
                       <div className="rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-4">
                               <div className="flex items-center gap-3">
@@ -987,6 +986,44 @@ const TraderProfileSetup = () => {
                 </div>
               </div>
             </div>
+
+            {/* Document preview bottom sheet */}
+            {previewSide && (
+              <>
+                <div
+                  className="absolute inset-0 z-40 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+                  onClick={() => setPreviewSide(null)}
+                />
+                <div className="absolute inset-x-0 bottom-0 z-50 rounded-t-3xl bg-background shadow-2xl animate-in slide-in-from-bottom duration-300">
+                  <div className="flex justify-center pt-3 pb-1">
+                    <div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
+                  </div>
+                  <div className="flex items-center justify-between px-5 pb-3">
+                    <h3 className="text-base font-bold text-foreground font-heading">
+                      {previewSide === "front" ? "Front Side" : "Back Side"} — Example
+                    </h3>
+                    <button onClick={() => setPreviewSide(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+                      <X className="h-4 w-4 text-muted-foreground" />
+                    </button>
+                  </div>
+                  <div className="px-5 pb-8">
+                    <div className="rounded-2xl border border-border overflow-hidden bg-muted/30">
+                      <img
+                        src={previewSide === "front" ? docPreviewFront : docPreviewBack}
+                        alt={`${previewSide} side example`}
+                        className="w-full h-auto object-contain"
+                      />
+                    </div>
+                    <p className="mt-3 text-xs text-muted-foreground text-center">
+                      {previewSide === "front"
+                        ? "Ensure your full name, photo, and document number are clearly visible"
+                        : "Ensure the barcode and all text on the back are clearly visible"}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
+          </>
           }
 
           {/* Step 3: App Permissions */}
