@@ -206,28 +206,6 @@ const JobDetail = () => {
         </div>
       </div>
 
-      {/* Voice note */}
-      {hasVoice && (
-        <div className="rounded-xl bg-primary/5 p-3 border border-primary/10">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => toast.info("Playing voice note...")}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md active:scale-95 transition-transform"
-            >
-              <Play className="h-4 w-4 fill-current ml-0.5" />
-            </button>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-bold text-foreground">Voice Message</p>
-              <div className="flex items-center gap-0.5 h-4 mt-0.5">
-                {[4, 7, 3, 9, 6, 8, 4, 7, 5, 8, 3, 6, 9, 4, 7].map((h, i) => (
-                  <div key={i} className="flex-1 rounded-full bg-primary/30" style={{ height: `${h * 1.5}px` }} />
-                ))}
-              </div>
-            </div>
-            <span className="text-[10px] font-bold text-primary font-mono">{job.media!.voiceNote!.duration}</span>
-          </div>
-        </div>
-      )}
 
       {/* Job Description */}
       <div>
