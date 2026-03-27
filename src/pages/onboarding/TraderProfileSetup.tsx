@@ -212,6 +212,7 @@ const TraderProfileSetup = () => {
   // Step 2 - Documents
   const [docSubStep, setDocSubStep] = useState(0);
   const [uploadedDocs, setUploadedDocs] = useState<Record<string, {fileName: string;uploadedAt: string;}>>({});
+  const [previewDocId, setPreviewDocId] = useState<string | null>(null);
 
   const mandatoryDocs = requiredDocuments.filter((d) => d.mandatory);
   const optionalDocs = requiredDocuments.filter((d) => !d.mandatory);
@@ -646,18 +647,28 @@ const TraderProfileSetup = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="text-base font-bold text-foreground">{currentDoc.label}</h3>
+                      {docPreviewExamples[currentDoc.id] && (
+                        <button
+                          onClick={() => setPreviewDocId(previewDocId === currentDoc.id ? null : currentDoc.id)}
+                          className="flex h-5 w-5 items-center justify-center rounded-full bg-muted hover:bg-primary/10 transition-colors"
+                          title="View example"
+                        >
+                          <Eye className="h-3 w-3 text-muted-foreground" />
+                        </button>
+                      )}
                       {currentDoc.mandatory && !isDocFullyUploaded(currentDoc) &&
                     <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[9px] font-bold text-destructive">
                           Required
                         </span>
                     }
-                      {currentDoc.hasFrontBack
-
-
-
-                    }
+                      {currentDoc.hasFrontBack}
                     </div>
                     <p className="mt-0.5 text-xs text-muted-foreground">{currentDoc.description}</p>
+                    {previewDocId === currentDoc.id && (
+                      <div className="mt-2 rounded-xl bg-muted/40 border border-border/50 px-3 py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <p className="text-[11px] text-foreground/70 leading-relaxed">{docPreviewExamples[currentDoc.id]}</p>
+                      </div>
+                    )}
                   </div>
                   {isDocFullyUploaded(currentDoc) &&
                 <CheckCircle2 className="h-6 w-6 shrink-0 text-primary" />
@@ -708,20 +719,7 @@ const TraderProfileSetup = () => {
                   </div>
                 )}
 
-                {/* Document preview example */}
-                {docPreviewExamples[currentDoc.id] && (
-                  <div className="rounded-2xl border-2 border-dashed border-border/60 bg-muted/20 p-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted">
-                        <Eye className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Example Preview</p>
-                        <p className="mt-0.5 text-xs text-foreground/70">{docPreviewExamples[currentDoc.id]}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {/* Document preview — shown on info icon click */}
 
                 {/* Info box */}
                 <div className="rounded-2xl border border-border bg-card p-4">
