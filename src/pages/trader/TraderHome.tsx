@@ -1,4 +1,5 @@
 import MobileLayout from "@/components/layout/MobileLayout";
+import { useNavigate } from "react-router-dom";
 import LocationSheet from "@/components/home/LocationSheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
