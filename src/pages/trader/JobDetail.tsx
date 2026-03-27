@@ -623,6 +623,7 @@ const JobDetail = () => {
         <ScrollArea className="flex-1 overflow-y-auto px-4 pt-4">
           {activeTab === "details" && renderDetailsTab()}
           {activeTab === "quotes" && renderQuotesTab()}
+          {activeTab === "attachments" && renderAttachmentsTab()}
         </ScrollArea>
 
         {/* Footer CTA */}
