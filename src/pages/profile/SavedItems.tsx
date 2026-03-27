@@ -1,58 +1,65 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
-import { ArrowLeft, Bookmark, MapPin, Clock, Trash2, Briefcase } from "lucide-react";
-import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
+import { ArrowLeft, Bookmark, BookmarkX } from "lucide-react";
+import IncomingJobCard, { IncomingJobData } from "@/components/trader/IncomingJobCard";
 import jobTapImg from "@/assets/job-tap-repair.jpg";
 import jobBathroomImg from "@/assets/job-bathroom-reno.jpg";
 import { toast } from "sonner";
 
-interface SavedItem {
-  id: string;
-  type: "job" | "trader";
-  title: string;
-  subtitle: string;
-  image?: string;
-  distance?: string;
-  price?: string;
-  savedAt: string;
-}
-
-const initialSavedItems: SavedItem[] = [
+const initialSavedJobs: IncomingJobData[] = [
   {
     id: "s1",
-    type: "job",
+    type: "catA",
+    category: "fixed",
     title: "Tap Repair",
-    subtitle: "Emily R. · Amsterdam Centrum",
-    image: jobTapImg,
+    icon: "🔧",
+    customer: "Emily R.",
+    location: "Amsterdam Centrum",
     distance: "2.3 km",
-    price: "£65",
-    savedAt: "2 hours ago",
+    price: 65,
+    timeWindow: "Mon 28 Jul, 9:00–12:00",
+    estimatedDuration: "1–2 hrs",
+    postedAgo: "2 hours ago",
+    description: "Kitchen tap is leaking and needs replacement.",
+    customerRequest: { photos: [jobTapImg] },
   },
   {
     id: "s2",
-    type: "job",
+    type: "catB",
+    category: "estimate",
     title: "Full Bathroom Renovation",
-    subtitle: "Sarah L. · Jordaan",
-    image: jobBathroomImg,
+    icon: "🛁",
+    customer: "Sarah L.",
+    location: "Jordaan",
     distance: "1.8 km",
-    price: "Quote TBD",
-    savedAt: "1 day ago",
+    price: null,
+    timeWindow: "Flexible — within 2 weeks",
+    estimatedDuration: "Multi-day",
+    postedAgo: "1 day ago",
+    description: "Complete bathroom reno including tiling and plumbing.",
+    customerRequest: { photos: [jobBathroomImg] },
   },
   {
     id: "s3",
-    type: "job",
+    type: "catA",
+    category: "inspection",
     title: "Wall Damp Inspection",
-    subtitle: "Mark van B. · De Pijp",
+    icon: "🔍",
+    customer: "Mark van B.",
+    location: "De Pijp",
     distance: "3.1 km",
-    price: "£45 inspect",
-    savedAt: "3 days ago",
+    price: null,
+    inspectionFee: 45,
+    timeWindow: "This week",
+    postedAgo: "3 days ago",
+    description: "Damp patches appearing on interior wall, need inspection.",
   },
 ];
 
 const SavedItems = () => {
   const navigate = useNavigate();
-  const [items, setItems] = useState(initialSavedItems);
+  const [items, setItems] = useState(initialSavedJobs);
 
   const removeItem = (id: string) => {
     setItems((prev) => prev.filter((i) => i.id !== id));
@@ -92,58 +99,21 @@ const SavedItems = () => {
             </div>
           ) : (
             <div className="flex flex-col gap-2.5">
-              {items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex gap-0 rounded-2xl bg-card border border-border overflow-hidden active:scale-[0.99] transition-transform"
-                >
-                  {/* Thumbnail */}
-                  <div className="w-[90px] shrink-0 bg-muted/30">
-                    {item.image ? (
-                      <img src={item.image} alt="" className="h-full w-full object-cover" loading="lazy" />
-                    ) : (
-                      <div className="h-full flex items-center justify-center p-2">
-                        <img src={noPhotoPlaceholder} alt="" className="w-full opacity-30" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0 px-3 py-2.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <Briefcase className="h-3 w-3 text-muted-foreground/50 shrink-0" />
-                          <span className="text-[9px] font-semibold text-muted-foreground uppercase">Job</span>
-                        </div>
-                        <h4 className="text-[13px] font-bold text-foreground truncate mt-0.5">{item.title}</h4>
-                        <p className="text-[10px] text-muted-foreground truncate">{item.subtitle}</p>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeItem(item.id);
-                        }}
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-destructive/10 active:bg-destructive/20"
-                      >
-                        <Trash2 className="h-3 w-3 text-destructive" />
-                      </button>
-                    </div>
-
-                    <div className="mt-1.5 flex items-center gap-3 text-[10px]">
-                      {item.price && (
-                        <span className="font-bold text-primary">{item.price}</span>
-                      )}
-                      {item.distance && (
-                        <span className="flex items-center gap-0.5 text-muted-foreground">
-                          <MapPin className="h-3 w-3" />{item.distance}
-                        </span>
-                      )}
-                      <span className="flex items-center gap-0.5 text-muted-foreground/60">
-                        <Clock className="h-3 w-3" />{item.savedAt}
-                      </span>
-                    </div>
-                  </div>
+              {items.map((job) => (
+                <div key={job.id} className="relative">
+                  <IncomingJobCard
+                    job={job}
+                    onViewDetail={() => navigate(`/trader/jobs/${job.id}`)}
+                    onRequestPhotos={() => {}}
+                  />
+                  {/* Unsave overlay button */}
+                  <button
+                    onClick={() => removeItem(job.id)}
+                    className="absolute top-2 right-2 z-10 flex h-7 w-7 items-center justify-center rounded-lg bg-destructive/90 text-destructive-foreground active:scale-95 transition-transform shadow-sm"
+                    title="Remove from saved"
+                  >
+                    <BookmarkX className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               ))}
             </div>
