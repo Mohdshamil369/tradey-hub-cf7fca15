@@ -37,6 +37,7 @@ interface IncomingJob {
   distance: string;
   price: number | null;
   timeWindow: string;
+  estimatedDuration?: string;
   postedAgo: string;
   description: string;
   hasVoiceNote: boolean;
