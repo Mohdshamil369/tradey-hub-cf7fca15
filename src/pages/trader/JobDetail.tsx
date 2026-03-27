@@ -75,7 +75,7 @@ const JobDetail = () => {
   const { jobId } = useParams();
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") === "quotes" ? "quotes" : "details";
-  const [activeTab, setActiveTab] = useState<"details" | "quotes">(initialTab as any);
+  const [activeTab, setActiveTab] = useState<"details" | "quotes" | "attachments">(initialTab as any);
   const [showQuoteSheet, setShowQuoteSheet] = useState(false);
   const [heroIndex, setHeroIndex] = useState(0);
 
