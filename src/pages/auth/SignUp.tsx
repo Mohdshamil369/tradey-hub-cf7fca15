@@ -55,19 +55,15 @@ const SignUp = () => {
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-    // Auto-focus next
     if (value && index < 5) {
       const next = document.getElementById(`otp-${index + 1}`);
       next?.focus();
     }
     // Auto-verify when all 6 digits entered
-    if (value && index === 5) {
-      const complete = [...otp];
-      complete[index] = value;
-      if (complete.every((d) => d !== "")) {
-        setTimeout(() => handleVerify(), 100);
-      }
+    if (newOtp.every((d) => d !== "")) {
+      setTimeout(() => handleVerifyWithCode(newOtp.join("")), 150);
     }
+  };
   };
 
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
@@ -97,12 +93,8 @@ const SignUp = () => {
     return () => clearInterval(interval);
   }, [step]);
 
-  const handleVerify = async () => {
-    const code = otp.join("");
-    if (code.length < 6) {
-      toast.error("Please enter the full 6-digit code");
-      return;
-    }
+  const handleVerifyWithCode = async (code: string) => {
+    if (code.length < 6) return;
     setLoading(true);
     const raw = getRawPhone();
     const fakeEmail = `+31${raw}@phone.trufindo.app`;
