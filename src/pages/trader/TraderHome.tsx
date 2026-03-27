@@ -663,6 +663,7 @@ const TraderHome = () => {
           );
         })()}
       </div>
+      <LocationSheet open={locationSheetOpen} onOpenChange={setLocationSheetOpen} />
     </MobileLayout>
   );
 };
