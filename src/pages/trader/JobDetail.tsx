@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Avatar from "boring-avatars";
 import { toast } from "sonner";
+import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 import QuoteSheet, { type QuoteSheetData } from "@/components/trader/QuoteSheet";
 
 export type JobCategory = "fixed" | "estimate" | "inspection";
@@ -628,19 +629,13 @@ const JobDetail = () => {
               </div>
             </div>
           ) : (
-            <div className="h-[140px] flex flex-col items-center justify-center gap-2 pt-8">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent text-[36px]">
-                {job.icon}
-              </div>
-              <div className="flex items-center gap-1.5">
-                <ImageIcon className="h-3.5 w-3.5 text-muted-foreground/30" />
-                <span className="text-[10px] text-muted-foreground/50">No photos</span>
-              </div>
+            <div className="relative h-[180px] flex items-center justify-center">
+              <img src={noPhotoPlaceholder} alt="No photo" className="h-full w-full object-contain opacity-30 p-6" />
               <button
                 onClick={() => toast.success("Photo request sent!")}
-                className="flex items-center gap-1 rounded-lg bg-foreground/70 px-2.5 py-1 text-[9px] font-bold text-background"
+                className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-lg bg-foreground/70 px-3 py-1.5 text-[10px] font-bold text-background backdrop-blur-sm active:opacity-80"
               >
-                <Camera className="h-3 w-3" /> Request Photos
+                <Camera className="h-3.5 w-3.5" /> Request Photos
               </button>
             </div>
           )}

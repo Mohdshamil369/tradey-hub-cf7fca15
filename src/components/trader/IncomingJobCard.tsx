@@ -1,5 +1,6 @@
 import { MapPin, Clock, Eye, Camera, Calendar, PoundSterling, Image as ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 
 export interface CustomerRequestMeta {
   photos?: string[];
@@ -100,8 +101,8 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
               )}
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full gap-1">
-              <ImageIcon className="h-6 w-6 text-muted-foreground/20" />
+            <div className="relative flex items-center justify-center h-full">
+              <img src={noPhotoPlaceholder} alt="No photo" className="h-full w-full object-contain opacity-40 p-2" />
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -109,10 +110,11 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
                   onRequestPhotos?.(job.id);
                 }}
                 disabled={photoRequested}
-                className="flex items-center gap-1 rounded bg-foreground/70 px-1.5 py-1 text-[8px] font-bold text-background active:opacity-80 disabled:opacity-50"
+                className="absolute inset-x-1 bottom-1.5 flex items-center justify-center gap-1 rounded bg-foreground/70 px-1.5 py-1 text-[8px] font-bold text-background active:opacity-80 disabled:opacity-50"
               >
                 <Camera className="h-2.5 w-2.5" />
                 {photoRequested ? "Sent" : "Request Photos"}
+              </button>
               </button>
             </div>
           )}
