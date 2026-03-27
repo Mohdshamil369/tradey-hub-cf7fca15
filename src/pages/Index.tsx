@@ -33,7 +33,7 @@ const Index = () => {
   const [locationOpen, setLocationOpen] = useState(false);
 
   return (
-    <MobileLayout>
+    <MobileLayout overlay={<LocationSheet open={locationOpen} onOpenChange={setLocationOpen} />}>
       {/* Header */}
       <div className="flex items-center justify-between px-4 pb-2 pt-6">
         <div>
