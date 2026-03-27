@@ -626,9 +626,19 @@ const JobDetail = () => {
                   </div>
                 </>
               )}
-              {/* Photo count badge */}
-              <div className="absolute bottom-2 right-2 rounded-lg bg-foreground/60 px-2 py-0.5 text-[9px] font-bold text-background backdrop-blur-sm">
-                {heroIndex + 1}/{photos.length}
+              {/* Photo count + request more */}
+              <div className="absolute bottom-2 right-2 flex items-center gap-1.5">
+                {photos.length <= 2 && (
+                  <button
+                    onClick={() => toast.success("Photo request sent to customer!")}
+                    className="rounded-lg bg-foreground/60 px-2 py-0.5 text-[9px] font-bold text-background backdrop-blur-sm active:opacity-80 flex items-center gap-1"
+                  >
+                    <Camera className="h-2.5 w-2.5" /> More Photos
+                  </button>
+                )}
+                <div className="rounded-lg bg-foreground/60 px-2 py-0.5 text-[9px] font-bold text-background backdrop-blur-sm">
+                  {heroIndex + 1}/{photos.length}
+                </div>
               </div>
             </div>
           ) : (
