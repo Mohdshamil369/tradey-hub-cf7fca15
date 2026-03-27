@@ -115,7 +115,6 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
                 <Camera className="h-2.5 w-2.5" />
                 {photoRequested ? "Sent" : "Request Photos"}
               </button>
-              </button>
             </div>
           )}
         </div>
