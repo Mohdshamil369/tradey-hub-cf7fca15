@@ -9,6 +9,8 @@ import { Wrench, Lightning, PaintBrush, Hammer, Broom, Snowflake, Bathtub, House
 import { catAServices } from "@/data/services";
 import { useAddressStore } from "@/stores/addressStore";
 import { serviceIconMap, iconMap, getCategoryColors, getServiceColors } from "@/lib/icons";
+import LocationSheet from "@/components/home/LocationSheet";
+import { useState } from "react";
 
 const topCategories: { id: string; label: string; icon: Icon }[] = [
   { id: "plumbing", label: "Plumbing", icon: Wrench },
