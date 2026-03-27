@@ -809,9 +809,20 @@ const TraderProfileSetup = () => {
                   const uploaded = uploadedDocs[key];
                   return (
                     <div key={side}>
-                          <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                            {side === "front" ? "📄 Front Side" : "📄 Back Side"}
-                          </p>
+                          <div className="mb-1.5 flex items-center justify-between">
+                            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                              {side === "front" ? "📄 Front Side" : "📄 Back Side"}
+                            </p>
+                            {currentDoc.hasFrontBack && (
+                              <button
+                                onClick={() => setPreviewSide(side)}
+                                className="flex items-center gap-1 text-[10px] font-semibold text-primary active:opacity-70"
+                              >
+                                <Eye className="h-3 w-3" />
+                                Preview
+                              </button>
+                            )}
+                          </div>
                           {uploaded ?
                       <div className="rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-4">
                               <div className="flex items-center gap-3">
