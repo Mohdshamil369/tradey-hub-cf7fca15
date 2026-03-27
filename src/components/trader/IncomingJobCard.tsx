@@ -1,4 +1,4 @@
-import { MapPin, Clock, Eye, Camera, Calendar, PoundSterling, Image as ImageIcon } from "lucide-react";
+import { MapPin, Clock, Eye, Camera, Calendar, PoundSterling, Image as ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
 export interface CustomerRequestMeta {
@@ -59,20 +59,44 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
   const hasPhotos = photos.length > 0;
   const estDuration = job.customerRequest?.expectedDuration || job.estimatedDuration;
   const [photoRequested, setPhotoRequested] = useState(false);
+  const [photoIndex, setPhotoIndex] = useState(0);
 
   return (
     <div className="rounded-2xl bg-card overflow-hidden border border-border">
-      {/* Photo + Info side by side */}
+      {/* Photo + Info */}
       <div className="flex gap-0">
-        {/* Photo thumbnail */}
-        <div className="relative w-[110px] shrink-0 min-h-[100px] bg-muted/40">
+        {/* Photo area with carousel */}
+        <div className="relative w-[105px] shrink-0 min-h-[96px] bg-muted/30">
           {hasPhotos ? (
             <>
-              <img src={photos[0]} alt="" className="h-full w-full object-cover" />
+              <img
+                src={photos[photoIndex]}
+                alt=""
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+              {/* Carousel controls */}
               {photos.length > 1 && (
-                <span className="absolute top-1.5 right-1.5 rounded bg-foreground/60 px-1.5 py-0.5 text-[9px] font-bold text-background">
-                  +{photos.length - 1}
-                </span>
+                <>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setPhotoIndex(i => (i - 1 + photos.length) % photos.length); }}
+                    className="absolute left-0.5 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-foreground/50 text-background active:bg-foreground/70"
+                  >
+                    <ChevronLeft className="h-3 w-3" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setPhotoIndex(i => (i + 1) % photos.length); }}
+                    className="absolute right-0.5 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-foreground/50 text-background active:bg-foreground/70"
+                  >
+                    <ChevronRight className="h-3 w-3" />
+                  </button>
+                  {/* Dot indicators */}
+                  <div className="absolute bottom-1 inset-x-0 flex justify-center gap-1">
+                    {photos.map((_, i) => (
+                      <div key={i} className={`h-1 rounded-full transition-all ${i === photoIndex ? "w-2.5 bg-background" : "w-1 bg-background/50"}`} />
+                    ))}
+                  </div>
+                </>
               )}
             </>
           ) : (
@@ -96,7 +120,6 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
 
         {/* Info */}
         <div className="flex-1 min-w-0 px-3 py-2.5">
-          {/* Title + badge */}
           <div className="flex items-start justify-between gap-1.5">
             <h4 className="text-[13px] font-bold text-foreground leading-snug truncate">{job.title}</h4>
             {cat && (
@@ -108,7 +131,7 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
 
           <p className="mt-0.5 text-[10.5px] text-muted-foreground truncate">{job.customer} · {job.location}</p>
 
-          {/* Key metrics row */}
+          {/* Metrics */}
           <div className="mt-2 flex items-center gap-3 text-[10px]">
             {job.price ? (
               <span className="font-extrabold text-primary text-[13px]">£{job.price}</span>
