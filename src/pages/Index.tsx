@@ -41,7 +41,7 @@ const Index = () => {
             tru<span className="text-primary">Findo</span>
           </h1>
           <button
-            onClick={() => navigate("/profile/address")}
+            onClick={() => setLocationOpen(true)}
             className="flex items-center gap-1 mt-0.5 transition-all active:opacity-70"
           >
             <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
