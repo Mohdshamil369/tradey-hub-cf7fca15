@@ -270,7 +270,7 @@ const TraderHome = () => {
   const selectedGroup = mockGroups.find((g) => g.id === selectedGroupId);
 
   return (
-    <MobileLayout role="trader">
+    <MobileLayout role="trader" overlay={<LocationSheet open={locationSheetOpen} onOpenChange={setLocationSheetOpen} />}>
       {/* Header */}
       <div className="px-4 pb-2 pt-6">
         <div className="flex items-center justify-between">
@@ -667,7 +667,6 @@ const TraderHome = () => {
           );
         })()}
       </div>
-      <LocationSheet open={locationSheetOpen} onOpenChange={setLocationSheetOpen} />
     </MobileLayout>
   );
 };
