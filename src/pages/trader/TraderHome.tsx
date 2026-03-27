@@ -1,5 +1,5 @@
 import MobileLayout from "@/components/layout/MobileLayout";
-import { useNavigate } from "react-router-dom";
+import LocationSheet from "@/components/home/LocationSheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { AreaChart, Area, XAxis, CartesianGrid, ResponsiveContainer } from "recharts";
@@ -156,7 +156,7 @@ const TraderHome = () => {
   const [scheduleJobs, setScheduleJobs] = useState(isNewUser ? [] : activeJobs);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [scheduleView, setScheduleView] = useState<"cards" | "calendar" | "empty">("cards");
-  const [locationDropdownOpen, setLocationDropdownOpen] = useState(false);
+  const [locationSheetOpen, setLocationSheetOpen] = useState(false);
 
   const displayEarnings = isNewUser ? {
     thisWeek: 0,
