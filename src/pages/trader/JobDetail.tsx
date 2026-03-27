@@ -99,9 +99,11 @@ const JobDetail = () => {
   const hasPhotos = photos.length > 0;
   const hasVoice = !!job.media?.voiceNote;
 
-  const tabs = [
-    { key: "details" as const, label: "Details", icon: ClipboardList },
+  const hasAttachments = hasPhotos || hasVoice;
+  const tabs: { key: "details" | "quotes" | "attachments"; label: string; icon: any }[] = [
+    { key: "details", label: "Details", icon: ClipboardList },
     ...(showQuotesTab ? [{ key: "quotes" as const, label: "Quote", icon: FileText }] : []),
+    ...(hasAttachments ? [{ key: "attachments" as const, label: "Attachments", icon: Image }] : []),
   ];
 
   const handleAction = (action: string) => {
