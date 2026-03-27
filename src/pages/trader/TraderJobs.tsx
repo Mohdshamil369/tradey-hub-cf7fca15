@@ -729,6 +729,8 @@ const TraderJobs = () => {
                       job={job}
                       onViewDetail={() => openJobDetail(job)}
                       viewMode={isIndividual ? "individual" : "agency"}
+                      onRequestPhotos={(id) => toast.success("Photo request sent to customer!")}
+                      nearbySchedule={mockNearbySchedules[job.id]}
                     />
                   )}
                 </div>
