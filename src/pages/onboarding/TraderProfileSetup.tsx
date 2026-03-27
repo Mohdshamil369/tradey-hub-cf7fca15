@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { serviceCategories, catAServices, catBServices, getAllServices } from "@/data/services";
 import { categoryServiceTypes } from "@/data/serviceTypes";
 import { EmojiIcon, getEmojiIconColors, categoryIconMap, categoryColorMap, iconMap } from "@/lib/icons";
+import docPreviewFront from "@/assets/doc-preview-front.png";
+import docPreviewBack from "@/assets/doc-preview-back.png";
 
 const mainSteps = ["Details", "Services", "Documents", "Permissions", "Done"];
 
