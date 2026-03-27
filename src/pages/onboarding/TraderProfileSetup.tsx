@@ -5,7 +5,7 @@ import {
   ArrowLeft, User, MapPin, Building2, Camera, FileText, Shield,
   CheckCircle2, ChevronRight, Upload, AlertTriangle, Fingerprint,
   CreditCard, HardHat, Scale, ClipboardCheck, ChevronDown,
-  Bell, MapPinned, Mic, PartyPopper, Sparkles, Eye } from
+  Bell, MapPinned, Mic, PartyPopper, Sparkles, Eye, X } from
 "lucide-react";
 import { toast } from "sonner";
 import { serviceCategories, catAServices, catBServices, getAllServices } from "@/data/services";
