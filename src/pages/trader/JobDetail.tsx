@@ -394,7 +394,6 @@ const JobDetail = () => {
               <p className="text-[11px] text-muted-foreground">{(q.assignedTo as any).type} • {(q.assignedTo as any).memberCount} members</p>
             </div>
           )}
-          }
 
           {/* Message/Notes */}
           {q.message &&
