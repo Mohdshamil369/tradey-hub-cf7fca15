@@ -512,21 +512,6 @@ const JobDetail = () => {
           </div>
         )}
 
-        {/* Photos grid */}
-        {hasPhotos && (
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground mb-2 px-1">
-              Photos ({photos.length})
-            </h3>
-            <div className="grid grid-cols-2 gap-2">
-              {photos.map((photo, i) => (
-                <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-border/30">
-                  <img src={photo} alt={`Job photo ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     );
   };
