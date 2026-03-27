@@ -1,6 +1,6 @@
 import {
   CreditCard, Bell, Wrench,
-  HelpCircle, FileText, Lock, ChevronRight, Heart,
+  HelpCircle, FileText, Lock, ChevronRight, Bookmark,
   Globe, MessageSquare, Landmark, ShieldCheck, PoundSterling,
   Building2, Receipt, Users, Banknote, AlertTriangle, Calendar
 } from "lucide-react";
@@ -36,6 +36,7 @@ const individualTraderMenuGroups: MenuGroup[] = [
     items: [
       { icon: Building2, label: "Personal Details", subtitle: "Name, phone, date of birth", route: "/profile/details" },
       { icon: Wrench, label: "My Services", subtitle: "Services you offer and prices", route: "/trader/services" },
+      { icon: Bookmark, label: "Saved Items", subtitle: "Jobs and traders you've saved", route: "/profile/saved-items" },
       { icon: ShieldCheck, label: "Verification & Documents", subtitle: "ID, right to work, certificates", route: "/profile/verification", badge: "1 Pending", badgeColor: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]" },
     ],
   },
