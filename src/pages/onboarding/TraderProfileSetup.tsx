@@ -219,6 +219,7 @@ const TraderProfileSetup = () => {
   const [docSubStep, setDocSubStep] = useState(0);
   const [uploadedDocs, setUploadedDocs] = useState<Record<string, {fileName: string;uploadedAt: string;}>>({});
   const [previewDocId, setPreviewDocId] = useState<string | null>(null);
+  const [previewSide, setPreviewSide] = useState<"front" | "back" | null>(null);
 
   const mandatoryDocs = requiredDocuments.filter((d) => d.mandatory);
   const optionalDocs = requiredDocuments.filter((d) => !d.mandatory);
