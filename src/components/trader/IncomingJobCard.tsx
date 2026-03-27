@@ -64,7 +64,7 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
   const hasSchedule = nearbySchedule && nearbySchedule.length > 0;
 
   return (
-    <div className="rounded-2xl bg-card overflow-hidden border border-border">
+    <div className="rounded-2xl bg-card overflow-hidden border border-border relative">
       {/* Title row */}
       <div className="px-4 pt-3.5 pb-2">
         <div className="flex items-start gap-3">
