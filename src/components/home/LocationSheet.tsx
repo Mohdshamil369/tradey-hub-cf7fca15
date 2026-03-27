@@ -42,7 +42,7 @@ const LocationSheet = ({ open, onOpenChange }: LocationSheetProps) => {
 
   const handleAddNew = () => {
     onOpenChange(false);
-    navigate("/profile/address");
+    navigate("/profile/address?mode=add");
   };
 
   const handleEditServiceArea = () => {
