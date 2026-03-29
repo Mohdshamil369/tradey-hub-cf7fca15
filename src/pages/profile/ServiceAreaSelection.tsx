@@ -106,7 +106,7 @@ const ServiceAreaSelection = () => {
             <p className="text-xs font-bold text-muted-foreground mb-2">
               {selectedDistricts.length} selected
             </p>
-            <div className="max-h-20 overflow-y-auto no-scrollbar">
+            <div className="max-h-[200px] overflow-y-auto no-scrollbar">
               <div className="flex flex-wrap gap-2">
                 {selectedDistricts.map((d) => (
                   <span
