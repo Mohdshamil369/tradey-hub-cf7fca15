@@ -106,16 +106,18 @@ const ServiceAreaSelection = () => {
             <p className="text-xs font-bold text-muted-foreground mb-2">
               {selectedDistricts.length} selected
             </p>
-            <div className="flex flex-wrap gap-2">
-              {selectedDistricts.map((d) => (
-                <span
-                  key={d}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[11px] font-bold animate-in zoom-in-95 duration-200"
-                >
-                  {d}
-                  <X className="h-3 w-3 cursor-pointer" onClick={() => toggleDistrict(d)} />
-                </span>
-              ))}
+            <div className="max-h-20 overflow-y-auto no-scrollbar">
+              <div className="flex flex-wrap gap-2">
+                {selectedDistricts.map((d) => (
+                  <span
+                    key={d}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[11px] font-bold animate-in zoom-in-95 duration-200"
+                  >
+                    {d}
+                    <X className="h-3 w-3 cursor-pointer" onClick={() => toggleDistrict(d)} />
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         )}
