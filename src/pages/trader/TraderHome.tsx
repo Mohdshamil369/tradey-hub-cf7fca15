@@ -16,6 +16,7 @@ import SwipeableJobStack from "@/components/trader/SwipeableJobStack";
 import ActiveJobCard from "@/components/trader/ActiveJobCard";
 import WorkerQuoteRequest from "@/components/trader/WorkerQuoteRequest";
 import QuoteBreakdown from "@/components/trader/QuoteBreakdown";
+import CalendarDayView from "@/components/home/CalendarDayView";
 
 const earningsData = {
   thisWeek: 845,
