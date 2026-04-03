@@ -612,19 +612,22 @@ const TraderJobs = () => {
           {/* Status filters for committed section */}
           {jobSection === "committed" && (
             <div className="flex gap-2 mb-1 overflow-x-auto no-scrollbar">
-              {(["all", "active", "completed"] as const).map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setCommittedFilter(filter)}
-                  className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all shrink-0 ${
-                    committedFilter === filter
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-muted-foreground"
-                  }`}
-                >
-                  {filter === "all" ? "All" : filter === "active" ? "Active" : "Completed"}
-                </button>
-              ))}
+              {(["all", "active", "completed", "cancelled"] as const).map((filter) => {
+                const labels: Record<typeof filter, string> = { all: "All", active: "Active", completed: "Completed", cancelled: "Cancelled" };
+                return (
+                  <button
+                    key={filter}
+                    onClick={() => setCommittedFilter(filter)}
+                    className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all shrink-0 ${
+                      committedFilter === filter
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-muted-foreground"
+                    }`}
+                  >
+                    {labels[filter]}
+                  </button>
+                );
+              })}
               <button
                 key="quotes"
                 onClick={() => { setJobSection("committed"); setCommittedFilter("all"); }}
