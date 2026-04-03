@@ -56,6 +56,7 @@ interface Job {
   description: string;
   postedAgo: string;
   status: JobStatus;
+  committedStatus?: "upcoming" | "in_progress" | "completed" | "cancelled";
   hasVoiceNote?: boolean;
   voiceDuration?: string;
   crew?: CrewMember[];
