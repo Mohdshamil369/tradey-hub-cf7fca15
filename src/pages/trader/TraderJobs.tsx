@@ -145,7 +145,7 @@ const initialJobs: Job[] = [
     { id: "m5", name: "Sara M.", avatar: "SM", status: "en_route", updatedAt: "12 min ago" },
   ] },
   {
-    id: "j6", type: "catA", category: "fixed", title: "Toilet Repair", icon: "🔧", customer: "Lisa M.", location: "Oost", distance: "5.2 km", price: 55, timeWindow: "10 Mar, 11:00", description: "Flush mechanism not working properly.", postedAgo: "", status: "completed",
+    id: "j6", type: "catA", category: "fixed", title: "Toilet Repair", icon: "🔧", customer: "Lisa M.", location: "Oost", distance: "5.2 km", price: 55, timeWindow: "10 Mar, 11:00", description: "Flush mechanism not working properly.", postedAgo: "", status: "completed", committedStatus: "completed",
     completedDate: "10 Mar 2025", duration: "1h 45m",
     assignment: {
       type: "group", groupName: "Plumbing Squad",
@@ -156,7 +156,7 @@ const initialJobs: Job[] = [
     },
   },
   {
-    id: "j7", type: "catA", category: "fixed", title: "Boiler Service", icon: "🔥", customer: "Peter W.", location: "Centrum", distance: "1.5 km", price: 95, timeWindow: "8 Mar, 10:00", description: "Annual boiler service and safety check.", postedAgo: "", status: "completed",
+    id: "j7", type: "catA", category: "fixed", title: "Boiler Service", icon: "🔥", customer: "Peter W.", location: "Centrum", distance: "1.5 km", price: 95, timeWindow: "8 Mar, 10:00", description: "Annual boiler service and safety check.", postedAgo: "", status: "completed", committedStatus: "completed",
     completedDate: "8 Mar 2025", duration: "2h 10m",
     assignment: {
       type: "individual",
@@ -164,7 +164,7 @@ const initialJobs: Job[] = [
     },
   },
   {
-    id: "j8", type: "catA", category: "fixed", title: "Kitchen Tiling", icon: "🧱", customer: "Anna J.", location: "Westerpark", distance: "3.8 km", price: 210, timeWindow: "5 Mar, 09:00 – 15:00", description: "Re-tile kitchen backsplash, approx 4m².", postedAgo: "", status: "completed",
+    id: "j8", type: "catA", category: "fixed", title: "Kitchen Tiling", icon: "🧱", customer: "Anna J.", location: "Westerpark", distance: "3.8 km", price: 210, timeWindow: "5 Mar, 09:00 – 15:00", description: "Re-tile kitchen backsplash, approx 4m².", postedAgo: "", status: "completed", committedStatus: "completed",
     completedDate: "5 Mar 2025", duration: "5h 30m",
     assignment: {
       type: "individuals",
@@ -175,6 +175,10 @@ const initialJobs: Job[] = [
         { id: "m7", name: "Jos V.", role: "Helper", hours: 3, earnings: 36 },
       ],
     },
+  },
+  {
+    id: "j10", type: "catA", category: "fixed", title: "Radiator Replacement", icon: "🔥", customer: "Mike S.", location: "Bos en Lommer", distance: "4.0 km", price: 180, timeWindow: "15 Mar, 09:00 – 12:00", description: "Replace old radiator in bedroom. Standard panel radiator.", postedAgo: "", status: "active", committedStatus: "cancelled",
+    completedDate: "Cancelled on 14 Mar",
   },
 ];
 
