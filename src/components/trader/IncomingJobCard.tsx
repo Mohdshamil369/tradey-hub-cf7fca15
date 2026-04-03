@@ -131,9 +131,9 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
                 onRequestPhotos?.(job.id);
               }}
               disabled={photoRequested}
-              className="absolute bottom-3 inset-x-4 flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-bold text-background active:opacity-80 disabled:opacity-50 bg-card"
+              className="absolute bottom-3 inset-x-4 flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-bold active:opacity-80 disabled:opacity-50 bg-card text-primary"
             >
-              <Camera className="h-3.5 w-3.5" />
+              <Camera className="h-3.5 w-3.5 text-primary" />
               {photoRequested ? "Request Sent" : "Request Photos"}
             </button>
           </div>
