@@ -215,10 +215,6 @@ const CalendarDayView = () => {
         </div>
       </div>
 
-      {/* FAB */}
-      <button className="absolute bottom-24 right-5 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-foreground shadow-lg active:scale-95 transition-transform">
-        <Plus className="h-5 w-5 text-background" />
-      </button>
     </div>
   );
 };
