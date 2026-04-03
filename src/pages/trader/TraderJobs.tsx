@@ -10,6 +10,7 @@ import {
   Star, MessageCircle, Users, X as XIcon,
   UserCheck, User, UsersRound, Timer, Building2,
   Send, PoundSterling, FileText, Eye, RotateCcw, Car,
+  Search, SlidersHorizontal, Filter,
 } from "lucide-react";
 import Avatar from "boring-avatars";
 import IncomingJobCard from "@/components/trader/IncomingJobCard";
@@ -17,6 +18,7 @@ import ActiveJobCard from "@/components/trader/ActiveJobCard";
 import CompanyJobCard, { type CompanyJobData } from "@/components/trader/CompanyJobCard";
 import CollaborativeQuote from "@/components/trader/CollaborativeQuote";
 import WorkerQuoteRequest from "@/components/trader/WorkerQuoteRequest";
+import CalendarDayView from "@/components/home/CalendarDayView";
 
 import JobDetailSheet, { type JobDetailData, type JobCategory } from "@/components/trader/JobDetailSheet";
 import QuoteDetailSheet, { type SentQuoteData } from "@/components/trader/QuoteDetailSheet";
