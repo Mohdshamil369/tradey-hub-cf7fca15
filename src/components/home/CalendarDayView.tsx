@@ -89,9 +89,9 @@ const CalendarDayView = () => {
   }, [selectedDate]);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col">
       {/* Horizontal date strip */}
-      <div className="px-2 pb-3">
+      <div className="pb-3">
         <div
           ref={dateScrollRef}
           className="flex gap-1 overflow-x-auto no-scrollbar py-1"
@@ -139,8 +139,8 @@ const CalendarDayView = () => {
       {/* Timeline */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-2 pb-20 relative"
-        style={{ minHeight: 0 }}
+        className="overflow-y-auto rounded-2xl bg-card border border-border relative"
+        style={{ maxHeight: 400 }}
       >
         <div className="relative" style={{ height: hours.length * 56 }}>
           {/* Hour lines */}
@@ -215,10 +215,6 @@ const CalendarDayView = () => {
         </div>
       </div>
 
-      {/* FAB */}
-      <button className="absolute bottom-24 right-5 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-foreground shadow-lg active:scale-95 transition-transform">
-        <Plus className="h-5 w-5 text-background" />
-      </button>
     </div>
   );
 };
