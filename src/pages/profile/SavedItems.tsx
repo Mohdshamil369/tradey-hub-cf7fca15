@@ -101,19 +101,23 @@ const SavedItems = () => {
             <div className="flex flex-col gap-2.5">
               {items.map((job) => (
                 <div key={job.id} className="relative">
+                  {/* Gradient overlay behind unsave button */}
+                  <div className="absolute top-0 right-0 z-10 h-16 w-24 rounded-tr-2xl pointer-events-none"
+                    style={{ background: "linear-gradient(135deg, transparent 0%, rgba(0,0,0,0.35) 100%)" }}
+                  />
+                  {/* Unsave button */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); removeItem(job.id); }}
+                    className="absolute top-2.5 right-2.5 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-destructive text-destructive-foreground active:scale-95 transition-transform shadow-md"
+                    title="Remove from saved"
+                  >
+                    <BookmarkX className="h-4 w-4" />
+                  </button>
                   <IncomingJobCard
                     job={job}
                     onViewDetail={() => navigate(`/trader/jobs/${job.id}`)}
                     onRequestPhotos={() => {}}
                   />
-                  {/* Unsave overlay button */}
-                  <button
-                    onClick={() => removeItem(job.id)}
-                    className="absolute top-2 right-2 z-10 flex h-7 w-7 items-center justify-center rounded-lg bg-destructive/90 text-destructive-foreground active:scale-95 transition-transform shadow-sm"
-                    title="Remove from saved"
-                  >
-                    <BookmarkX className="h-3.5 w-3.5" />
-                  </button>
                 </div>
               ))}
             </div>
