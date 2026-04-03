@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { format, addDays, subDays, isSameDay, isToday } from "date-fns";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { format, addDays, subDays, isSameDay, isToday, startOfDay } from "date-fns";
 import { MapPin, Clock, Eye, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -56,24 +56,38 @@ const formatTime = (time: string) => {
   return `${h12}:${m.toString().padStart(2, "0")} ${suffix}`;
 };
 
+const formatHourLabel = (hour: number) => {
+  if (hour === 0) return "12 AM";
+  if (hour < 12) return `${hour} AM`;
+  if (hour === 12) return "12 PM";
+  return `${hour - 12} PM`;
+};
+
 const hours = Array.from({ length: 13 }, (_, i) => i + 7);
 
 const CalendarDayView = () => {
-  const today = new Date();
   const navigate = useNavigate();
+  const today = useMemo(() => startOfDay(new Date()), []);
   const [selectedDate, setSelectedDate] = useState(today);
   const dateScrollRef = useRef<HTMLDivElement>(null);
 
-  const dates = Array.from({ length: 15 }, (_, i) => addDays(subDays(today, 7), i));
+  const dates = useMemo(
+    () => Array.from({ length: 15 }, (_, i) => addDays(subDays(today, 7), i)),
+    [today]
+  );
+
   const tasks = generateMockTasks(selectedDate);
 
   // Build a map of hour -> tasks that start at that hour
-  const tasksByHour = new Map<number, Task[]>();
-  tasks.forEach((task) => {
-    const h = parseInt(task.startTime.split(":")[0]);
-    if (!tasksByHour.has(h)) tasksByHour.set(h, []);
-    tasksByHour.get(h)!.push(task);
-  });
+  const tasksByHour = useMemo(() => {
+    const map = new Map<number, Task[]>();
+    tasks.forEach((task) => {
+      const h = parseInt(task.startTime.split(":")[0]);
+      if (!map.has(h)) map.set(h, []);
+      map.get(h)!.push(task);
+    });
+    return map;
+  }, [tasks]);
 
   const currentHour = (() => {
     const now = new Date();
@@ -84,15 +98,18 @@ const CalendarDayView = () => {
     return { hour: h, minutes: m };
   })();
 
+  // Center selected date in scroll on mount and date change
   useEffect(() => {
     if (dateScrollRef.current) {
       const idx = dates.findIndex((d) => isSameDay(d, selectedDate));
-      const el = dateScrollRef.current.children[idx] as HTMLElement;
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      if (idx >= 0) {
+        const el = dateScrollRef.current.children[idx] as HTMLElement;
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+        }
       }
     }
-  }, [selectedDate]);
+  }, [selectedDate, dates]);
 
   const handleViewTask = (task: Task) => {
     if (task.jobId) {
@@ -106,7 +123,8 @@ const CalendarDayView = () => {
       <div className="pb-3">
         <div
           ref={dateScrollRef}
-          className="flex gap-1 overflow-x-auto no-scrollbar py-1"
+          className="flex gap-1 overflow-x-auto py-1"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {dates.map((date) => {
             const selected = isSameDay(date, selectedDate);
@@ -146,7 +164,7 @@ const CalendarDayView = () => {
         </span>
       </div>
 
-      {/* Timeline — flows naturally, no inner scroll */}
+      {/* Timeline — flows naturally with the page, no inner scroll */}
       {tasks.length === 0 ? (
         <div className="flex flex-col items-center py-12 text-center">
           <Calendar className="mb-2 h-10 w-10 text-muted-foreground/30" />
@@ -157,35 +175,35 @@ const CalendarDayView = () => {
         <div className="flex flex-col">
           {hours.map((hour) => {
             const hourTasks = tasksByHour.get(hour) || [];
-            const isCurrentHour = currentHour && currentHour.hour === hour;
+            const isCurrentHour = currentHour !== null && currentHour.hour === hour;
             const hasContent = hourTasks.length > 0;
 
             return (
-              <div key={hour} className="flex gap-3 min-h-[48px]">
+              <div key={hour} className="flex gap-3">
                 {/* Time label */}
                 <div className="w-14 shrink-0 pt-0.5 text-right">
                   <span className={`text-[11px] font-semibold ${isCurrentHour ? "text-destructive" : "text-muted-foreground"}`}>
-                    {hour <= 12 ? `${hour} AM` : `${hour - 12} PM`}
+                    {formatHourLabel(hour)}
                   </span>
                   {isCurrentHour && (
                     <div className="mt-0.5">
                       <span className="text-[9px] font-bold text-destructive">
-                        {format(new Date(), "h:mm")}
+                        {format(new Date(), "h:mm a")}
                       </span>
                     </div>
                   )}
                 </div>
 
                 {/* Content area */}
-                <div className="flex-1 border-l border-border/50 pl-3 pb-2 relative">
+                <div className={`flex-1 border-l border-border/50 pl-3 relative ${hasContent ? "pb-1" : "pb-0"}`} style={{ minHeight: hasContent ? undefined : 32 }}>
                   {/* Current time indicator */}
                   {isCurrentHour && (
                     <div
-                      className="absolute left-0 right-0 z-10 flex items-center -translate-x-1"
+                      className="absolute left-0 right-0 z-10 flex items-center"
                       style={{ top: `${(currentHour.minutes / 60) * 100}%` }}
                     >
-                      <div className="w-2 h-2 rounded-full bg-destructive" />
-                      <div className="flex-1 h-[1.5px] bg-destructive" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-destructive -ml-[5px]" />
+                      <div className="flex-1 h-[2px] bg-destructive" />
                     </div>
                   )}
 
@@ -194,17 +212,17 @@ const CalendarDayView = () => {
                     <div
                       key={task.id}
                       onClick={() => handleViewTask(task)}
-                      className={`rounded-2xl border ${task.colorBorder} ${task.colorBg} p-3.5 mb-2 cursor-pointer transition-all active:scale-[0.98] hover:shadow-md`}
+                      className={`rounded-2xl border-l-4 border ${task.colorBorder} ${task.colorBg} p-4 mb-2 cursor-pointer transition-all active:scale-[0.98] shadow-sm`}
                     >
                       {/* Task name — most prominent */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-lg">{task.icon}</span>
+                      <div className="flex items-center gap-2.5 mb-2.5">
+                        <span className="text-xl">{task.icon}</span>
                         <h4 className={`text-[15px] font-bold ${task.colorAccent}`}>{task.title}</h4>
                       </div>
 
                       {/* Time */}
-                      <div className="flex items-center gap-1.5 mb-1.5">
-                        <Clock className={`h-3.5 w-3.5 ${task.colorAccent} opacity-60`} />
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="text-[12px] font-semibold text-foreground/80">
                           {formatTime(task.startTime)} – {formatTime(task.endTime)}
                         </span>
@@ -212,32 +230,32 @@ const CalendarDayView = () => {
 
                       {/* Location */}
                       {task.location && (
-                        <div className="flex items-center gap-1.5 mb-3">
-                          <MapPin className={`h-3.5 w-3.5 ${task.colorAccent} opacity-60`} />
+                        <div className="flex items-center gap-2 mb-3">
+                          <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
                           <span className="text-[12px] text-foreground/70">
-                            {task.customer && `${task.customer} · `}{task.location}
+                            {task.customer ? `${task.customer} · ` : ""}{task.location}
                           </span>
                         </div>
                       )}
 
                       {/* View button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewTask(task);
-                        }}
-                        className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-[11px] font-bold transition-all active:scale-[0.97] bg-foreground/10 text-foreground/80 hover:bg-foreground/15`}
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                        View Details
-                      </button>
+                      {task.jobId && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewTask(task);
+                          }}
+                          className="flex items-center gap-1.5 rounded-xl bg-primary/10 px-3.5 py-2 text-[11px] font-bold text-primary transition-all active:scale-[0.97]"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          View
+                        </button>
+                      )}
                     </div>
                   ))}
 
-                  {/* Empty hour — subtle spacer */}
-                  {!hasContent && (
-                    <div className="h-6" />
-                  )}
+                  {/* Empty hour — thin line spacer */}
+                  {!hasContent && <div style={{ height: 32 }} />}
                 </div>
               </div>
             );
