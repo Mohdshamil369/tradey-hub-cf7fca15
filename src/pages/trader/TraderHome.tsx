@@ -670,7 +670,6 @@ const TraderHome = () => {
           );
         })()}
       </div>
-      )}
     </MobileLayout>
   );
 };
