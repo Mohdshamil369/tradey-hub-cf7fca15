@@ -1179,69 +1179,35 @@ const TraderJobs = () => {
         );
       })()}
 
-      {/* Schedule bottom sheet — page level */}
-      {scheduleJob && (() => {
-        const schedule = mockNearbySchedules[scheduleJob.id] || [];
-        return (
-          <>
-            <div
-              className="absolute inset-0 z-40 bg-foreground/40"
-              onClick={() => setScheduleJob(null)}
-            />
-            <div className="absolute inset-x-0 bottom-0 z-50 rounded-t-3xl bg-background shadow-2xl border-t border-border/40 animate-in slide-in-from-bottom duration-200">
-              <div className="flex justify-center pt-3 pb-1">
-                <div className="h-1 w-10 rounded-full bg-muted-foreground/20" />
-              </div>
-              <div className="flex items-center justify-between px-5 pb-3">
-                <h3 className="text-sm font-bold text-foreground">Your Nearby Schedule</h3>
-                <button onClick={() => setScheduleJob(null)} className="rounded-full p-1 active:bg-muted">
-                  <X className="h-4 w-4 text-muted-foreground" />
-                </button>
-              </div>
-              {/* This job reference */}
-              <div className="mx-5 mb-3 rounded-xl bg-primary/5 border border-primary/15 px-3 py-2">
-                <p className="text-[10px] font-bold text-primary mb-0.5">This Job</p>
-                <p className="text-[11px] font-semibold text-foreground">{scheduleJob.icon} {scheduleJob.title} · {scheduleJob.timeWindow}</p>
-                <p className="text-[10px] text-muted-foreground">{scheduleJob.location} · {scheduleJob.distance}</p>
-              </div>
-              {/* Schedule items */}
-              <div className="px-5 pb-6 flex flex-col gap-2 max-h-[260px] overflow-y-auto">
-                {schedule.length === 0 ? (
-                  <div className="py-6 text-center">
-                    <Calendar className="mx-auto mb-2 h-8 w-8 text-muted-foreground/30" />
-                    <p className="text-xs text-muted-foreground">No nearby bookings</p>
-                    <p className="text-[10px] text-muted-foreground/60">You're free around this time!</p>
-                  </div>
-                ) : schedule.map((s, i) => (
-                  <div key={i} className="rounded-xl border border-border/30 bg-card px-3.5 py-3">
-                    <div className="flex items-start justify-between gap-2 mb-1.5">
-                      <p className="text-[12px] font-bold text-foreground">{s.title}</p>
-                      <span className="text-[11px] font-semibold text-primary shrink-0">{s.time}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1">
-                      {s.location && (
-                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                          <MapPin className="h-3 w-3" />{s.location}
-                        </span>
-                      )}
-                      {s.distanceFromJob && (
-                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                          <MapPin className="h-3 w-3" />{s.distanceFromJob} from this job
-                        </span>
-                      )}
-                      {s.driveTime && (
-                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                          <Car className="h-3 w-3" />{s.driveTime} drive
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+      {/* Schedule bottom sheet — calendar day view */}
+      {scheduleJob && (
+        <>
+          <div
+            className="absolute inset-0 z-40 bg-foreground/40"
+            onClick={() => setScheduleJob(null)}
+          />
+          <div className="absolute inset-x-0 bottom-0 z-50 rounded-t-3xl bg-background shadow-2xl border-t border-border/40 animate-in slide-in-from-bottom duration-200 max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="h-1 w-10 rounded-full bg-muted-foreground/20" />
             </div>
-          </>
-        );
-      })()}
+            <div className="flex items-center justify-between px-5 pb-2">
+              <h3 className="text-sm font-bold text-foreground">My Schedule</h3>
+              <button onClick={() => setScheduleJob(null)} className="rounded-full p-1 active:bg-muted">
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+            {/* This job reference */}
+            <div className="mx-4 mb-2 rounded-xl bg-primary/5 border border-primary/15 px-3 py-2">
+              <p className="text-[10px] font-bold text-primary mb-0.5">Viewing schedule for</p>
+              <p className="text-[11px] font-semibold text-foreground">{scheduleJob.icon} {scheduleJob.title} · {scheduleJob.timeWindow}</p>
+              <p className="text-[10px] text-muted-foreground">{scheduleJob.location} · {scheduleJob.distance}</p>
+            </div>
+            <div className="flex-1 overflow-y-auto px-2 pb-6">
+              <CalendarDayView />
+            </div>
+          </div>
+        </>
+      )}
 
     </MobileLayout>
   );
