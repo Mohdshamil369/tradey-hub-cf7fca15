@@ -523,6 +523,7 @@ const TraderJobs = () => {
   };
 
 
+  const acceptJob = (id: string, assignTo?: { type: "group" | "individual"; name: string; memberNames?: string[] }) => {
     setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, status: "active" as JobStatus } : j)));
     if (assignTo) {
       if (assignTo.type === "group" && assignTo.memberNames) {
