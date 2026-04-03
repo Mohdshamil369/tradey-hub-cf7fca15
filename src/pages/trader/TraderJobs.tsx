@@ -446,10 +446,16 @@ const TraderJobs = () => {
 
     if (job.status === "active" && job.committedStatus !== "cancelled") {
       return (
-        <div key={job.id} className="relative">
+        <div key={job.id} className="rounded-2xl bg-card overflow-hidden border border-border card-shadow">
+          {/* Status banner */}
           {statusTag && (
-            <div className="absolute top-3 right-3 z-10">
-              <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${statusTag.className}`}>{statusTag.label}</span>
+            <div className={`flex items-center justify-between px-4 py-1.5 ${statusTag.className.replace(/text-\S+/, '')} border-b border-border/40`}>
+              <span className={`text-[10px] font-bold uppercase tracking-wider ${statusTag.className.split(' ').filter(c => c.startsWith('text-')).join(' ')}`}>
+                {statusTag.label}
+              </span>
+              {job.price && (
+                <span className="text-sm font-extrabold text-foreground">£{job.price}</span>
+              )}
             </div>
           )}
           <ActiveJobCard
@@ -462,7 +468,7 @@ const TraderJobs = () => {
               location: job.location,
               distance: job.distance,
               status: job.status,
-              price: job.price,
+              price: statusTag ? null : job.price,
               crew: job.crew,
             }}
             expanded={false}
@@ -486,16 +492,20 @@ const TraderJobs = () => {
 
     return (
       <div key={job.id} className="rounded-2xl bg-card overflow-hidden border border-border">
+        {/* Status banner */}
+        {statusTag && (
+          <div className={`flex items-center justify-between px-4 py-1.5 ${statusTag.className.replace(/text-\S+/, '')} border-b border-border/40`}>
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${statusTag.className.split(' ').filter(c => c.startsWith('text-')).join(' ')}`}>
+              {statusTag.label}
+            </span>
+            <span className="text-sm font-extrabold text-foreground">{job.price ? `£${job.price}` : "—"}</span>
+          </div>
+        )}
         <button onClick={() => openJobDetail(job)} className="w-full px-4 py-3.5 text-left">
           <div className="flex gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-xl mt-0.5">{job.icon}</div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <h4 className="text-[14px] font-bold text-foreground truncate leading-snug">{job.title}</h4>
-                {statusTag && (
-                  <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold shrink-0 ${statusTag.className}`}>{statusTag.label}</span>
-                )}
-              </div>
+              <h4 className="text-[14px] font-bold text-foreground truncate leading-snug">{job.title}</h4>
               <div className="mt-1 flex items-center gap-2 text-[11.5px] text-muted-foreground">
                 <span className="inline-flex items-center gap-1 truncate"><MapPin className="h-3 w-3 shrink-0 text-muted-foreground/70" />{job.location}</span>
                 <span className="text-border shrink-0">·</span>
@@ -516,7 +526,9 @@ const TraderJobs = () => {
             {job.committedStatus === "completed" && <><Star className="h-3.5 w-3.5 fill-star text-star" /><span className="text-xs font-bold text-foreground">5.0</span></>}
             <span className="text-[11px] text-muted-foreground">{job.customer}</span>
           </div>
-          <span className="text-[15px] font-extrabold text-primary">{job.price ? `£${job.price}` : "—"}</span>
+          {job.completedDate && (
+            <span className="text-[11px] text-muted-foreground">{job.completedDate}</span>
+          )}
         </div>
       </div>
     );
