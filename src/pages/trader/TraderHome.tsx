@@ -314,6 +314,31 @@ const TraderHome = () => {
         </div>
       </div>
 
+      {/* Tab switcher */}
+      <div className="flex gap-1 mx-4 mt-2 mb-1 rounded-xl bg-secondary p-1">
+        <button
+          onClick={() => setHomeTab("dashboard")}
+          className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${
+            homeTab === "dashboard" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+          }`}
+        >
+          <LayoutGrid className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />
+          Dashboard
+        </button>
+        <button
+          onClick={() => setHomeTab("calendar")}
+          className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${
+            homeTab === "calendar" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+          }`}
+        >
+          <CalendarDays className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />
+          Calendar
+        </button>
+      </div>
+
+      {homeTab === "calendar" ? (
+        <CalendarDayView />
+      ) : (
       <div className="flex flex-col gap-8 px-4 pb-6 mt-2">
         {/* Earnings Card */}
         <div className="rounded-2xl bg-primary p-5 card-shadow">
