@@ -56,6 +56,7 @@ interface Job {
   description: string;
   postedAgo: string;
   status: JobStatus;
+  committedStatus?: "upcoming" | "in_progress" | "completed" | "cancelled";
   hasVoiceNote?: boolean;
   voiceDuration?: string;
   crew?: CrewMember[];
@@ -134,17 +135,17 @@ const initialJobs: Job[] = [
     customerData: { rating: 4.5, reviews: 8, isVerified: false, memberSince: "Feb 2025" }
   },
   { id: "j2", type: "catA", category: "fixed", title: "Light Switch Replacement", icon: "💡", customer: "Mark T.", location: "De Pijp", distance: "4.1 km", price: 55, timeWindow: "Tomorrow, 09:00 – 11:00", description: "2 light switches need replacing in the hallway. Standard switches.", postedAgo: "12 min ago", status: "incoming", hasVoiceNote: false, customerRequest: { expectedDuration: "30 min – 1 hour" }, customerData: { rating: 4.2, reviews: 5, isVerified: true, memberSince: "Nov 2024" } },
-  { id: "j4", type: "catA", category: "fixed", title: "Drain Unblocking", icon: "🚿", customer: "David K.", location: "Oud-West", distance: "3.0 km", price: 75, timeWindow: "Today, 10:00 – 12:00", description: "Kitchen sink is completely blocked. Tried plunger, no luck.", postedAgo: "", status: "active", crew: [
+  { id: "j4", type: "catA", category: "fixed", title: "Drain Unblocking", icon: "🚿", customer: "David K.", location: "Oud-West", distance: "3.0 km", price: 75, timeWindow: "Today, 10:00 – 12:00", description: "Kitchen sink is completely blocked. Tried plunger, no luck.", postedAgo: "", status: "active", committedStatus: "in_progress", crew: [
     { id: "m1", name: "Jan V.", avatar: "JV", status: "arrived", updatedAt: "2 min ago" },
     { id: "m2", name: "Pieter D.", avatar: "PD", status: "en_route", updatedAt: "8 min ago" },
   ] },
-  { id: "j5", type: "catA", category: "fixed", title: "Wall Painting (1 room)", icon: "🎨", customer: "Hannah P.", location: "Amstelveen", distance: "8.5 km", price: 120, timeWindow: "14 Mar, 09:00 – 14:00", description: "Living room walls need repainting. White to light grey.", postedAgo: "", status: "active", crew: [
+  { id: "j5", type: "catA", category: "fixed", title: "Wall Painting (1 room)", icon: "🎨", customer: "Hannah P.", location: "Amstelveen", distance: "8.5 km", price: 120, timeWindow: "14 Mar, 09:00 – 14:00", description: "Living room walls need repainting. White to light grey.", postedAgo: "", status: "active", committedStatus: "upcoming", crew: [
     { id: "m3", name: "Lena K.", avatar: "LK", status: "working", updatedAt: "15 min ago" },
     { id: "m4", name: "Tom B.", avatar: "TB", status: "arrived", updatedAt: "5 min ago" },
     { id: "m5", name: "Sara M.", avatar: "SM", status: "en_route", updatedAt: "12 min ago" },
   ] },
   {
-    id: "j6", type: "catA", category: "fixed", title: "Toilet Repair", icon: "🔧", customer: "Lisa M.", location: "Oost", distance: "5.2 km", price: 55, timeWindow: "10 Mar, 11:00", description: "Flush mechanism not working properly.", postedAgo: "", status: "completed",
+    id: "j6", type: "catA", category: "fixed", title: "Toilet Repair", icon: "🔧", customer: "Lisa M.", location: "Oost", distance: "5.2 km", price: 55, timeWindow: "10 Mar, 11:00", description: "Flush mechanism not working properly.", postedAgo: "", status: "completed", committedStatus: "completed",
     completedDate: "10 Mar 2025", duration: "1h 45m",
     assignment: {
       type: "group", groupName: "Plumbing Squad",
@@ -155,7 +156,7 @@ const initialJobs: Job[] = [
     },
   },
   {
-    id: "j7", type: "catA", category: "fixed", title: "Boiler Service", icon: "🔥", customer: "Peter W.", location: "Centrum", distance: "1.5 km", price: 95, timeWindow: "8 Mar, 10:00", description: "Annual boiler service and safety check.", postedAgo: "", status: "completed",
+    id: "j7", type: "catA", category: "fixed", title: "Boiler Service", icon: "🔥", customer: "Peter W.", location: "Centrum", distance: "1.5 km", price: 95, timeWindow: "8 Mar, 10:00", description: "Annual boiler service and safety check.", postedAgo: "", status: "completed", committedStatus: "completed",
     completedDate: "8 Mar 2025", duration: "2h 10m",
     assignment: {
       type: "individual",
@@ -163,7 +164,7 @@ const initialJobs: Job[] = [
     },
   },
   {
-    id: "j8", type: "catA", category: "fixed", title: "Kitchen Tiling", icon: "🧱", customer: "Anna J.", location: "Westerpark", distance: "3.8 km", price: 210, timeWindow: "5 Mar, 09:00 – 15:00", description: "Re-tile kitchen backsplash, approx 4m².", postedAgo: "", status: "completed",
+    id: "j8", type: "catA", category: "fixed", title: "Kitchen Tiling", icon: "🧱", customer: "Anna J.", location: "Westerpark", distance: "3.8 km", price: 210, timeWindow: "5 Mar, 09:00 – 15:00", description: "Re-tile kitchen backsplash, approx 4m².", postedAgo: "", status: "completed", committedStatus: "completed",
     completedDate: "5 Mar 2025", duration: "5h 30m",
     assignment: {
       type: "individuals",
@@ -174,6 +175,10 @@ const initialJobs: Job[] = [
         { id: "m7", name: "Jos V.", role: "Helper", hours: 3, earnings: 36 },
       ],
     },
+  },
+  {
+    id: "j10", type: "catA", category: "fixed", title: "Radiator Replacement", icon: "🔥", customer: "Mike S.", location: "Bos en Lommer", distance: "4.0 km", price: 180, timeWindow: "15 Mar, 09:00 – 12:00", description: "Replace old radiator in bedroom. Standard panel radiator.", postedAgo: "", status: "active", committedStatus: "cancelled",
+    completedDate: "Cancelled on 14 Mar",
   },
 ];
 
@@ -347,7 +352,7 @@ const TraderJobs = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [jobSection, setJobSection] = useState<"incoming" | "committed">("incoming");
-  const [committedFilter, setCommittedFilter] = useState<"all" | "active" | "completed">("all");
+  const [committedFilter, setCommittedFilter] = useState<"all" | "active" | "completed" | "cancelled">("all");
   
   // Quote detail sheet state
   const [selectedQuote, setSelectedQuote] = useState<SentQuoteData | null>(null);
@@ -418,15 +423,105 @@ const TraderJobs = () => {
     if (jobSection === "incoming") {
       if (j.status !== "incoming") return false;
     } else {
-      // committed
+      // committed — exclude incoming jobs
       if (j.status === "incoming") return false;
-      if (committedFilter === "active" && j.status !== "active") return false;
-      if (committedFilter === "completed" && j.status !== "completed") return false;
+      if (committedFilter === "active" && j.committedStatus !== "in_progress" && j.committedStatus !== "upcoming") return false;
+      if (committedFilter === "completed" && j.committedStatus !== "completed") return false;
+      if (committedFilter === "cancelled" && j.committedStatus !== "cancelled") return false;
     }
     // Search filter
     if (searchQuery && !j.title.toLowerCase().includes(searchLower) && !j.customer.toLowerCase().includes(searchLower) && !j.location.toLowerCase().includes(searchLower)) return false;
     return true;
   });
+
+  const committedStatusConfig: Record<string, { label: string; className: string }> = {
+    upcoming: { label: "Upcoming", className: "bg-blue-500/10 text-blue-600" },
+    in_progress: { label: "In Progress", className: "bg-primary/10 text-primary" },
+    completed: { label: "Completed", className: "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]" },
+    cancelled: { label: "Cancelled", className: "bg-destructive/10 text-destructive" },
+  };
+
+  const renderCommittedJobCard = (job: Job) => {
+    const statusTag = job.committedStatus ? committedStatusConfig[job.committedStatus] : null;
+
+    if (job.status === "active" && job.committedStatus !== "cancelled") {
+      return (
+        <div key={job.id} className="relative">
+          {statusTag && (
+            <div className="absolute top-3 right-3 z-10">
+              <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${statusTag.className}`}>{statusTag.label}</span>
+            </div>
+          )}
+          <ActiveJobCard
+            job={{
+              id: job.id,
+              title: job.title,
+              icon: job.icon,
+              customer: job.customer,
+              timeWindow: job.timeWindow,
+              location: job.location,
+              distance: job.distance,
+              status: job.status,
+              price: job.price,
+              crew: job.crew,
+            }}
+            expanded={false}
+            onToggleExpand={() => openJobDetail(job)}
+            description={job.description}
+            viewMode={isIndividual ? "individual" : "agency"}
+          />
+        </div>
+      );
+    }
+
+    // Completed / cancelled cards
+    const a = job.assignment;
+    let assignLabel = "";
+    let AssignIcon = User;
+    if (a) {
+      if (a.type === "group") { assignLabel = a.groupName || "Group"; AssignIcon = UsersRound; }
+      else if (a.type === "individual") { assignLabel = a.members[0]?.name || "Individual"; AssignIcon = User; }
+      else { const shown = a.members.slice(0, 2).map((m) => m.name.split(" ")[0]); const extra = a.members.length - 2; assignLabel = extra > 0 ? `${shown.join(", ")} +${extra}` : shown.join(", "); AssignIcon = Users; }
+    }
+
+    return (
+      <div key={job.id} className="rounded-2xl bg-card overflow-hidden border border-border">
+        <button onClick={() => openJobDetail(job)} className="w-full px-4 py-3.5 text-left">
+          <div className="flex gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-xl mt-0.5">{job.icon}</div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <h4 className="text-[14px] font-bold text-foreground truncate leading-snug">{job.title}</h4>
+                {statusTag && (
+                  <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold shrink-0 ${statusTag.className}`}>{statusTag.label}</span>
+                )}
+              </div>
+              <div className="mt-1 flex items-center gap-2 text-[11.5px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1 truncate"><MapPin className="h-3 w-3 shrink-0 text-muted-foreground/70" />{job.location}</span>
+                <span className="text-border shrink-0">·</span>
+                <span className="inline-flex items-center gap-1 truncate"><Clock className="h-3 w-3 shrink-0 text-muted-foreground/70" />{job.timeWindow}</span>
+              </div>
+              {!isIndividual && a && (
+                <div className="mt-1.5 flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                    <AssignIcon className="h-3 w-3" />{assignLabel}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </button>
+        <div className="flex items-center justify-between border-t border-border px-4 py-2.5">
+          <div className="flex items-center gap-1.5">
+            {job.committedStatus === "completed" && <><Star className="h-3.5 w-3.5 fill-star text-star" /><span className="text-xs font-bold text-foreground">5.0</span></>}
+            <span className="text-[11px] text-muted-foreground">{job.customer}</span>
+          </div>
+          <span className="text-[15px] font-extrabold text-primary">{job.price ? `£${job.price}` : "—"}</span>
+        </div>
+      </div>
+    );
+  };
+
 
   const acceptJob = (id: string, assignTo?: { type: "group" | "individual"; name: string; memberNames?: string[] }) => {
     setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, status: "active" as JobStatus } : j)));
@@ -606,19 +701,22 @@ const TraderJobs = () => {
           {/* Status filters for committed section */}
           {jobSection === "committed" && (
             <div className="flex gap-2 mb-1 overflow-x-auto no-scrollbar">
-              {(["all", "active", "completed"] as const).map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setCommittedFilter(filter)}
-                  className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all shrink-0 ${
-                    committedFilter === filter
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-muted-foreground"
-                  }`}
-                >
-                  {filter === "all" ? "All" : filter === "active" ? "Active" : "Completed"}
-                </button>
-              ))}
+              {(["all", "active", "completed", "cancelled"] as const).map((filter) => {
+                const labels: Record<typeof filter, string> = { all: "All", active: "Active", completed: "Completed", cancelled: "Cancelled" };
+                return (
+                  <button
+                    key={filter}
+                    onClick={() => setCommittedFilter(filter)}
+                    className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all shrink-0 ${
+                      committedFilter === filter
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-muted-foreground"
+                    }`}
+                  >
+                    {labels[filter]}
+                  </button>
+                );
+              })}
               <button
                 key="quotes"
                 onClick={() => { setJobSection("committed"); setCommittedFilter("all"); }}
@@ -645,16 +743,33 @@ const TraderJobs = () => {
         )}
 
         <div className={`flex flex-col gap-3 ${isAgencyProfile && jobSection === "incoming" ? "max-h-[calc(100vh-200px)] overflow-y-auto pr-1" : ""}`}>
-          {jobSection === "committed" && committedFilter !== "completed" && filteredJobs.filter(j => j.status === "active").length > 0 && (
-            <div className="flex items-center gap-2 mb-1">
-              <Clock className="h-4 w-4 text-primary" />
-              <h3 className="text-sm font-bold text-foreground">Upcoming</h3>
-              <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
-                {filteredJobs.filter(j => j.status === "active").length} jobs
-              </span>
-            </div>
-          )}
-          {filteredJobs.map((job) => {
+          {/* When committed + "All" filter, group by status with section headers */}
+          {jobSection === "committed" && committedFilter === "all" && (() => {
+            const statusOrder: Array<{ key: string; label: string; icon: typeof Clock; color: string }> = [
+              { key: "in_progress", label: "In Progress", icon: Clock, color: "text-primary" },
+              { key: "upcoming", label: "Upcoming", icon: Calendar, color: "text-blue-600" },
+              { key: "completed", label: "Completed", icon: CheckCircle2, color: "text-[hsl(142,70%,45%)]" },
+              { key: "cancelled", label: "Cancelled", icon: X, color: "text-destructive" },
+            ];
+            const groupedJobs = statusOrder
+              .map((s) => ({ ...s, jobs: filteredJobs.filter((j) => j.committedStatus === s.key) }))
+              .filter((g) => g.jobs.length > 0);
+
+            return groupedJobs.map((group) => (
+              <div key={group.key} className="flex flex-col gap-2.5">
+                <div className="flex items-center gap-2 mt-1">
+                  <group.icon className={`h-4 w-4 ${group.color}`} />
+                  <h3 className="text-sm font-bold text-foreground">{group.label}</h3>
+                  <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+                    {group.jobs.length}
+                  </span>
+                </div>
+                {group.jobs.map((job) => renderCommittedJobCard(job))}
+              </div>
+            ));
+          })()}
+          {/* Render jobs that aren't handled by grouped view above */}
+          {(jobSection !== "committed" || committedFilter !== "all") && filteredJobs.map((job) => {
             // Use shared IncomingJobCard for incoming section
             if (job.status === "incoming") {
               return (
@@ -715,178 +830,7 @@ const TraderJobs = () => {
               );
             }
 
-            const isExpanded = expandedId === job.id;
-            const isQuick = job.type === "catA";
-
-            return (
-              <div key={job.id}>
-                {job.status === "active" ? (
-                  <ActiveJobCard
-                    job={{
-                      id: job.id,
-                      title: job.title,
-                      icon: job.icon,
-                      customer: job.customer,
-                      timeWindow: job.timeWindow,
-                      location: job.location,
-                      distance: job.distance,
-                      status: job.status,
-                      price: job.price,
-                      crew: job.crew,
-                    }}
-                    expanded={false}
-                    onToggleExpand={() => openJobDetail(job)}
-                    description={job.description}
-                    viewMode={isIndividual ? "individual" : "agency"}
-                  />
-                ) : (
-                  /* Completed jobs */
-                  (() => {
-                    const a = job.assignment;
-                    // Build collapsed assignment summary
-                    let assignLabel = "";
-                    let AssignIcon = User;
-                    if (a) {
-                      if (a.type === "group") {
-                        assignLabel = a.groupName || "Group";
-                        AssignIcon = UsersRound;
-                      } else if (a.type === "individual") {
-                        assignLabel = a.members[0]?.name || "Individual";
-                        AssignIcon = User;
-                      } else {
-                        // individuals
-                        const shown = a.members.slice(0, 2).map((m) => m.name.split(" ")[0]);
-                        const extra = a.members.length - 2;
-                        assignLabel = extra > 0 ? `${shown.join(", ")} +${extra}` : shown.join(", ");
-                        AssignIcon = Users;
-                      }
-                    }
-
-                    return (
-                      <div className="rounded-2xl bg-card overflow-hidden border border-border">
-                        <button
-                          onClick={() => openJobDetail(job)}
-                          className="w-full px-4 py-3.5 text-left"
-                        >
-                          <div className="flex gap-3">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-xl mt-0.5">
-                              {job.icon}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-2">
-                                <h4 className="text-[14px] font-bold text-foreground truncate leading-snug">{job.title}</h4>
-                                <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 mt-0.5 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
-                              </div>
-                              <div className="mt-1 flex items-center gap-2 text-[11.5px] text-muted-foreground">
-                                <span className="inline-flex items-center gap-1 truncate">
-                                  <MapPin className="h-3 w-3 shrink-0 text-muted-foreground/70" />{job.location}
-                                </span>
-                                <span className="text-border shrink-0">·</span>
-                                <span className="inline-flex items-center gap-1 truncate">
-                                  <Clock className="h-3 w-3 shrink-0 text-muted-foreground/70" />{job.timeWindow}
-                                </span>
-                              </div>
-                              {/* Assignment summary badge — agency only */}
-                              {!isIndividual && a && (
-                                <div className="mt-1.5 flex items-center gap-1.5">
-                                  <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
-                                    <AssignIcon className="h-3 w-3" />
-                                    {assignLabel}
-                                  </span>
-                                  {a.type === "group" && (
-                                    <span className="text-[10px] text-muted-foreground">· {a.members.length} members</span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </button>
-
-                        {/* Expanded details */}
-                        {isExpanded && (
-                          <div className="border-t border-border bg-muted/30">
-                            {/* Customer & Job Info */}
-                            <div className="px-4 py-3 grid grid-cols-2 gap-3 border-b border-border">
-                              <div>
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Customer</p>
-                                <p className="text-xs font-semibold text-foreground">{job.customer}</p>
-                              </div>
-                              <div>
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Location</p>
-                                <p className="text-xs font-semibold text-foreground">{job.location}</p>
-                              </div>
-                              {job.completedDate && (
-                                <div>
-                                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Completed</p>
-                                  <p className="text-xs font-semibold text-foreground">{job.completedDate}</p>
-                                </div>
-                              )}
-                              {job.duration && (
-                                <div>
-                                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Duration</p>
-                                  <p className="text-xs font-semibold text-foreground flex items-center gap-1"><Timer className="h-3 w-3 text-muted-foreground" />{job.duration}</p>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Description */}
-                            {job.description && (
-                              <div className="px-4 py-3 border-b border-border">
-                                <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Job Description</p>
-                                <p className="text-xs text-foreground leading-relaxed">{job.description}</p>
-                              </div>
-                            )}
-
-                            {/* Assignment Details — agency only */}
-                            {!isIndividual && a && (
-                              <div className="px-4 py-3">
-                                <div className="flex items-center justify-between mb-2">
-                                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                                    {a.type === "group" ? "Group Assignment" : a.type === "individual" ? "Individual Assignment" : "Team Assignment"}
-                                  </p>
-                                  {a.type === "group" && a.groupName && (
-                                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">{a.groupName}</span>
-                                  )}
-                                </div>
-                                <div className="flex flex-col gap-1.5">
-                                  {a.members.map((member) => (
-                                    <div key={member.id} className="flex items-center gap-2.5 rounded-xl bg-card border border-border px-3 py-2">
-                                      <Avatar size={28} name={member.name} variant="beam" colors={["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7"]} />
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-[11px] font-semibold text-foreground truncate">{member.name}</p>
-                                        <p className="text-[9px] text-muted-foreground">{member.role}</p>
-                                      </div>
-                                      <div className="text-right shrink-0">
-                                        {member.hours != null && (
-                                          <p className="text-[10px] font-semibold text-foreground">{member.hours}h</p>
-                                        )}
-                                        {member.earnings != null && (
-                                          <p className="text-[9px] text-muted-foreground">£{member.earnings.toFixed(2)}</p>
-                                        )}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Footer */}
-                        <div className="flex items-center justify-between border-t border-border px-4 py-2.5">
-                          <div className="flex items-center gap-1.5">
-                            <Star className="h-3.5 w-3.5 fill-star text-star" />
-                            <span className="text-xs font-bold text-foreground">5.0</span>
-                            <span className="text-[11px] text-muted-foreground">from {job.customer}</span>
-                          </div>
-                          <span className="text-[15px] font-extrabold text-primary">£{job.price}</span>
-                        </div>
-                      </div>
-                    );
-                  })()
-                )}
-              </div>
-            );
+            return renderCommittedJobCard(job);
           })}
 
         </div>
