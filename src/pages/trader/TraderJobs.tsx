@@ -412,8 +412,21 @@ const TraderJobs = () => {
   };
 
 
-  const filteredJobs = jobs.filter((j) => j.status === activeTab);
-  const incomingCount = jobs.filter((j) => j.status === "incoming").length;
+  const searchLower = searchQuery.toLowerCase();
+  const filteredJobs = jobs.filter((j) => {
+    // Section filter
+    if (jobSection === "incoming") {
+      if (j.status !== "incoming") return false;
+    } else {
+      // committed
+      if (j.status === "incoming") return false;
+      if (committedFilter === "active" && j.status !== "active") return false;
+      if (committedFilter === "completed" && j.status !== "completed") return false;
+    }
+    // Search filter
+    if (searchQuery && !j.title.toLowerCase().includes(searchLower) && !j.customer.toLowerCase().includes(searchLower) && !j.location.toLowerCase().includes(searchLower)) return false;
+    return true;
+  });
 
   const acceptJob = (id: string, assignTo?: { type: "group" | "individual"; name: string; memberNames?: string[] }) => {
     setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, status: "active" as JobStatus } : j)));
