@@ -139,8 +139,8 @@ const CalendarDayView = () => {
       {/* Timeline */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-2 pb-20 relative"
-        style={{ minHeight: 0 }}
+        className="overflow-y-auto rounded-2xl bg-card border border-border relative"
+        style={{ maxHeight: 400 }}
       >
         <div className="relative" style={{ height: hours.length * 56 }}>
           {/* Hour lines */}
