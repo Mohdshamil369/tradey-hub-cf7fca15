@@ -644,19 +644,19 @@ const TraderJobs = () => {
           </div>
         )}
 
-        <div className={`flex flex-col gap-3 ${isAgencyProfile && activeTab === "incoming" ? "max-h-[calc(100vh-200px)] overflow-y-auto pr-1" : ""}`}>
-          {activeTab === "active" && filteredJobs.length > 0 && (
+        <div className={`flex flex-col gap-3 ${isAgencyProfile && jobSection === "incoming" ? "max-h-[calc(100vh-200px)] overflow-y-auto pr-1" : ""}`}>
+          {jobSection === "committed" && committedFilter !== "completed" && filteredJobs.filter(j => j.status === "active").length > 0 && (
             <div className="flex items-center gap-2 mb-1">
               <Clock className="h-4 w-4 text-primary" />
               <h3 className="text-sm font-bold text-foreground">Upcoming</h3>
               <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
-                {filteredJobs.length} jobs
+                {filteredJobs.filter(j => j.status === "active").length} jobs
               </span>
             </div>
           )}
           {filteredJobs.map((job) => {
-            // Use shared IncomingJobCard for incoming tab
-            if (activeTab === "incoming") {
+            // Use shared IncomingJobCard for incoming section
+            if (job.status === "incoming") {
               return (
                 <div key={job.id} className="flex flex-col gap-2">
                   {/* Agency collaborative quote — replaces the job card */}
