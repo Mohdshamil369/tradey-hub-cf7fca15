@@ -434,7 +434,95 @@ const TraderJobs = () => {
     return true;
   });
 
-  const acceptJob = (id: string, assignTo?: { type: "group" | "individual"; name: string; memberNames?: string[] }) => {
+  const committedStatusConfig: Record<string, { label: string; className: string }> = {
+    upcoming: { label: "Upcoming", className: "bg-blue-500/10 text-blue-600" },
+    in_progress: { label: "In Progress", className: "bg-primary/10 text-primary" },
+    completed: { label: "Completed", className: "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]" },
+    cancelled: { label: "Cancelled", className: "bg-destructive/10 text-destructive" },
+  };
+
+  const renderCommittedJobCard = (job: Job) => {
+    const statusTag = job.committedStatus ? committedStatusConfig[job.committedStatus] : null;
+
+    if (job.status === "active" && job.committedStatus !== "cancelled") {
+      return (
+        <div key={job.id} className="relative">
+          {statusTag && (
+            <div className="absolute top-3 right-3 z-10">
+              <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${statusTag.className}`}>{statusTag.label}</span>
+            </div>
+          )}
+          <ActiveJobCard
+            job={{
+              id: job.id,
+              title: job.title,
+              icon: job.icon,
+              customer: job.customer,
+              timeWindow: job.timeWindow,
+              location: job.location,
+              distance: job.distance,
+              status: job.status,
+              price: job.price,
+              crew: job.crew,
+            }}
+            expanded={false}
+            onToggleExpand={() => openJobDetail(job)}
+            description={job.description}
+            viewMode={isIndividual ? "individual" : "agency"}
+          />
+        </div>
+      );
+    }
+
+    // Completed / cancelled cards
+    const a = job.assignment;
+    let assignLabel = "";
+    let AssignIcon = User;
+    if (a) {
+      if (a.type === "group") { assignLabel = a.groupName || "Group"; AssignIcon = UsersRound; }
+      else if (a.type === "individual") { assignLabel = a.members[0]?.name || "Individual"; AssignIcon = User; }
+      else { const shown = a.members.slice(0, 2).map((m) => m.name.split(" ")[0]); const extra = a.members.length - 2; assignLabel = extra > 0 ? `${shown.join(", ")} +${extra}` : shown.join(", "); AssignIcon = Users; }
+    }
+
+    return (
+      <div key={job.id} className="rounded-2xl bg-card overflow-hidden border border-border">
+        <button onClick={() => openJobDetail(job)} className="w-full px-4 py-3.5 text-left">
+          <div className="flex gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-xl mt-0.5">{job.icon}</div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <h4 className="text-[14px] font-bold text-foreground truncate leading-snug">{job.title}</h4>
+                {statusTag && (
+                  <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold shrink-0 ${statusTag.className}`}>{statusTag.label}</span>
+                )}
+              </div>
+              <div className="mt-1 flex items-center gap-2 text-[11.5px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1 truncate"><MapPin className="h-3 w-3 shrink-0 text-muted-foreground/70" />{job.location}</span>
+                <span className="text-border shrink-0">·</span>
+                <span className="inline-flex items-center gap-1 truncate"><Clock className="h-3 w-3 shrink-0 text-muted-foreground/70" />{job.timeWindow}</span>
+              </div>
+              {!isIndividual && a && (
+                <div className="mt-1.5 flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                    <AssignIcon className="h-3 w-3" />{assignLabel}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </button>
+        <div className="flex items-center justify-between border-t border-border px-4 py-2.5">
+          <div className="flex items-center gap-1.5">
+            {job.committedStatus === "completed" && <><Star className="h-3.5 w-3.5 fill-star text-star" /><span className="text-xs font-bold text-foreground">5.0</span></>}
+            <span className="text-[11px] text-muted-foreground">{job.customer}</span>
+          </div>
+          <span className="text-[15px] font-extrabold text-primary">{job.price ? `£${job.price}` : "—"}</span>
+        </div>
+      </div>
+    );
+  };
+
+
     setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, status: "active" as JobStatus } : j)));
     if (assignTo) {
       if (assignTo.type === "group" && assignTo.memberNames) {
