@@ -89,9 +89,9 @@ const CalendarDayView = () => {
   }, [selectedDate]);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col">
       {/* Horizontal date strip */}
-      <div className="px-2 pb-3">
+      <div className="pb-3">
         <div
           ref={dateScrollRef}
           className="flex gap-1 overflow-x-auto no-scrollbar py-1"
