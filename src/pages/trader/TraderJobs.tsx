@@ -345,6 +345,9 @@ const TraderJobs = () => {
   const [jobs, setJobs] = useState(initialJobs);
   const [companyJobList, setCompanyJobList] = useState(companyJobs);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [jobSection, setJobSection] = useState<"incoming" | "committed">("incoming");
+  const [committedFilter, setCommittedFilter] = useState<"all" | "active" | "completed">("all");
   
   // Quote detail sheet state
   const [selectedQuote, setSelectedQuote] = useState<SentQuoteData | null>(null);
