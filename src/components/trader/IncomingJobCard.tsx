@@ -1,4 +1,4 @@
-import { MapPin, Clock, Eye, Camera, Calendar, PoundSterling, Image as ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, Clock, Eye, Camera, Calendar, PoundSterling, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 
@@ -63,61 +63,50 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
   const [photoIndex, setPhotoIndex] = useState(0);
 
   return (
-    <div className="rounded-2xl bg-card overflow-hidden border border-border">
-      {/* Photo + Info */}
-      <div className="flex gap-0">
-        {/* Photo area with carousel */}
-        <div className="relative w-[105px] shrink-0 min-h-[96px] bg-muted/30">
-          {hasPhotos ? (
-            <>
-              <img
-                src={photos[photoIndex]}
-                alt=""
-                className="h-full w-full object-cover"
-                loading="lazy"
-              />
-              {/* Carousel controls */}
-              {photos.length > 1 && (
-                <>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setPhotoIndex(i => (i - 1 + photos.length) % photos.length); }}
-                    className="absolute left-0.5 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-foreground/50 text-background active:bg-foreground/70"
-                  >
-                    <ChevronLeft className="h-3 w-3" />
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setPhotoIndex(i => (i + 1) % photos.length); }}
-                    className="absolute right-0.5 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-foreground/50 text-background active:bg-foreground/70"
-                  >
-                    <ChevronRight className="h-3 w-3" />
-                  </button>
-                  {/* Dot indicators */}
-                  <div className="absolute bottom-1 inset-x-0 flex justify-center gap-1">
-                    {photos.map((_, i) => (
-                      <div key={i} className={`h-1 rounded-full transition-all ${i === photoIndex ? "w-2.5 bg-background" : "w-1 bg-background/50"}`} />
-                    ))}
-                  </div>
-                </>
-              )}
-              {/* Request more photos when only 1-2 */}
-              {photos.length <= 2 && (
+    <div
+      className="rounded-2xl bg-card overflow-hidden border border-border card-shadow transition-all active:scale-[0.99]"
+      onClick={onViewDetail}
+    >
+      {/* Photo area on top — full width */}
+      <div className="relative w-full h-[160px] bg-muted/30">
+        {hasPhotos ? (
+          <>
+            <img
+              src={photos[photoIndex]}
+              alt=""
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+            {/* Carousel controls */}
+            {photos.length > 1 && (
+              <>
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setPhotoRequested(true);
-                    onRequestPhotos?.(job.id);
-                  }}
-                  disabled={photoRequested}
-                  className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-foreground/70 px-1.5 py-0.5 text-[7px] font-bold text-background active:opacity-80 disabled:opacity-50"
+                  onClick={(e) => { e.stopPropagation(); setPhotoIndex(i => (i - 1 + photos.length) % photos.length); }}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-foreground/50 text-background active:bg-foreground/70"
                 >
-                  <Camera className="h-2 w-2" />
-                  {photoRequested ? "Requested" : "More Photos"}
+                  <ChevronLeft className="h-4 w-4" />
                 </button>
-              )}
-            </>
-          ) : (
-            <div className="relative flex items-center justify-center h-full">
-              <img src={noPhotoPlaceholder} alt="No photo" className="h-full w-full object-contain opacity-40 p-2" />
+                <button
+                  onClick={(e) => { e.stopPropagation(); setPhotoIndex(i => (i + 1) % photos.length); }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-foreground/50 text-background active:bg-foreground/70"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+                {/* Dot indicators */}
+                <div className="absolute bottom-2 inset-x-0 flex justify-center gap-1">
+                  {photos.map((_, i) => (
+                    <div key={i} className={`h-1.5 rounded-full transition-all ${i === photoIndex ? "w-4 bg-background" : "w-1.5 bg-background/50"}`} />
+                  ))}
+                </div>
+              </>
+            )}
+            {/* Photo count badge */}
+            <div className="absolute top-2 left-2 flex items-center gap-1 rounded-lg bg-foreground/60 px-2 py-1 text-[10px] font-bold text-background">
+              <Camera className="h-3 w-3" />
+              {photos.length}
+            </div>
+            {/* Request more photos when only 1-2 */}
+            {photos.length <= 2 && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -125,57 +114,79 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
                   onRequestPhotos?.(job.id);
                 }}
                 disabled={photoRequested}
-                className="absolute inset-x-1 bottom-1.5 flex items-center justify-center gap-1 rounded bg-foreground/70 px-1.5 py-1 text-[8px] font-bold text-background active:opacity-80 disabled:opacity-50"
+                className="absolute top-2 right-2 flex items-center gap-1 rounded-lg bg-foreground/70 px-2 py-1 text-[9px] font-bold text-background active:opacity-80 disabled:opacity-50"
               >
-                <Camera className="h-2.5 w-2.5" />
-                {photoRequested ? "Sent" : "Request Photos"}
+                <Camera className="h-3 w-3" />
+                {photoRequested ? "Requested" : "More Photos"}
               </button>
-            </div>
+            )}
+          </>
+        ) : (
+          <div className="relative flex items-center justify-center h-full bg-muted/20">
+            <img src={noPhotoPlaceholder} alt="No photo" className="h-20 w-20 object-contain opacity-30" />
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setPhotoRequested(true);
+                onRequestPhotos?.(job.id);
+              }}
+              disabled={photoRequested}
+              className="absolute bottom-3 inset-x-4 flex items-center justify-center gap-1.5 rounded-xl bg-foreground/70 px-3 py-2 text-[11px] font-bold text-background active:opacity-80 disabled:opacity-50"
+            >
+              <Camera className="h-3.5 w-3.5" />
+              {photoRequested ? "Request Sent" : "Request Photos"}
+            </button>
+          </div>
+        )}
+        {/* Category badge over photo */}
+        {cat && (
+          <div className="absolute top-2 right-2">
+            <span className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold backdrop-blur-sm ${cat.className} bg-opacity-90`}>
+              {cat.emoji} {cat.label}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Info section */}
+      <div className="px-3.5 py-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-lg">{job.icon}</span>
+            <h4 className="text-[15px] font-bold text-foreground leading-snug truncate">{job.title}</h4>
+          </div>
+          {job.price ? (
+            <span className="font-extrabold text-primary text-[16px] shrink-0">£{job.price}</span>
+          ) : job.inspectionFee ? (
+            <span className="font-bold text-[hsl(25,90%,55%)] text-[14px] shrink-0">£{job.inspectionFee} <span className="text-[10px] font-medium">inspect</span></span>
+          ) : (
+            <span className="font-bold text-blue-600 text-[12px] shrink-0">Quote TBD</span>
           )}
         </div>
 
-        {/* Info */}
-        <div className="flex-1 min-w-0 px-3 py-2.5">
-          <div className="flex items-start justify-between gap-1.5">
-            <h4 className="text-[13px] font-bold text-foreground leading-snug truncate">{job.title}</h4>
-            {cat && (
-              <span className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[8px] font-bold shrink-0 ${cat.className}`}>
-                {cat.emoji} {cat.label}
-              </span>
-            )}
-          </div>
+        <p className="mt-1 text-[12px] text-muted-foreground">{job.customer} · {job.location}</p>
 
-          <p className="mt-0.5 text-[10.5px] text-muted-foreground truncate">{job.customer} · {job.location}</p>
+        {/* Description preview */}
+        <p className="mt-2 text-[11px] text-muted-foreground/80 line-clamp-2 leading-relaxed">{job.description}</p>
 
-          {/* Metrics */}
-          <div className="mt-2 flex items-center gap-3 text-[10px]">
-            {job.price ? (
-              <span className="font-extrabold text-primary text-[13px]">£{job.price}</span>
-            ) : job.inspectionFee ? (
-              <span className="font-bold text-[hsl(25,90%,55%)] text-[12px]">£{job.inspectionFee} <span className="text-[9px] font-medium">inspect</span></span>
-            ) : (
-              <span className="font-bold text-blue-600 text-[11px]">Quote TBD</span>
-            )}
-            {estDuration && (
-              <span className="flex items-center gap-0.5 text-muted-foreground">
-                <Clock className="h-3 w-3" />{estDuration}
-              </span>
-            )}
-            <span className="flex items-center gap-0.5 text-muted-foreground">
-              <MapPin className="h-3 w-3" />{job.distance}
+        {/* Metrics row */}
+        <div className="mt-3 flex items-center gap-3 flex-wrap">
+          {estDuration && (
+            <span className="flex items-center gap-1 text-[11px] text-muted-foreground bg-secondary rounded-lg px-2 py-1">
+              <Clock className="h-3 w-3" />{estDuration}
             </span>
-          </div>
-
-          {/* Time window */}
-          <div className="mt-1.5 flex items-center gap-1 text-[10px] text-muted-foreground">
-            <Calendar className="h-3 w-3 shrink-0" />
-            <span className="truncate">{job.timeWindow}</span>
-          </div>
+          )}
+          <span className="flex items-center gap-1 text-[11px] text-muted-foreground bg-secondary rounded-lg px-2 py-1">
+            <MapPin className="h-3 w-3" />{job.distance}
+          </span>
+          <span className="flex items-center gap-1 text-[11px] text-muted-foreground bg-secondary rounded-lg px-2 py-1">
+            <Calendar className="h-3 w-3" />{job.timeWindow}
+          </span>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between border-t border-border/40 px-3 py-2">
+      <div className="flex items-center justify-between border-t border-border/40 px-3.5 py-2.5">
         <div className="flex items-center gap-2">
           {onShowSchedule && (
             <button
@@ -183,20 +194,23 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
                 e.stopPropagation();
                 onShowSchedule(job);
               }}
-              className="flex items-center gap-1 rounded-lg border border-border/40 bg-muted/40 px-2 py-1 text-[9px] font-semibold text-muted-foreground active:opacity-70"
+              className="flex items-center gap-1 rounded-lg border border-border/40 bg-muted/40 px-2.5 py-1.5 text-[10px] font-semibold text-muted-foreground active:opacity-70"
             >
-              <Clock className="h-2.5 w-2.5" />
+              <Clock className="h-3 w-3" />
               My Schedule
             </button>
           )}
           <span className="text-[10px] text-muted-foreground/60">{job.postedAgo || "Just now"}</span>
         </div>
         <button
-          onClick={onViewDetail}
-          className="flex items-center gap-1 rounded-xl bg-primary px-3 py-1.5 text-[11px] font-bold text-primary-foreground active:scale-[0.97] transition-transform"
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewDetail();
+          }}
+          className="flex items-center gap-1 rounded-xl bg-primary px-4 py-2 text-[11px] font-bold text-primary-foreground active:scale-[0.97] transition-transform"
         >
-          <Eye className="h-3 w-3" />
-          View
+          <Eye className="h-3.5 w-3.5" />
+          View Details
         </button>
       </div>
     </div>
