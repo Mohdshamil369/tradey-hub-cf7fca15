@@ -679,7 +679,8 @@ const TraderJobs = () => {
               </div>
             ));
           })()}
-          {filteredJobs.map((job) => {
+          {/* Render jobs that aren't handled by grouped view above */}
+          {(jobSection !== "committed" || committedFilter !== "all") && filteredJobs.map((job) => {
             // Use shared IncomingJobCard for incoming section
             if (job.status === "incoming") {
               return (
