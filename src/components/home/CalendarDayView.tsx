@@ -235,44 +235,45 @@ const CalendarDayView = () => {
                   style={{
                     top: top + cardPadding,
                     height: height - cardPadding * 2,
+                    minHeight: 56,
                   }}
                 >
-                  <div className="p-3 h-full flex flex-col justify-between">
+                  <div className="p-2.5 h-full flex flex-col justify-between gap-1">
                     {/* Top section */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-base">{task.icon}</span>
-                        <h4 className={`text-[13px] font-bold ${task.colorAccent} leading-tight`}>{task.title}</h4>
+                    <div className="flex items-start justify-between gap-1.5 min-w-0">
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        <span className="text-sm shrink-0">{task.icon}</span>
+                        <h4 className={`text-[12px] font-bold ${task.colorAccent} leading-tight truncate`}>{task.title}</h4>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-[11px] font-semibold text-foreground/70">
-                          {formatTime(task.startTime)} – {formatTime(task.endTime)}
-                        </span>
-                      </div>
+                      {task.jobId && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewTask(task);
+                          }}
+                          className="flex items-center gap-1 rounded-lg bg-primary/10 px-2 py-1 text-[9px] font-bold text-primary active:scale-[0.97] shrink-0"
+                        >
+                          <Eye className="h-3 w-3" />
+                          View
+                        </button>
+                      )}
                     </div>
 
-                    {/* Bottom section — only show if card is tall enough */}
+                    {/* Time row — always visible */}
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+                      <span className="text-[10px] font-semibold text-foreground/70">
+                        {formatTime(task.startTime)} – {formatTime(task.endTime)}
+                      </span>
+                    </div>
+
+                    {/* Location — only show if card is tall enough */}
                     {height > 80 && (
-                      <div className="flex items-end justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <MapPin className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-[11px] text-foreground/60 truncate max-w-[140px]">
-                            {task.customer ? `${task.customer} · ` : ""}{task.location}
-                          </span>
-                        </div>
-                        {task.jobId && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewTask(task);
-                            }}
-                            className="flex items-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1.5 text-[10px] font-bold text-primary active:scale-[0.97] shrink-0"
-                          >
-                            <Eye className="h-3 w-3" />
-                            View
-                          </button>
-                        )}
+                      <div className="flex items-center gap-1.5 mt-auto">
+                        <MapPin className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+                        <span className="text-[10px] text-foreground/60 truncate">
+                          {task.customer ? `${task.customer} · ` : ""}{task.location}
+                        </span>
                       </div>
                     )}
                   </div>
