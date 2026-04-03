@@ -720,7 +720,7 @@ const TraderJobs = () => {
 
             return (
               <div key={job.id}>
-                {activeTab === "active" ? (
+                {job.status === "active" ? (
                   <ActiveJobCard
                     job={{
                       id: job.id,
