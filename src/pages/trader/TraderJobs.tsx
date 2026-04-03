@@ -654,15 +654,31 @@ const TraderJobs = () => {
         )}
 
         <div className={`flex flex-col gap-3 ${isAgencyProfile && jobSection === "incoming" ? "max-h-[calc(100vh-200px)] overflow-y-auto pr-1" : ""}`}>
-          {jobSection === "committed" && committedFilter !== "completed" && filteredJobs.filter(j => j.status === "active").length > 0 && (
-            <div className="flex items-center gap-2 mb-1">
-              <Clock className="h-4 w-4 text-primary" />
-              <h3 className="text-sm font-bold text-foreground">Upcoming</h3>
-              <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
-                {filteredJobs.filter(j => j.status === "active").length} jobs
-              </span>
-            </div>
-          )}
+          {/* When committed + "All" filter, group by status with section headers */}
+          {jobSection === "committed" && committedFilter === "all" && (() => {
+            const statusOrder: Array<{ key: string; label: string; icon: typeof Clock; color: string }> = [
+              { key: "in_progress", label: "In Progress", icon: Clock, color: "text-primary" },
+              { key: "upcoming", label: "Upcoming", icon: Calendar, color: "text-blue-600" },
+              { key: "completed", label: "Completed", icon: CheckCircle2, color: "text-[hsl(142,70%,45%)]" },
+              { key: "cancelled", label: "Cancelled", icon: X, color: "text-destructive" },
+            ];
+            const groupedJobs = statusOrder
+              .map((s) => ({ ...s, jobs: filteredJobs.filter((j) => j.committedStatus === s.key) }))
+              .filter((g) => g.jobs.length > 0);
+
+            return groupedJobs.map((group) => (
+              <div key={group.key} className="flex flex-col gap-2.5">
+                <div className="flex items-center gap-2 mt-1">
+                  <group.icon className={`h-4 w-4 ${group.color}`} />
+                  <h3 className="text-sm font-bold text-foreground">{group.label}</h3>
+                  <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+                    {group.jobs.length}
+                  </span>
+                </div>
+                {group.jobs.map((job) => renderCommittedJobCard(job))}
+              </div>
+            ));
+          })()}
           {filteredJobs.map((job) => {
             // Use shared IncomingJobCard for incoming section
             if (job.status === "incoming") {
