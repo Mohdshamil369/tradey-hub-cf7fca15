@@ -163,6 +163,7 @@ const TraderHome = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [scheduleView, setScheduleView] = useState<"cards" | "calendar" | "empty">("cards");
   const [locationSheetOpen, setLocationSheetOpen] = useState(false);
+  const [homeTab, setHomeTab] = useState<"dashboard" | "calendar">("dashboard");
 
   const displayEarnings = isNewUser ? {
     thisWeek: 0,
