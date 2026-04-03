@@ -423,10 +423,11 @@ const TraderJobs = () => {
     if (jobSection === "incoming") {
       if (j.status !== "incoming") return false;
     } else {
-      // committed
+      // committed — exclude incoming jobs
       if (j.status === "incoming") return false;
-      if (committedFilter === "active" && j.status !== "active") return false;
-      if (committedFilter === "completed" && j.status !== "completed") return false;
+      if (committedFilter === "active" && j.committedStatus !== "in_progress" && j.committedStatus !== "upcoming") return false;
+      if (committedFilter === "completed" && j.committedStatus !== "completed") return false;
+      if (committedFilter === "cancelled" && j.committedStatus !== "cancelled") return false;
     }
     // Search filter
     if (searchQuery && !j.title.toLowerCase().includes(searchLower) && !j.customer.toLowerCase().includes(searchLower) && !j.location.toLowerCase().includes(searchLower)) return false;
