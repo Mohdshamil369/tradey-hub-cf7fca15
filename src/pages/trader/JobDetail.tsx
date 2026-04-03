@@ -590,6 +590,28 @@ const JobDetail = () => {
             </button>
             <div className="flex gap-2">
               <button
+                onClick={async () => {
+                  const shareData = {
+                    title: job.title,
+                    text: `Check out this job: ${job.title} — ${job.location}`,
+                    url: window.location.href,
+                  };
+                  if (navigator.share) {
+                    try {
+                      await navigator.share(shareData);
+                    } catch (err) {
+                      // User cancelled or share failed silently
+                    }
+                  } else {
+                    await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+                    toast.success("Link copied to clipboard!");
+                  }
+                }}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm shadow-sm active:bg-background"
+              >
+                <Share2 className="h-4 w-4 text-foreground" />
+              </button>
+              <button
                 onClick={() => toast.success("Job saved!")}
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm shadow-sm active:bg-background"
               >
