@@ -6,7 +6,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
   ArrowLeft, MapPin, Clock, Star, Play, Info, ChevronRight, ChevronLeft,
   ShieldCheck, Timer, MessageCircle, XCircle, FileText,
-  Image, Mic, ClipboardList, Package, Wrench, Ban, RotateCcw, Plus,
+  Image, Mic, ClipboardList, Package, Wrench, Ban, RotateCcw, Plus, Sparkles,
   Camera, Calendar, User, Briefcase, Heart, Share2,
   Image as ImageIcon,
 } from "lucide-react";
