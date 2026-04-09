@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
-import { ArrowLeft, Bookmark, BookmarkX } from "lucide-react";
+import { ArrowLeft, Heart, HeartOff } from "lucide-react";
 import IncomingJobCard, { IncomingJobData } from "@/components/trader/IncomingJobCard";
 import jobTapImg from "@/assets/job-tap-repair.jpg";
 import jobBathroomImg from "@/assets/job-bathroom-reno.jpg";
@@ -90,11 +90,11 @@ const SavedItems = () => {
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <div className="h-14 w-14 rounded-2xl bg-accent flex items-center justify-center">
-                <Bookmark className="h-7 w-7 text-muted-foreground/40" />
+                <Heart className="h-7 w-7 text-muted-foreground/40" />
               </div>
               <p className="text-sm font-bold text-foreground">No saved items</p>
               <p className="text-[11px] text-muted-foreground text-center max-w-[200px]">
-                Tap the bookmark icon on jobs to save them here for later
+                Tap the heart icon on jobs to save them here for later
               </p>
             </div>
           ) : (
@@ -111,7 +111,7 @@ const SavedItems = () => {
                     className="absolute top-2.5 right-2.5 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-destructive text-destructive-foreground active:scale-95 transition-transform shadow-md"
                     title="Remove from saved"
                   >
-                    <BookmarkX className="h-4 w-4" />
+                    <HeartOff className="h-4 w-4" />
                   </button>
                   <IncomingJobCard
                     job={job}
