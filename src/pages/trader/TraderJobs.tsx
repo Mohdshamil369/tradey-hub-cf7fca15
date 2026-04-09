@@ -1029,6 +1029,8 @@ const TraderJobs = () => {
                       viewMode={isIndividual ? "individual" : "agency"}
                       onRequestPhotos={(id) => toast.success("Photo request sent to customer!")}
                       onShowSchedule={() => setScheduleJob(job)}
+                      isSaved={likedJobIds.has(job.id)}
+                      onToggleSave={toggleLike}
                     />
                   )}
                 </div>
