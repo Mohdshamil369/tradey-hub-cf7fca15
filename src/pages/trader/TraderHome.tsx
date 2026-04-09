@@ -404,9 +404,9 @@ const TraderHome = () => {
             </div>
           )}
 
-          {jobs.length > 0 && (
+          {displayJobs.length > 0 && (
             <div className="flex flex-col gap-3">
-              {jobs.map((job) => (
+              {displayJobs.map((job) => (
                 <IncomingJobCard
                   key={job.id}
                   job={job}
