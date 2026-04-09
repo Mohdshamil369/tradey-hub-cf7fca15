@@ -371,13 +371,25 @@ const TraderJobs = () => {
   // Schedule bottom sheet state
   const [scheduleJob, setScheduleJob] = useState<Job | null>(null);
 
-  const [dispatchJobId, setDispatchJobId] = useState<string | null>(null);
-  const [assignStep, setAssignStep] = useState<"choose" | "select-members" | "confirm">("choose");
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
-  const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set());
-  const [selectedIndividual, setSelectedIndividual] = useState<{ id: string; name: string } | null>(null);
-  const [selectedIndividuals, setSelectedIndividuals] = useState<{ id: string; name: string; role: string }[]>([]);
-  const [individualSearch, setIndividualSearch] = useState("");
+  // Filter state
+  const [showFilterSheet, setShowFilterSheet] = useState(false);
+  const [filterDistance, setFilterDistance] = useState<string>("any");
+  const [filterPriceRange, setFilterPriceRange] = useState<string>("any");
+  const [filterCategory, setFilterCategory] = useState<string>("any");
+  const [filterTimeWindow, setFilterTimeWindow] = useState<string>("any");
+  const activeFilterCount = [filterDistance, filterPriceRange, filterCategory, filterTimeWindow].filter(f => f !== "any").length;
+
+  // Saved / liked jobs
+  const [showSavedJobs, setShowSavedJobs] = useState(false);
+  const [likedJobIds, setLikedJobIds] = useState<Set<string>>(new Set(["j1", "j3"]));
+  const toggleLike = (id: string) => {
+    setLikedJobIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); toast("Removed from saved"); }
+      else { next.add(id); toast.success("Saved!"); }
+      return next;
+    });
+  };
 
 
   const mockGroups = [
