@@ -373,11 +373,31 @@ const TraderJobs = () => {
 
   // Filter state
   const [showFilterSheet, setShowFilterSheet] = useState(false);
-  const [filterDistance, setFilterDistance] = useState<string>("any");
-  const [filterPriceRange, setFilterPriceRange] = useState<string>("any");
-  const [filterCategory, setFilterCategory] = useState<string>("any");
-  const [filterTimeWindow, setFilterTimeWindow] = useState<string>("any");
-  const activeFilterCount = [filterDistance, filterPriceRange, filterCategory, filterTimeWindow].filter(f => f !== "any").length;
+  const [expandedFilter, setExpandedFilter] = useState<string | null>(null);
+  const [filterDistanceKm, setFilterDistanceKm] = useState<number>(50); // 50 = any
+  const [filterDistanceInput, setFilterDistanceInput] = useState<string>("");
+  const [filterPriceMin, setFilterPriceMin] = useState<number>(0);
+  const [filterPriceMax, setFilterPriceMax] = useState<number>(500); // 500 = any/max
+  const [filterPriceMinInput, setFilterPriceMinInput] = useState<string>("");
+  const [filterPriceMaxInput, setFilterPriceMaxInput] = useState<string>("");
+  const [filterCategories, setFilterCategories] = useState<Set<string>>(new Set());
+  const [filterTimeWindows, setFilterTimeWindows] = useState<Set<string>>(new Set());
+  const [filterJobType, setFilterJobType] = useState<string>("any");
+
+  const toggleFilterCategory = (cat: string) => {
+    setFilterCategories(prev => { const n = new Set(prev); if (n.has(cat)) n.delete(cat); else n.add(cat); return n; });
+  };
+  const toggleFilterTimeWindow = (tw: string) => {
+    setFilterTimeWindows(prev => { const n = new Set(prev); if (n.has(tw)) n.delete(tw); else n.add(tw); return n; });
+  };
+
+  const activeFilterCount = (filterDistanceKm < 50 ? 1 : 0) + (filterPriceMin > 0 || filterPriceMax < 500 ? 1 : 0) + (filterCategories.size > 0 ? 1 : 0) + (filterTimeWindows.size > 0 ? 1 : 0) + (filterJobType !== "any" ? 1 : 0);
+
+  const resetAllFilters = () => {
+    setFilterDistanceKm(50); setFilterDistanceInput("");
+    setFilterPriceMin(0); setFilterPriceMax(500); setFilterPriceMinInput(""); setFilterPriceMaxInput("");
+    setFilterCategories(new Set()); setFilterTimeWindows(new Set()); setFilterJobType("any");
+  };
 
   const [dispatchJobId, setDispatchJobId] = useState<string | null>(null);
   const [assignStep, setAssignStep] = useState<"choose" | "select-members" | "confirm">("choose");
