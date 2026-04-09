@@ -90,7 +90,7 @@ const SavedItems = () => {
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <div className="h-14 w-14 rounded-2xl bg-accent flex items-center justify-center">
-                <Bookmark className="h-7 w-7 text-muted-foreground/40" />
+                <Heart className="h-7 w-7 text-muted-foreground/40" />
               </div>
               <p className="text-sm font-bold text-foreground">No saved items</p>
               <p className="text-[11px] text-muted-foreground text-center max-w-[200px]">
