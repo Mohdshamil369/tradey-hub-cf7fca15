@@ -379,7 +379,13 @@ const TraderJobs = () => {
   const [filterTimeWindow, setFilterTimeWindow] = useState<string>("any");
   const activeFilterCount = [filterDistance, filterPriceRange, filterCategory, filterTimeWindow].filter(f => f !== "any").length;
 
-  // Saved / liked jobs
+  const [dispatchJobId, setDispatchJobId] = useState<string | null>(null);
+  const [assignStep, setAssignStep] = useState<"choose" | "select-members" | "confirm">("choose");
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set());
+  const [selectedIndividual, setSelectedIndividual] = useState<{ id: string; name: string } | null>(null);
+  const [selectedIndividuals, setSelectedIndividuals] = useState<{ id: string; name: string; role: string }[]>([]);
+  const [individualSearch, setIndividualSearch] = useState("");
   const [showSavedJobs, setShowSavedJobs] = useState(false);
   const [likedJobIds, setLikedJobIds] = useState<Set<string>>(new Set(["j1", "j3"]));
   const toggleLike = (id: string) => {
