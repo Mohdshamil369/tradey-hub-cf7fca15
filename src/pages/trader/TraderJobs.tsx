@@ -1453,45 +1453,40 @@ const TraderJobs = () => {
                       <div className="px-5 pb-4 pt-1 animate-in fade-in duration-150">
                         {/* Distance */}
                         {section.id === "distance" && (
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-muted-foreground">Max distance</span>
-                              <span className="text-sm font-bold text-foreground">{filterDistanceKm >= 50 ? "Any" : `${filterDistanceKm} km`}</span>
-                            </div>
-                            <input
-                              type="range"
-                              min={1}
-                              max={50}
-                              value={filterDistanceKm}
-                              onChange={(e) => {
-                                const v = Number(e.target.value);
-                                setFilterDistanceKm(v);
-                                setFilterDistanceInput(v >= 50 ? "" : String(v));
-                              }}
-                              className="w-full h-2 rounded-full appearance-none bg-secondary accent-primary cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-md"
-                            />
-                            <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                              <span>1 km</span>
-                              <span>50+ km</span>
-                            </div>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-xs text-muted-foreground shrink-0">Or enter:</span>
-                              <div className="relative flex-1">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="range"
+                                min={1}
+                                max={50}
+                                value={filterDistanceKm}
+                                onChange={(e) => {
+                                  const v = Number(e.target.value);
+                                  setFilterDistanceKm(v);
+                                  setFilterDistanceInput(v >= 50 ? "" : String(v));
+                                }}
+                                className="flex-1 h-2 rounded-full appearance-none bg-secondary accent-primary cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-md"
+                              />
+                              <div className="relative w-20 shrink-0">
                                 <input
                                   type="number"
                                   min={1}
                                   max={100}
-                                  placeholder="e.g. 15"
+                                  placeholder="Any"
                                   value={filterDistanceInput}
                                   onChange={(e) => {
                                     setFilterDistanceInput(e.target.value);
                                     const v = Number(e.target.value);
                                     if (v > 0 && v <= 100) setFilterDistanceKm(Math.min(v, 50));
                                   }}
-                                  className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
+                                  className="w-full rounded-lg border border-border bg-card px-2 pr-7 py-1.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 text-center"
                                 />
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">km</span>
+                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">km</span>
                               </div>
+                            </div>
+                            <div className="flex items-center justify-between text-[10px] text-muted-foreground px-0.5">
+                              <span>1 km</span>
+                              <span>50+ km</span>
                             </div>
                           </div>
                         )}
@@ -1503,62 +1498,62 @@ const TraderJobs = () => {
                               <span className="text-xs text-muted-foreground">Price range</span>
                               <span className="text-sm font-bold text-foreground">£{filterPriceMin} – £{filterPriceMax >= 500 ? "500+" : filterPriceMax}</span>
                             </div>
-                            {/* Min slider */}
-                            <div>
+                            {/* Min: slider + input inline */}
+                            <div className="space-y-1">
                               <span className="text-[10px] font-semibold text-muted-foreground">Minimum</span>
-                              <input
-                                type="range"
-                                min={0}
-                                max={filterPriceMax - 10}
-                                value={filterPriceMin}
-                                onChange={(e) => { setFilterPriceMin(Number(e.target.value)); setFilterPriceMinInput(e.target.value); }}
-                                className="w-full h-2 rounded-full appearance-none bg-secondary accent-primary cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-md"
-                              />
-                            </div>
-                            {/* Max slider */}
-                            <div>
-                              <span className="text-[10px] font-semibold text-muted-foreground">Maximum</span>
-                              <input
-                                type="range"
-                                min={filterPriceMin + 10}
-                                max={500}
-                                value={filterPriceMax}
-                                onChange={(e) => { setFilterPriceMax(Number(e.target.value)); setFilterPriceMaxInput(e.target.value); }}
-                                className="w-full h-2 rounded-full appearance-none bg-secondary accent-primary cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-md"
-                              />
-                            </div>
-                            {/* Manual inputs */}
-                            <div className="flex items-center gap-2">
-                              <div className="relative flex-1">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">£</span>
+                              <div className="flex items-center gap-3">
                                 <input
-                                  type="number"
+                                  type="range"
                                   min={0}
-                                  placeholder="Min"
-                                  value={filterPriceMinInput}
-                                  onChange={(e) => {
-                                    setFilterPriceMinInput(e.target.value);
-                                    const v = Number(e.target.value);
-                                    if (v >= 0 && v < filterPriceMax) setFilterPriceMin(v);
-                                  }}
-                                  className="w-full rounded-lg border border-border bg-card pl-7 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
+                                  max={filterPriceMax - 10}
+                                  value={filterPriceMin}
+                                  onChange={(e) => { setFilterPriceMin(Number(e.target.value)); setFilterPriceMinInput(e.target.value); }}
+                                  className="flex-1 h-2 rounded-full appearance-none bg-secondary accent-primary cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-md"
                                 />
+                                <div className="relative w-20 shrink-0">
+                                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">£</span>
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    placeholder="Min"
+                                    value={filterPriceMinInput}
+                                    onChange={(e) => {
+                                      setFilterPriceMinInput(e.target.value);
+                                      const v = Number(e.target.value);
+                                      if (v >= 0 && v < filterPriceMax) setFilterPriceMin(v);
+                                    }}
+                                    className="w-full rounded-lg border border-border bg-card pl-5 pr-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 text-center"
+                                  />
+                                </div>
                               </div>
-                              <span className="text-muted-foreground text-xs">to</span>
-                              <div className="relative flex-1">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">£</span>
+                            </div>
+                            {/* Max: slider + input inline */}
+                            <div className="space-y-1">
+                              <span className="text-[10px] font-semibold text-muted-foreground">Maximum</span>
+                              <div className="flex items-center gap-3">
                                 <input
-                                  type="number"
-                                  min={filterPriceMin}
-                                  placeholder="Max"
-                                  value={filterPriceMaxInput}
-                                  onChange={(e) => {
-                                    setFilterPriceMaxInput(e.target.value);
-                                    const v = Number(e.target.value);
-                                    if (v > filterPriceMin) setFilterPriceMax(Math.min(v, 500));
-                                  }}
-                                  className="w-full rounded-lg border border-border bg-card pl-7 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
+                                  type="range"
+                                  min={filterPriceMin + 10}
+                                  max={500}
+                                  value={filterPriceMax}
+                                  onChange={(e) => { setFilterPriceMax(Number(e.target.value)); setFilterPriceMaxInput(e.target.value); }}
+                                  className="flex-1 h-2 rounded-full appearance-none bg-secondary accent-primary cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-md"
                                 />
+                                <div className="relative w-20 shrink-0">
+                                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">£</span>
+                                  <input
+                                    type="number"
+                                    min={filterPriceMin}
+                                    placeholder="Max"
+                                    value={filterPriceMaxInput}
+                                    onChange={(e) => {
+                                      setFilterPriceMaxInput(e.target.value);
+                                      const v = Number(e.target.value);
+                                      if (v > filterPriceMin) setFilterPriceMax(Math.min(v, 500));
+                                    }}
+                                    className="w-full rounded-lg border border-border bg-card pl-5 pr-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 text-center"
+                                  />
+                                </div>
                               </div>
                             </div>
                             {/* Quick presets */}
