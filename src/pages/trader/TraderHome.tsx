@@ -156,10 +156,10 @@ const TraderHome = () => {
   const traderType = profile?.trader_type ?? "individual";
   const isIndividual = traderType === "individual";
   const isAgencyProfile = traderType === "agency";
-  const isNewUser = profile?.full_name === "Demo User";
+  const isNewUser = false; // Toggle controls empty/filled state instead
 
   const [showEmpty, setShowEmpty] = useState(false);
-  const effectiveNewUser = isNewUser || showEmpty;
+  const effectiveNewUser = showEmpty;
 
   const [jobs, setJobs] = useState(initialIncomingJobs);
   const [scheduleJobs, setScheduleJobs] = useState(activeJobs);
