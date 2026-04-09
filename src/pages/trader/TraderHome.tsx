@@ -280,6 +280,24 @@ const TraderHome = () => {
     <MobileLayout role="trader" overlay={<LocationSheet open={locationSheetOpen} onOpenChange={setLocationSheetOpen} />}>
       {/* Header */}
       <div className="px-4 pb-2 pt-6">
+        {/* Empty/Filled toggle */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-semibold text-muted-foreground">Empty</span>
+            <button
+              onClick={() => setShowEmpty(!showEmpty)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                showEmpty ? "bg-muted" : "bg-primary"
+              }`}
+            >
+              <span className={`inline-block h-4 w-4 rounded-full bg-background shadow-sm transition-transform ${
+                showEmpty ? "translate-x-1" : "translate-x-6"
+              }`} />
+            </button>
+            <span className="text-[11px] font-semibold text-muted-foreground">Filled</span>
+          </div>
+        </div>
+
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground font-heading">{firstName} 👋</h1>
@@ -295,7 +313,6 @@ const TraderHome = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {/* Messages icon — agency only */}
             {isAgencyProfile && (
               <button
                 onClick={() => navigate("/chat")}
@@ -309,9 +326,9 @@ const TraderHome = () => {
               className="relative flex h-10 w-10 items-center justify-center rounded-full bg-secondary"
             >
               <Bell className="h-5 w-5 text-foreground" />
-              {jobs.length > 0 && (
+              {displayJobs.length > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
-                  {jobs.length}
+                  {displayJobs.length}
                 </span>
               )}
             </button>
