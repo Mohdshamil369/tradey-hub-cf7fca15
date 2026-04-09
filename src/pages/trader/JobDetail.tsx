@@ -520,63 +520,59 @@ const JobDetail = () => {
     );
   };
 
-  const renderFooter = () => {
-    switch (job.category) {
-      case "fixed":
-        return (
-          <div className="flex gap-3 p-4 bg-background border-t border-border/40">
-            <button
-              onClick={() => handleAction("decline")}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted"
-            >
-              <XCircle className="h-4 w-4" /> Decline
-            </button>
-            <button
-              onClick={() => handleAction("accept")}
-              className="flex-[2] rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
-            >
-              Pickup Job • £{job.price}
-            </button>
-          </div>
-        );
-      case "estimate":
-        return (
-          <div className="flex gap-3 p-4 bg-background border-t border-border/40">
-            <button
-              onClick={() => handleAction("decline")}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted"
-            >
-              <XCircle className="h-4 w-4" /> Decline
-            </button>
-            <button
-              onClick={() => { setActiveTab("quotes"); setShowQuoteSheet(true); }}
-              className="flex-[2] rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-            >
-              <FileText className="h-4 w-4" /> Create Estimate
-            </button>
-          </div>
-        );
-      case "inspection":
-        return (
-          <div className="flex gap-3 p-4 bg-background border-t border-border/40">
-            <button
-              onClick={() => handleAction("decline")}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted"
-            >
-              <XCircle className="h-4 w-4" /> Decline
-            </button>
-            <button
-              onClick={() => { setActiveTab("quotes"); setShowQuoteSheet(true); }}
-              className="flex-[2] rounded-xl bg-[hsl(25,90%,55%)] py-3.5 text-[12px] font-bold text-white shadow-lg shadow-orange-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-            >
-              <FileText className="h-4 w-4" /> Inspection Quote
-            </button>
-          </div>
-        );
-      default:
-        return null;
+  const quoteOptions = useMemo(() => {
+    const recommended = job.category;
+    const options = [
+      {
+        key: "fixed" as const,
+        label: "Pick Up Job",
+        description: "Accept the job at the customer's fixed price",
+        icon: Package,
+        price: job.price,
+      },
+      {
+        key: "estimate" as const,
+        label: "Generate Estimate",
+        description: "Send a detailed cost breakdown for the work",
+        icon: FileText,
+      },
+      {
+        key: "inspection" as const,
+        label: "Generate Inspection Quote",
+        description: "Propose an on-site inspection before quoting",
+        icon: ClipboardList,
+      },
+    ];
+    return options.map((o) => ({ ...o, isRecommended: o.key === recommended }));
+  }, [job.category, job.price]);
+
+  const handleQuoteOptionSelect = (key: "fixed" | "estimate" | "inspection") => {
+    setShowQuoteOptions(false);
+    if (key === "fixed") {
+      handleAction("accept");
+    } else {
+      setSelectedQuoteCategory(key);
+      setActiveTab("quotes");
+      setShowQuoteSheet(true);
     }
   };
+
+  const renderFooter = () => (
+    <div className="flex gap-3 p-4 bg-background border-t border-border/40">
+      <button
+        onClick={() => handleAction("decline")}
+        className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted"
+      >
+        <XCircle className="h-4 w-4" /> Decline
+      </button>
+      <button
+        onClick={() => setShowQuoteOptions(true)}
+        className="flex-[2] rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+      >
+        <FileText className="h-4 w-4" /> Generate Quote
+      </button>
+    </div>
+  );
 
   return (
     <MobileLayout role="trader" hideNav>
