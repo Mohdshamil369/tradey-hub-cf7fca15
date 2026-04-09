@@ -81,7 +81,6 @@ const JobDetail = () => {
   const [showQuoteOptions, setShowQuoteOptions] = useState(false);
   const [selectedQuoteCategory, setSelectedQuoteCategory] = useState<"fixed" | "estimate" | "inspection">("estimate");
   const [heroIndex, setHeroIndex] = useState(0);
-  const [heroIndex, setHeroIndex] = useState(0);
 
   const stored = sessionStorage.getItem(`job_detail_${jobId}`);
   const job: JobDetailPageData | null = stored ? JSON.parse(stored) : null;
