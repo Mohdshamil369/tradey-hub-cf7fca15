@@ -158,6 +158,9 @@ const TraderHome = () => {
   const isAgencyProfile = traderType === "agency";
   const isNewUser = profile?.full_name === "Demo User";
 
+  const [showEmpty, setShowEmpty] = useState(false);
+  const effectiveNewUser = isNewUser || showEmpty;
+
   const [jobs, setJobs] = useState(isNewUser ? [] : initialIncomingJobs);
   const [scheduleJobs, setScheduleJobs] = useState(isNewUser ? [] : activeJobs);
   const [expandedId, setExpandedId] = useState<string | null>(null);
