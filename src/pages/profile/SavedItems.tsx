@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
-import { ArrowLeft, Bookmark, BookmarkX } from "lucide-react";
+import { ArrowLeft, Heart, HeartOff } from "lucide-react";
 import IncomingJobCard, { IncomingJobData } from "@/components/trader/IncomingJobCard";
 import jobTapImg from "@/assets/job-tap-repair.jpg";
 import jobBathroomImg from "@/assets/job-bathroom-reno.jpg";
