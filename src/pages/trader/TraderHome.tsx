@@ -167,7 +167,7 @@ const TraderHome = () => {
   const [scheduleView, setScheduleView] = useState<"cards" | "calendar" | "empty">("cards");
   const [locationSheetOpen, setLocationSheetOpen] = useState(false);
 
-  const displayEarnings = isNewUser ? {
+  const displayEarnings = effectiveNewUser ? {
     thisWeek: 0,
     lastWeek: 0,
     thisMonth: 0,
@@ -177,7 +177,10 @@ const TraderHome = () => {
     reviews: 0,
   } : earningsData;
 
-  const pctChange = isNewUser || displayEarnings.lastWeek === 0 ? 0 : Math.round(((displayEarnings.thisWeek - displayEarnings.lastWeek) / displayEarnings.lastWeek) * 100);
+  const pctChange = effectiveNewUser || displayEarnings.lastWeek === 0 ? 0 : Math.round(((displayEarnings.thisWeek - displayEarnings.lastWeek) / displayEarnings.lastWeek) * 100);
+
+  const displayJobs = effectiveNewUser ? [] : jobs;
+  const displayScheduleJobs = effectiveNewUser ? [] : scheduleJobs;
 
   // Dispatch flow state (agency only)
   const [dispatchJobId, setDispatchJobId] = useState<string | null>(null);
