@@ -460,7 +460,7 @@ const TraderHome = () => {
               </div>
             ) : (
               <div className="flex flex-col gap-3">
-                {[...scheduleJobs]
+                {[...displayScheduleJobs]
                   .sort((a, b) => a.priority - b.priority)
                   .map((job) => (
                     <button
