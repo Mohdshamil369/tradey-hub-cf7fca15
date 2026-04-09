@@ -245,18 +245,6 @@ const CalendarDayView = () => {
                         <span className="text-sm shrink-0">{task.icon}</span>
                         <h4 className={`text-[12px] font-bold ${task.colorAccent} leading-tight truncate`}>{task.title}</h4>
                       </div>
-                      {task.jobId && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewTask(task);
-                          }}
-                          className="flex items-center gap-1 rounded-lg bg-primary/10 px-2 py-1 text-[9px] font-bold text-primary active:scale-[0.97] shrink-0"
-                        >
-                          <Eye className="h-3 w-3" />
-                          View
-                        </button>
-                      )}
                     </div>
 
                     {/* Time row — always visible */}
