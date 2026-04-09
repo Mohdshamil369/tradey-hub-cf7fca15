@@ -94,7 +94,7 @@ const SavedItems = () => {
               </div>
               <p className="text-sm font-bold text-foreground">No saved items</p>
               <p className="text-[11px] text-muted-foreground text-center max-w-[200px]">
-                Tap the bookmark icon on jobs to save them here for later
+                Tap the heart icon on jobs to save them here for later
               </p>
             </div>
           ) : (
