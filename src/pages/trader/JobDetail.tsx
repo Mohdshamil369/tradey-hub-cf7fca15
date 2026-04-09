@@ -6,7 +6,7 @@ import {
   ArrowLeft, MapPin, Clock, Star, Play, Info, ChevronRight, ChevronLeft,
   ShieldCheck, Timer, MessageCircle, XCircle, FileText,
   Image, Mic, ClipboardList, Package, Wrench, Ban, RotateCcw, Plus,
-  Camera, Calendar, User, Briefcase, Bookmark, Share2,
+  Camera, Calendar, User, Briefcase, Heart, Share2,
   Image as ImageIcon,
 } from "lucide-react";
 import Avatar from "boring-avatars";
