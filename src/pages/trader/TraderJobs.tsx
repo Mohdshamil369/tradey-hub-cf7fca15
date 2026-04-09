@@ -754,32 +754,38 @@ const TraderJobs = () => {
           {/* Active filter chips */}
           {activeFilterCount > 0 && !showSavedJobs && (
             <div className="flex gap-1.5 mb-2 overflow-x-auto no-scrollbar">
-              {filterDistance !== "any" && (
+              {filterDistanceKm < 50 && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary shrink-0">
-                  {filterDistance}
-                  <button onClick={() => setFilterDistance("any")} className="ml-0.5"><X className="h-3 w-3" /></button>
+                  Within {filterDistanceKm} km
+                  <button onClick={() => { setFilterDistanceKm(50); setFilterDistanceInput(""); }} className="ml-0.5"><X className="h-3 w-3" /></button>
                 </span>
               )}
-              {filterPriceRange !== "any" && (
+              {(filterPriceMin > 0 || filterPriceMax < 500) && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary shrink-0">
-                  {filterPriceRange}
-                  <button onClick={() => setFilterPriceRange("any")} className="ml-0.5"><X className="h-3 w-3" /></button>
+                  £{filterPriceMin} – £{filterPriceMax === 500 ? "500+" : filterPriceMax}
+                  <button onClick={() => { setFilterPriceMin(0); setFilterPriceMax(500); setFilterPriceMinInput(""); setFilterPriceMaxInput(""); }} className="ml-0.5"><X className="h-3 w-3" /></button>
                 </span>
               )}
-              {filterCategory !== "any" && (
+              {filterCategories.size > 0 && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary shrink-0">
-                  {filterCategory}
-                  <button onClick={() => setFilterCategory("any")} className="ml-0.5"><X className="h-3 w-3" /></button>
+                  {[...filterCategories].slice(0, 2).join(", ")}{filterCategories.size > 2 ? ` +${filterCategories.size - 2}` : ""}
+                  <button onClick={() => setFilterCategories(new Set())} className="ml-0.5"><X className="h-3 w-3" /></button>
                 </span>
               )}
-              {filterTimeWindow !== "any" && (
+              {filterTimeWindows.size > 0 && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary shrink-0">
-                  {filterTimeWindow}
-                  <button onClick={() => setFilterTimeWindow("any")} className="ml-0.5"><X className="h-3 w-3" /></button>
+                  {[...filterTimeWindows].slice(0, 2).join(", ")}{filterTimeWindows.size > 2 ? ` +${filterTimeWindows.size - 2}` : ""}
+                  <button onClick={() => setFilterTimeWindows(new Set())} className="ml-0.5"><X className="h-3 w-3" /></button>
+                </span>
+              )}
+              {filterJobType !== "any" && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary shrink-0">
+                  {filterJobType}
+                  <button onClick={() => setFilterJobType("any")} className="ml-0.5"><X className="h-3 w-3" /></button>
                 </span>
               )}
               <button
-                onClick={() => { setFilterDistance("any"); setFilterPriceRange("any"); setFilterCategory("any"); setFilterTimeWindow("any"); }}
+                onClick={resetAllFilters}
                 className="text-[10px] font-semibold text-destructive shrink-0 px-1"
               >
                 Clear all
