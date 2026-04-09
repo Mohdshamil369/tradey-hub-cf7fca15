@@ -1019,6 +1019,8 @@ const TraderJobs = () => {
           })}
 
         </div>
+          </>
+        )}
       </div>
 
       {/* Accept & Assign Multi-Step Modal */}
