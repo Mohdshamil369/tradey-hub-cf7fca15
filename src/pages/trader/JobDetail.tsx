@@ -2,10 +2,11 @@ import { useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
   ArrowLeft, MapPin, Clock, Star, Play, Info, ChevronRight, ChevronLeft,
   ShieldCheck, Timer, MessageCircle, XCircle, FileText,
-  Image, Mic, ClipboardList, Package, Wrench, Ban, RotateCcw, Plus,
+  Image, Mic, ClipboardList, Package, Wrench, Ban, RotateCcw, Plus, Sparkles,
   Camera, Calendar, User, Briefcase, Heart, Share2,
   Image as ImageIcon,
 } from "lucide-react";
@@ -78,6 +79,8 @@ const JobDetail = () => {
   const initialTab = searchParams.get("tab") === "quotes" ? "quotes" : "details";
   const [activeTab, setActiveTab] = useState<"details" | "quotes" | "attachments">(initialTab as any);
   const [showQuoteSheet, setShowQuoteSheet] = useState(false);
+  const [showQuoteOptions, setShowQuoteOptions] = useState(false);
+  const [selectedQuoteCategory, setSelectedQuoteCategory] = useState<"fixed" | "estimate" | "inspection">("estimate");
   const [heroIndex, setHeroIndex] = useState(0);
 
   const stored = sessionStorage.getItem(`job_detail_${jobId}`);
@@ -517,63 +520,59 @@ const JobDetail = () => {
     );
   };
 
-  const renderFooter = () => {
-    switch (job.category) {
-      case "fixed":
-        return (
-          <div className="flex gap-3 p-4 bg-background border-t border-border/40">
-            <button
-              onClick={() => handleAction("decline")}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted"
-            >
-              <XCircle className="h-4 w-4" /> Decline
-            </button>
-            <button
-              onClick={() => handleAction("accept")}
-              className="flex-[2] rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
-            >
-              Pickup Job • £{job.price}
-            </button>
-          </div>
-        );
-      case "estimate":
-        return (
-          <div className="flex gap-3 p-4 bg-background border-t border-border/40">
-            <button
-              onClick={() => handleAction("decline")}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted"
-            >
-              <XCircle className="h-4 w-4" /> Decline
-            </button>
-            <button
-              onClick={() => { setActiveTab("quotes"); setShowQuoteSheet(true); }}
-              className="flex-[2] rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-            >
-              <FileText className="h-4 w-4" /> Create Estimate
-            </button>
-          </div>
-        );
-      case "inspection":
-        return (
-          <div className="flex gap-3 p-4 bg-background border-t border-border/40">
-            <button
-              onClick={() => handleAction("decline")}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted"
-            >
-              <XCircle className="h-4 w-4" /> Decline
-            </button>
-            <button
-              onClick={() => { setActiveTab("quotes"); setShowQuoteSheet(true); }}
-              className="flex-[2] rounded-xl bg-[hsl(25,90%,55%)] py-3.5 text-[12px] font-bold text-white shadow-lg shadow-orange-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-            >
-              <FileText className="h-4 w-4" /> Inspection Quote
-            </button>
-          </div>
-        );
-      default:
-        return null;
+  const quoteOptions = (() => {
+    const recommended = job.category;
+    const options = [
+      {
+        key: "fixed" as const,
+        label: "Pick Up Job",
+        description: "Accept the job at the customer's fixed price",
+        icon: Package,
+        price: job.price,
+      },
+      {
+        key: "estimate" as const,
+        label: "Generate Estimate",
+        description: "Send a detailed cost breakdown for the work",
+        icon: FileText,
+      },
+      {
+        key: "inspection" as const,
+        label: "Generate Inspection Quote",
+        description: "Propose an on-site inspection before quoting",
+        icon: ClipboardList,
+      },
+    ];
+    return options.map((o) => ({ ...o, isRecommended: o.key === recommended }));
+  })();
+
+  const handleQuoteOptionSelect = (key: "fixed" | "estimate" | "inspection") => {
+    setShowQuoteOptions(false);
+    if (key === "fixed") {
+      handleAction("accept");
+    } else {
+      setSelectedQuoteCategory(key);
+      setActiveTab("quotes");
+      setShowQuoteSheet(true);
     }
   };
+
+  const renderFooter = () => (
+    <div className="flex gap-3 p-4 bg-background border-t border-border/40">
+      <button
+        onClick={() => handleAction("decline")}
+        className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted"
+      >
+        <XCircle className="h-4 w-4" /> Decline
+      </button>
+      <button
+        onClick={() => setShowQuoteOptions(true)}
+        className="flex-[2] rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+      >
+        <FileText className="h-4 w-4" /> Generate Quote
+      </button>
+    </div>
+  );
 
   return (
     <MobileLayout role="trader" hideNav>
@@ -705,15 +704,62 @@ const JobDetail = () => {
         {activeTab === "details" && renderFooter()}
       </div>
 
-      {showQuotesTab && (
-        <QuoteSheet
-          isOpen={showQuoteSheet}
-          onOpenChange={setShowQuoteSheet}
-          category={job.category as "estimate" | "inspection"}
-          jobTitle={job.title}
-          onSubmit={handleQuoteSubmit}
-        />
-      )}
+      {/* Quote Options Bottom Sheet */}
+      <Sheet open={showQuoteOptions} onOpenChange={setShowQuoteOptions}>
+        <SheetContent side="bottom" className="rounded-t-3xl px-4 pb-8 pt-2">
+          <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-muted-foreground/20" />
+          <h3 className="text-base font-bold text-foreground mb-1">Choose Quote Type</h3>
+          <p className="text-[11px] text-muted-foreground mb-4">
+            Select how you'd like to respond to this job
+          </p>
+          <div className="flex flex-col gap-2.5">
+            {quoteOptions
+              .sort((a, b) => (b.isRecommended ? 1 : 0) - (a.isRecommended ? 1 : 0))
+              .map((option) => (
+              <button
+                key={option.key}
+                onClick={() => handleQuoteOptionSelect(option.key)}
+                className={`relative flex items-start gap-3 rounded-2xl p-3.5 text-left transition-all active:scale-[0.98] ${
+                  option.isRecommended
+                    ? "bg-primary/8 border-2 border-primary/30 shadow-sm"
+                    : "bg-muted/50 border border-border/50"
+                }`}
+              >
+                {option.isRecommended && (
+                  <span className="absolute -top-2.5 right-3 flex items-center gap-1 rounded-full bg-primary px-2.5 py-0.5 text-[9px] font-bold text-primary-foreground shadow-sm">
+                    <Sparkles className="h-3 w-3" /> Recommended
+                  </span>
+                )}
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                  option.isRecommended ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+                }`}>
+                  <option.icon className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[13px] font-bold text-foreground">{option.label}</span>
+                    {option.price && (
+                      <span className="text-[11px] font-bold text-primary">£{option.price}</span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                    {option.description}
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/50 mt-1" />
+              </button>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <QuoteSheet
+        isOpen={showQuoteSheet}
+        onOpenChange={setShowQuoteSheet}
+        category={selectedQuoteCategory as "estimate" | "inspection"}
+        jobTitle={job.title}
+        onSubmit={handleQuoteSubmit}
+      />
     </MobileLayout>
   );
 };
