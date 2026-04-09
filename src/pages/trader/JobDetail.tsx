@@ -520,7 +520,7 @@ const JobDetail = () => {
     );
   };
 
-  const quoteOptions = useMemo(() => {
+  const quoteOptions = (() => {
     const recommended = job.category;
     const options = [
       {
@@ -544,7 +544,7 @@ const JobDetail = () => {
       },
     ];
     return options.map((o) => ({ ...o, isRecommended: o.key === recommended }));
-  }, [job.category, job.price]);
+  })();
 
   const handleQuoteOptionSelect = (key: "fixed" | "estimate" | "inspection") => {
     setShowQuoteOptions(false);
