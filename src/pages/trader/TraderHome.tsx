@@ -452,7 +452,7 @@ const TraderHome = () => {
           </div>
 
           {scheduleView === "cards" ? (
-            scheduleJobs.length === 0 ? (
+            displayScheduleJobs.length === 0 ? (
               <div className="flex flex-col items-center rounded-2xl bg-card p-6 card-shadow text-center">
                 <CalendarDays className="mb-2 h-8 w-8 text-primary/40" />
                 <p className="text-sm font-semibold text-foreground">No upcoming jobs</p>
