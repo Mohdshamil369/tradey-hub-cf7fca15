@@ -880,61 +880,55 @@ const TraderJobs = () => {
             ) : (
               <div className="flex flex-col gap-3">
                 {jobs.filter(j => likedJobIds.has(j.id)).map((job) => (
-                  <div key={job.id} className="relative group">
-                    <button
-                      onClick={() => openJobDetail(job)}
-                      className="w-full rounded-2xl bg-card border border-border overflow-hidden card-shadow transition-all active:scale-[0.98] text-left"
-                    >
-                      {/* Top accent bar */}
-                      <div className="h-1 bg-gradient-to-r from-primary via-primary/60 to-transparent" />
-                      <div className="p-4">
-                        <div className="flex gap-3">
-                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent text-xl">
-                            {job.icon}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <h4 className="text-sm font-bold text-foreground truncate">{job.title}</h4>
-                              {job.price && (
-                                <span className="text-sm font-extrabold text-primary shrink-0">£{job.price}</span>
-                              )}
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-0.5">{job.customer}</p>
-                            <div className="flex items-center gap-3 mt-1.5">
-                              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                                <MapPin className="h-3 w-3 text-muted-foreground/70" />{job.location}
-                              </span>
-                              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                                <Clock className="h-3 w-3 text-muted-foreground/70" />{job.timeWindow}
-                              </span>
-                            </div>
-                          </div>
+                  <button
+                    key={job.id}
+                    onClick={() => openJobDetail(job)}
+                    className="w-full rounded-2xl bg-card border border-border overflow-hidden card-shadow transition-all active:scale-[0.98] text-left"
+                  >
+                    {/* Top accent bar */}
+                    <div className="h-1 bg-gradient-to-r from-primary via-primary/60 to-transparent" />
+                    <div className="p-4">
+                      <div className="flex gap-3">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent text-xl">
+                          {job.icon}
                         </div>
-                        {/* Description preview */}
-                        <p className="mt-2.5 text-xs text-muted-foreground line-clamp-2 leading-relaxed">{job.description}</p>
-                        {/* Bottom row */}
-                        <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-border/40">
-                          <div className="flex items-center gap-2">
-                            {job.type === "catB" && (
-                              <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">Quote required</span>
-                            )}
-                            {job.type === "catA" && (
-                              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">Fixed price</span>
-                            )}
-                            <span className="text-[10px] text-muted-foreground">{job.postedAgo || job.distance}</span>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-bold text-foreground truncate">{job.title}</h4>
+                          <p className="text-xs text-muted-foreground mt-0.5">{job.customer}</p>
+                          <div className="flex items-center gap-3 mt-1.5">
+                            <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                              <MapPin className="h-3 w-3 text-muted-foreground/70" />{job.location}
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                              <Clock className="h-3 w-3 text-muted-foreground/70" />{job.timeWindow}
+                            </span>
                           </div>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
                         </div>
                       </div>
-                    </button>
-                    {/* Unlike button */}
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleLike(job.id); }}
-                      className="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-destructive/10 text-destructive active:scale-95 transition-transform"
-                    >
-                      <Heart className="h-4 w-4 fill-destructive" />
-                    </button>
-                  </div>
+                      <p className="mt-2.5 text-xs text-muted-foreground line-clamp-2 leading-relaxed">{job.description}</p>
+                    </div>
+                    {/* Footer row — price, tags, and unlike */}
+                    <div className="flex items-center justify-between px-4 py-2.5 border-t border-border/40">
+                      <div className="flex items-center gap-2">
+                        {job.price ? (
+                          <span className="text-sm font-extrabold text-primary">£{job.price}</span>
+                        ) : (
+                          <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">Quote required</span>
+                        )}
+                        {job.type === "catA" && (
+                          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">Fixed price</span>
+                        )}
+                        <span className="text-[10px] text-muted-foreground">{job.postedAgo || job.distance}</span>
+                      </div>
+                      <div
+                        role="button"
+                        onClick={(e) => { e.stopPropagation(); toggleLike(job.id); }}
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-destructive/10 text-destructive active:scale-95 transition-transform"
+                      >
+                        <Heart className="h-4 w-4 fill-destructive" />
+                      </div>
+                    </div>
+                  </button>
                 ))}
               </div>
             )}
