@@ -111,7 +111,7 @@ const SavedItems = () => {
                     className="absolute top-2.5 right-2.5 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-destructive text-destructive-foreground active:scale-95 transition-transform shadow-md"
                     title="Remove from saved"
                   >
-                    <BookmarkX className="h-4 w-4" />
+                    <HeartOff className="h-4 w-4" />
                   </button>
                   <IncomingJobCard
                     job={job}

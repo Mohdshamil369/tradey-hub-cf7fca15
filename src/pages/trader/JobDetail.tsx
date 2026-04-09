@@ -615,7 +615,7 @@ const JobDetail = () => {
                 onClick={() => toast.success("Job saved!")}
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm shadow-sm active:bg-background"
               >
-                <Bookmark className="h-4 w-4 text-foreground" />
+                <Heart className="h-4 w-4 text-foreground" />
               </button>
             </div>
           </div>
