@@ -347,7 +347,7 @@ const TraderHome = () => {
               <div className="mt-1 flex items-center gap-1">
                 <TrendingUp className="h-3.5 w-3.5 text-primary-foreground/80" />
                 <span className="text-xs font-semibold text-primary-foreground/80">
-                  {isNewUser ? "Start your first job" : `+${pctChange}% vs last week`}
+                  {effectiveNewUser ? "Start your first job" : `+${pctChange}% vs last week`}
                 </span>
               </div>
             </div>
