@@ -385,7 +385,7 @@ const TraderHome = () => {
             <div className="flex items-center gap-2">
               <Zap className="h-4 w-4 text-primary" />
               <h3 className="font-bold text-foreground">Incoming Jobs</h3>
-              {jobs.length > 0 && (
+              {displayJobs.length > 0 && (
                 <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-bold text-destructive">
                   {jobs.length} new
                 </span>
