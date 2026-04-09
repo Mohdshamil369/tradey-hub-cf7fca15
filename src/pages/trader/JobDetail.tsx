@@ -704,15 +704,62 @@ const JobDetail = () => {
         {activeTab === "details" && renderFooter()}
       </div>
 
-      {showQuotesTab && (
-        <QuoteSheet
-          isOpen={showQuoteSheet}
-          onOpenChange={setShowQuoteSheet}
-          category={job.category as "estimate" | "inspection"}
-          jobTitle={job.title}
-          onSubmit={handleQuoteSubmit}
-        />
-      )}
+      {/* Quote Options Bottom Sheet */}
+      <Sheet open={showQuoteOptions} onOpenChange={setShowQuoteOptions}>
+        <SheetContent side="bottom" className="rounded-t-3xl px-4 pb-8 pt-2">
+          <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-muted-foreground/20" />
+          <h3 className="text-base font-bold text-foreground mb-1">Choose Quote Type</h3>
+          <p className="text-[11px] text-muted-foreground mb-4">
+            Select how you'd like to respond to this job
+          </p>
+          <div className="flex flex-col gap-2.5">
+            {quoteOptions
+              .sort((a, b) => (b.isRecommended ? 1 : 0) - (a.isRecommended ? 1 : 0))
+              .map((option) => (
+              <button
+                key={option.key}
+                onClick={() => handleQuoteOptionSelect(option.key)}
+                className={`relative flex items-start gap-3 rounded-2xl p-3.5 text-left transition-all active:scale-[0.98] ${
+                  option.isRecommended
+                    ? "bg-primary/8 border-2 border-primary/30 shadow-sm"
+                    : "bg-muted/50 border border-border/50"
+                }`}
+              >
+                {option.isRecommended && (
+                  <span className="absolute -top-2.5 right-3 flex items-center gap-1 rounded-full bg-primary px-2.5 py-0.5 text-[9px] font-bold text-primary-foreground shadow-sm">
+                    <Sparkles className="h-3 w-3" /> Recommended
+                  </span>
+                )}
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                  option.isRecommended ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+                }`}>
+                  <option.icon className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[13px] font-bold text-foreground">{option.label}</span>
+                    {option.price && (
+                      <span className="text-[11px] font-bold text-primary">£{option.price}</span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                    {option.description}
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/50 mt-1" />
+              </button>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <QuoteSheet
+        isOpen={showQuoteSheet}
+        onOpenChange={setShowQuoteSheet}
+        category={selectedQuoteCategory as "estimate" | "inspection"}
+        jobTitle={job.title}
+        onSubmit={handleQuoteSubmit}
+      />
     </MobileLayout>
   );
 };
