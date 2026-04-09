@@ -387,7 +387,7 @@ const TraderHome = () => {
               <h3 className="font-bold text-foreground">Incoming Jobs</h3>
               {displayJobs.length > 0 && (
                 <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-bold text-destructive">
-                  {jobs.length} new
+                  {displayJobs.length} new
                 </span>
               )}
             </div>
