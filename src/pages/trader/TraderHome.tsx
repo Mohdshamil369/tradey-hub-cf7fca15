@@ -395,15 +395,88 @@ const TraderHome = () => {
           )}
         </div>
 
-        {/* Today's Schedule — Calendar View */}
+        {/* Upcoming — Toggle between cards and calendar */}
         <div>
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-primary" />
-              <h3 className="font-bold text-foreground">Schedule</h3>
+              <h3 className="font-bold text-foreground">Upcoming</h3>
+            </div>
+            <div className="flex items-center gap-1 rounded-xl bg-secondary p-1">
+              <button
+                onClick={() => setScheduleView("cards")}
+                className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition-all ${
+                  scheduleView === "cards"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground"
+                }`}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                Cards
+              </button>
+              <button
+                onClick={() => setScheduleView("calendar")}
+                className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition-all ${
+                  scheduleView === "calendar"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground"
+                }`}
+              >
+                <Calendar className="h-3.5 w-3.5" />
+                Calendar
+              </button>
             </div>
           </div>
-          <CalendarDayView />
+
+          {scheduleView === "cards" ? (
+            scheduleJobs.length === 0 ? (
+              <div className="flex flex-col items-center rounded-2xl bg-card p-6 card-shadow text-center">
+                <CalendarDays className="mb-2 h-8 w-8 text-primary/40" />
+                <p className="text-sm font-semibold text-foreground">No upcoming jobs</p>
+                <p className="text-xs text-muted-foreground">Accept jobs to fill your schedule</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {[...scheduleJobs]
+                  .sort((a, b) => a.priority - b.priority)
+                  .map((job) => (
+                    <button
+                      key={job.id}
+                      onClick={() => navigate(`/trader/jobs/${job.id}`)}
+                      className="flex items-center gap-3 rounded-2xl bg-card p-4 card-shadow transition-all hover:card-shadow-hover active:scale-[0.98] text-left w-full"
+                    >
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent text-xl">
+                        {job.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-sm font-semibold text-foreground truncate">{job.title}</h4>
+                          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            job.status === "In Progress"
+                              ? "bg-primary/10 text-primary"
+                              : "bg-secondary text-muted-foreground"
+                          }`}>
+                            {job.status}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{job.customer}</p>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <Clock className="h-3 w-3" /> {job.date}
+                          </span>
+                        </div>
+                        <span className="flex items-center gap-1 text-[11px] text-muted-foreground mt-0.5">
+                          <MapPin className="h-3 w-3" /> {job.location}
+                        </span>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                    </button>
+                  ))}
+              </div>
+            )
+          ) : (
+            <CalendarDayView />
+          )}
         </div>
 
         {/* Earnings + Chart CTA removed, now in bottom nav */}
