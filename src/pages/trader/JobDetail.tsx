@@ -79,9 +79,8 @@ const JobDetail = () => {
   const [activeTab, setActiveTab] = useState<"details" | "quotes" | "attachments">(initialTab as any);
   const [showQuoteSheet, setShowQuoteSheet] = useState(false);
   const [showQuoteOptions, setShowQuoteOptions] = useState(false);
-  const [selectedQuoteCategory, setSelectedQuoteCategory] = useState<"fixed" | "estimate" | "inspection">(
-    (job?.category as any) || "estimate"
-  );
+  const [selectedQuoteCategory, setSelectedQuoteCategory] = useState<"fixed" | "estimate" | "inspection">("estimate");
+  const [heroIndex, setHeroIndex] = useState(0);
   const [heroIndex, setHeroIndex] = useState(0);
 
   const stored = sessionStorage.getItem(`job_detail_${jobId}`);
