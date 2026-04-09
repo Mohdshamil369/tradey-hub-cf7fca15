@@ -396,7 +396,7 @@ const TraderHome = () => {
             </button>
           </div>
 
-          {jobs.length === 0 && (
+          {displayJobs.length === 0 && (
             <div className="flex flex-col items-center rounded-2xl bg-card p-6 card-shadow text-center">
               <CheckCircle2 className="mb-2 h-8 w-8 text-primary/40" />
               <p className="text-sm font-semibold text-foreground">All caught up!</p>
