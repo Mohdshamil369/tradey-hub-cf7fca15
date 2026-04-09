@@ -1366,113 +1366,336 @@ const TraderJobs = () => {
         </>
       )}
 
-      {/* Filter Bottom Sheet */}
-      {showFilterSheet && (
-        <>
-          <div className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-sm" onClick={() => setShowFilterSheet(false)} />
-          <div className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-background shadow-2xl border-t border-border/40 animate-in slide-in-from-bottom duration-200 max-h-[75vh] overflow-hidden flex flex-col">
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="h-1 w-10 rounded-full bg-muted-foreground/20" />
-            </div>
-            <div className="flex items-center justify-between px-5 pb-3">
-              <h3 className="text-base font-bold text-foreground">Filter Jobs</h3>
-              <button onClick={() => setShowFilterSheet(false)} className="rounded-full p-1.5 active:bg-muted">
-                <X className="h-4 w-4 text-muted-foreground" />
-              </button>
-            </div>
+      {/* Filter Bottom Sheet — Accordion Style */}
+      {showFilterSheet && (() => {
+        const filterSections = [
+          {
+            id: "distance",
+            label: "Distance",
+            icon: "📍",
+            summary: filterDistanceKm < 50 ? `Within ${filterDistanceKm} km` : "Any",
+            hasValue: filterDistanceKm < 50,
+          },
+          {
+            id: "price",
+            label: "Price Range",
+            icon: "💷",
+            summary: filterPriceMin > 0 || filterPriceMax < 500 ? `£${filterPriceMin} – £${filterPriceMax === 500 ? "500+" : filterPriceMax}` : "Any",
+            hasValue: filterPriceMin > 0 || filterPriceMax < 500,
+          },
+          {
+            id: "category",
+            label: "Category",
+            icon: "🔧",
+            summary: filterCategories.size > 0 ? `${filterCategories.size} selected` : "Any",
+            hasValue: filterCategories.size > 0,
+          },
+          {
+            id: "timeWindow",
+            label: "Time Window",
+            icon: "🕐",
+            summary: filterTimeWindows.size > 0 ? `${filterTimeWindows.size} selected` : "Any",
+            hasValue: filterTimeWindows.size > 0,
+          },
+          {
+            id: "jobType",
+            label: "Job Type",
+            icon: "📋",
+            summary: filterJobType !== "any" ? filterJobType : "Any",
+            hasValue: filterJobType !== "any",
+          },
+        ];
 
-            <div className="flex-1 overflow-y-auto px-5 pb-8 space-y-5">
-              {/* Distance */}
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Distance</p>
-                <div className="flex flex-wrap gap-2">
-                  {["any", "< 2 km", "< 5 km", "< 10 km", "10+ km"].map((opt) => (
-                    <button
-                      key={opt}
-                      onClick={() => setFilterDistance(opt)}
-                      className={`rounded-full px-3 py-2 text-xs font-semibold transition-all ${
-                        filterDistance === opt ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
-                      }`}
-                    >
-                      {opt === "any" ? "Any" : opt}
-                    </button>
-                  ))}
+        const allCategories = [
+          "Plumbing", "Electrical", "Painting", "Tiling", "Carpentry",
+          "Cleaning", "HVAC", "Roofing", "Bathroom", "Kitchen",
+          "Flooring", "Landscaping", "General",
+        ];
+        const allTimeWindows = ["Today", "Tomorrow", "This week", "Next week", "This month", "Flexible"];
+
+        return (
+          <>
+            <div className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-sm" onClick={() => setShowFilterSheet(false)} />
+            <div className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-background shadow-2xl border-t border-border/40 animate-in slide-in-from-bottom duration-200 max-h-[85vh] overflow-hidden flex flex-col">
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="h-1 w-10 rounded-full bg-muted-foreground/20" />
+              </div>
+              <div className="flex items-center justify-between px-5 pb-3">
+                <div>
+                  <h3 className="text-base font-bold text-foreground">Filter Jobs</h3>
+                  {activeFilterCount > 0 && (
+                    <p className="text-[11px] text-muted-foreground">{activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""} active</p>
+                  )}
                 </div>
+                <button onClick={() => setShowFilterSheet(false)} className="rounded-full p-1.5 active:bg-muted">
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
               </div>
 
-              {/* Price Range */}
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Price Range</p>
-                <div className="flex flex-wrap gap-2">
-                  {["any", "Under £50", "£50 – £100", "£100 – £200", "£200+", "Quote only"].map((opt) => (
+              <div className="flex-1 overflow-y-auto pb-4">
+                {filterSections.map((section) => (
+                  <div key={section.id} className="border-b border-border/30">
+                    {/* Accordion header */}
                     <button
-                      key={opt}
-                      onClick={() => setFilterPriceRange(opt)}
-                      className={`rounded-full px-3 py-2 text-xs font-semibold transition-all ${
-                        filterPriceRange === opt ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
-                      }`}
+                      onClick={() => setExpandedFilter(expandedFilter === section.id ? null : section.id)}
+                      className="flex items-center justify-between w-full px-5 py-3.5 text-left active:bg-accent/50 transition-colors"
                     >
-                      {opt === "any" ? "Any" : opt}
+                      <div className="flex items-center gap-3">
+                        <span className="text-base">{section.icon}</span>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{section.label}</p>
+                          <p className={`text-[11px] ${section.hasValue ? "text-primary font-semibold" : "text-muted-foreground"}`}>
+                            {section.summary}
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${expandedFilter === section.id ? "rotate-180" : ""}`} />
                     </button>
-                  ))}
-                </div>
+
+                    {/* Accordion content */}
+                    {expandedFilter === section.id && (
+                      <div className="px-5 pb-4 pt-1 animate-in fade-in duration-150">
+                        {/* Distance */}
+                        {section.id === "distance" && (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-muted-foreground">Max distance</span>
+                              <span className="text-sm font-bold text-foreground">{filterDistanceKm >= 50 ? "Any" : `${filterDistanceKm} km`}</span>
+                            </div>
+                            <input
+                              type="range"
+                              min={1}
+                              max={50}
+                              value={filterDistanceKm}
+                              onChange={(e) => {
+                                const v = Number(e.target.value);
+                                setFilterDistanceKm(v);
+                                setFilterDistanceInput(v >= 50 ? "" : String(v));
+                              }}
+                              className="w-full h-2 rounded-full appearance-none bg-secondary accent-primary cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-md"
+                            />
+                            <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                              <span>1 km</span>
+                              <span>50+ km</span>
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-xs text-muted-foreground shrink-0">Or enter:</span>
+                              <div className="relative flex-1">
+                                <input
+                                  type="number"
+                                  min={1}
+                                  max={100}
+                                  placeholder="e.g. 15"
+                                  value={filterDistanceInput}
+                                  onChange={(e) => {
+                                    setFilterDistanceInput(e.target.value);
+                                    const v = Number(e.target.value);
+                                    if (v > 0 && v <= 100) setFilterDistanceKm(Math.min(v, 50));
+                                  }}
+                                  className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
+                                />
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">km</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Price Range */}
+                        {section.id === "price" && (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-muted-foreground">Price range</span>
+                              <span className="text-sm font-bold text-foreground">£{filterPriceMin} – £{filterPriceMax >= 500 ? "500+" : filterPriceMax}</span>
+                            </div>
+                            {/* Min slider */}
+                            <div>
+                              <span className="text-[10px] font-semibold text-muted-foreground">Minimum</span>
+                              <input
+                                type="range"
+                                min={0}
+                                max={filterPriceMax - 10}
+                                value={filterPriceMin}
+                                onChange={(e) => { setFilterPriceMin(Number(e.target.value)); setFilterPriceMinInput(e.target.value); }}
+                                className="w-full h-2 rounded-full appearance-none bg-secondary accent-primary cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-md"
+                              />
+                            </div>
+                            {/* Max slider */}
+                            <div>
+                              <span className="text-[10px] font-semibold text-muted-foreground">Maximum</span>
+                              <input
+                                type="range"
+                                min={filterPriceMin + 10}
+                                max={500}
+                                value={filterPriceMax}
+                                onChange={(e) => { setFilterPriceMax(Number(e.target.value)); setFilterPriceMaxInput(e.target.value); }}
+                                className="w-full h-2 rounded-full appearance-none bg-secondary accent-primary cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-md"
+                              />
+                            </div>
+                            {/* Manual inputs */}
+                            <div className="flex items-center gap-2">
+                              <div className="relative flex-1">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">£</span>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  placeholder="Min"
+                                  value={filterPriceMinInput}
+                                  onChange={(e) => {
+                                    setFilterPriceMinInput(e.target.value);
+                                    const v = Number(e.target.value);
+                                    if (v >= 0 && v < filterPriceMax) setFilterPriceMin(v);
+                                  }}
+                                  className="w-full rounded-lg border border-border bg-card pl-7 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
+                                />
+                              </div>
+                              <span className="text-muted-foreground text-xs">to</span>
+                              <div className="relative flex-1">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">£</span>
+                                <input
+                                  type="number"
+                                  min={filterPriceMin}
+                                  placeholder="Max"
+                                  value={filterPriceMaxInput}
+                                  onChange={(e) => {
+                                    setFilterPriceMaxInput(e.target.value);
+                                    const v = Number(e.target.value);
+                                    if (v > filterPriceMin) setFilterPriceMax(Math.min(v, 500));
+                                  }}
+                                  className="w-full rounded-lg border border-border bg-card pl-7 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
+                                />
+                              </div>
+                            </div>
+                            {/* Quick presets */}
+                            <div className="flex flex-wrap gap-1.5 mt-1">
+                              {[
+                                { label: "Under £50", min: 0, max: 50 },
+                                { label: "£50 – £100", min: 50, max: 100 },
+                                { label: "£100 – £200", min: 100, max: 200 },
+                                { label: "£200+", min: 200, max: 500 },
+                              ].map((preset) => (
+                                <button
+                                  key={preset.label}
+                                  onClick={() => {
+                                    setFilterPriceMin(preset.min); setFilterPriceMax(preset.max);
+                                    setFilterPriceMinInput(String(preset.min)); setFilterPriceMaxInput(preset.max >= 500 ? "" : String(preset.max));
+                                  }}
+                                  className={`rounded-full px-2.5 py-1 text-[10px] font-semibold transition-all ${
+                                    filterPriceMin === preset.min && filterPriceMax === preset.max
+                                      ? "bg-primary text-primary-foreground"
+                                      : "bg-secondary text-muted-foreground"
+                                  }`}
+                                >
+                                  {preset.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Category — multi-select checkboxes */}
+                        {section.id === "category" && (
+                          <div className="grid grid-cols-2 gap-1.5">
+                            {allCategories.map((cat) => {
+                              const selected = filterCategories.has(cat);
+                              return (
+                                <button
+                                  key={cat}
+                                  onClick={() => toggleFilterCategory(cat)}
+                                  className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-left transition-all ${
+                                    selected
+                                      ? "bg-primary/10 border border-primary/30"
+                                      : "bg-secondary/50 border border-transparent"
+                                  }`}
+                                >
+                                  <div className={`flex h-4 w-4 shrink-0 items-center justify-center rounded ${
+                                    selected ? "bg-primary" : "border-2 border-border"
+                                  }`}>
+                                    {selected && <CheckCircle2 className="h-3 w-3 text-primary-foreground" />}
+                                  </div>
+                                  <span className={`text-xs font-semibold ${selected ? "text-primary" : "text-foreground"}`}>{cat}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {/* Time Window — multi-select */}
+                        {section.id === "timeWindow" && (
+                          <div className="flex flex-col gap-1.5">
+                            {allTimeWindows.map((tw) => {
+                              const selected = filterTimeWindows.has(tw);
+                              return (
+                                <button
+                                  key={tw}
+                                  onClick={() => toggleFilterTimeWindow(tw)}
+                                  className={`flex items-center gap-3 rounded-xl px-3 py-3 text-left transition-all ${
+                                    selected
+                                      ? "bg-primary/10 border border-primary/30"
+                                      : "bg-secondary/50 border border-transparent"
+                                  }`}
+                                >
+                                  <div className={`flex h-4 w-4 shrink-0 items-center justify-center rounded ${
+                                    selected ? "bg-primary" : "border-2 border-border"
+                                  }`}>
+                                    {selected && <CheckCircle2 className="h-3 w-3 text-primary-foreground" />}
+                                  </div>
+                                  <span className={`text-xs font-semibold ${selected ? "text-primary" : "text-foreground"}`}>{tw}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {/* Job Type */}
+                        {section.id === "jobType" && (
+                          <div className="flex flex-col gap-1.5">
+                            {["any", "Fixed Price", "Quote Required", "Inspection"].map((jt) => (
+                              <button
+                                key={jt}
+                                onClick={() => setFilterJobType(jt)}
+                                className={`flex items-center gap-3 rounded-xl px-3 py-3 text-left transition-all ${
+                                  filterJobType === jt
+                                    ? "bg-primary/10 border border-primary/30"
+                                    : "bg-secondary/50 border border-transparent"
+                                }`}
+                              >
+                                <div className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${
+                                  filterJobType === jt ? "bg-primary" : "border-2 border-border"
+                                }`}>
+                                  {filterJobType === jt && <div className="h-2 w-2 rounded-full bg-primary-foreground" />}
+                                </div>
+                                <span className={`text-xs font-semibold ${filterJobType === jt ? "text-primary" : "text-foreground"}`}>
+                                  {jt === "any" ? "All Types" : jt}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
 
-              {/* Category */}
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Category</p>
-                <div className="flex flex-wrap gap-2">
-                  {["any", "Plumbing", "Electrical", "Painting", "Tiling", "Carpentry", "General"].map((opt) => (
-                    <button
-                      key={opt}
-                      onClick={() => setFilterCategory(opt)}
-                      className={`rounded-full px-3 py-2 text-xs font-semibold transition-all ${
-                        filterCategory === opt ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
-                      }`}
-                    >
-                      {opt === "any" ? "Any" : opt}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Time Window */}
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Time Window</p>
-                <div className="flex flex-wrap gap-2">
-                  {["any", "Today", "Tomorrow", "This week", "Flexible"].map((opt) => (
-                    <button
-                      key={opt}
-                      onClick={() => setFilterTimeWindow(opt)}
-                      className={`rounded-full px-3 py-2 text-xs font-semibold transition-all ${
-                        filterTimeWindow === opt ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
-                      }`}
-                    >
-                      {opt === "any" ? "Any" : opt}
-                    </button>
-                  ))}
-                </div>
+              {/* Bottom actions */}
+              <div className="flex gap-2 px-5 py-4 border-t border-border/40">
+                <button
+                  onClick={resetAllFilters}
+                  className="flex-1 rounded-xl border border-border py-3 text-sm font-semibold text-muted-foreground transition-colors active:bg-muted"
+                >
+                  Reset All
+                </button>
+                <button
+                  onClick={() => setShowFilterSheet(false)}
+                  className="flex-1 rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground transition-transform active:scale-95"
+                >
+                  Apply Filters
+                </button>
               </div>
             </div>
-
-            {/* Bottom actions */}
-            <div className="flex gap-2 px-5 py-4 border-t border-border/40">
-              <button
-                onClick={() => { setFilterDistance("any"); setFilterPriceRange("any"); setFilterCategory("any"); setFilterTimeWindow("any"); }}
-                className="flex-1 rounded-xl border border-border py-3 text-sm font-semibold text-muted-foreground transition-colors active:bg-muted"
-              >
-                Reset
-              </button>
-              <button
-                onClick={() => setShowFilterSheet(false)}
-                className="flex-1 rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground transition-transform active:scale-95"
-              >
-                Apply Filters
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+          </>
+        );
+      })()}
 
     </MobileLayout>
   );
