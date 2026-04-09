@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { format, addDays, subDays, isSameDay, isToday, startOfDay } from "date-fns";
-import { MapPin, Clock, Eye, Calendar } from "lucide-react";
+import { MapPin, Clock, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface Task {
