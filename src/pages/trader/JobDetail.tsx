@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { ScrollArea } from "@/components/ui/scroll-area";
