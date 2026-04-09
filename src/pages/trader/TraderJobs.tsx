@@ -10,7 +10,8 @@ import {
   Star, MessageCircle, Users, X as XIcon,
   UserCheck, User, UsersRound, Timer, Building2,
   Send, PoundSterling, FileText, Eye, RotateCcw, Car,
-  Search, SlidersHorizontal, Filter,
+  Search, SlidersHorizontal, Filter, Heart, HeartOff,
+  Bookmark, ArrowRight, ChevronRight,
 } from "lucide-react";
 import Avatar from "boring-avatars";
 import IncomingJobCard from "@/components/trader/IncomingJobCard";
