@@ -158,13 +158,16 @@ const TraderHome = () => {
   const isAgencyProfile = traderType === "agency";
   const isNewUser = profile?.full_name === "Demo User";
 
+  const [showEmpty, setShowEmpty] = useState(false);
+  const effectiveNewUser = isNewUser || showEmpty;
+
   const [jobs, setJobs] = useState(isNewUser ? [] : initialIncomingJobs);
   const [scheduleJobs, setScheduleJobs] = useState(isNewUser ? [] : activeJobs);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [scheduleView, setScheduleView] = useState<"cards" | "calendar" | "empty">("cards");
   const [locationSheetOpen, setLocationSheetOpen] = useState(false);
 
-  const displayEarnings = isNewUser ? {
+  const displayEarnings = effectiveNewUser ? {
     thisWeek: 0,
     lastWeek: 0,
     thisMonth: 0,
@@ -174,7 +177,10 @@ const TraderHome = () => {
     reviews: 0,
   } : earningsData;
 
-  const pctChange = isNewUser || displayEarnings.lastWeek === 0 ? 0 : Math.round(((displayEarnings.thisWeek - displayEarnings.lastWeek) / displayEarnings.lastWeek) * 100);
+  const pctChange = effectiveNewUser || displayEarnings.lastWeek === 0 ? 0 : Math.round(((displayEarnings.thisWeek - displayEarnings.lastWeek) / displayEarnings.lastWeek) * 100);
+
+  const displayJobs = effectiveNewUser ? [] : jobs;
+  const displayScheduleJobs = effectiveNewUser ? [] : scheduleJobs;
 
   // Dispatch flow state (agency only)
   const [dispatchJobId, setDispatchJobId] = useState<string | null>(null);
@@ -274,6 +280,24 @@ const TraderHome = () => {
     <MobileLayout role="trader" overlay={<LocationSheet open={locationSheetOpen} onOpenChange={setLocationSheetOpen} />}>
       {/* Header */}
       <div className="px-4 pb-2 pt-6">
+        {/* Empty/Filled toggle */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-semibold text-muted-foreground">Empty</span>
+            <button
+              onClick={() => setShowEmpty(!showEmpty)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                showEmpty ? "bg-muted" : "bg-primary"
+              }`}
+            >
+              <span className={`inline-block h-4 w-4 rounded-full bg-background shadow-sm transition-transform ${
+                showEmpty ? "translate-x-1" : "translate-x-6"
+              }`} />
+            </button>
+            <span className="text-[11px] font-semibold text-muted-foreground">Filled</span>
+          </div>
+        </div>
+
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground font-heading">{firstName} 👋</h1>
@@ -289,7 +313,6 @@ const TraderHome = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {/* Messages icon — agency only */}
             {isAgencyProfile && (
               <button
                 onClick={() => navigate("/chat")}
@@ -303,9 +326,9 @@ const TraderHome = () => {
               className="relative flex h-10 w-10 items-center justify-center rounded-full bg-secondary"
             >
               <Bell className="h-5 w-5 text-foreground" />
-              {jobs.length > 0 && (
+              {displayJobs.length > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
-                  {jobs.length}
+                  {displayJobs.length}
                 </span>
               )}
             </button>
@@ -324,7 +347,7 @@ const TraderHome = () => {
               <div className="mt-1 flex items-center gap-1">
                 <TrendingUp className="h-3.5 w-3.5 text-primary-foreground/80" />
                 <span className="text-xs font-semibold text-primary-foreground/80">
-                  {isNewUser ? "Start your first job" : `+${pctChange}% vs last week`}
+                  {effectiveNewUser ? "Start your first job" : `+${pctChange}% vs last week`}
                 </span>
               </div>
             </div>
@@ -362,9 +385,9 @@ const TraderHome = () => {
             <div className="flex items-center gap-2">
               <Zap className="h-4 w-4 text-primary" />
               <h3 className="font-bold text-foreground">Incoming Jobs</h3>
-              {jobs.length > 0 && (
+              {displayJobs.length > 0 && (
                 <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-bold text-destructive">
-                  {jobs.length} new
+                  {displayJobs.length} new
                 </span>
               )}
             </div>
@@ -373,7 +396,7 @@ const TraderHome = () => {
             </button>
           </div>
 
-          {jobs.length === 0 && (
+          {displayJobs.length === 0 && (
             <div className="flex flex-col items-center rounded-2xl bg-card p-6 card-shadow text-center">
               <CheckCircle2 className="mb-2 h-8 w-8 text-primary/40" />
               <p className="text-sm font-semibold text-foreground">All caught up!</p>
@@ -381,9 +404,9 @@ const TraderHome = () => {
             </div>
           )}
 
-          {jobs.length > 0 && (
+          {displayJobs.length > 0 && (
             <div className="flex flex-col gap-3">
-              {jobs.map((job) => (
+              {displayJobs.map((job) => (
                 <IncomingJobCard
                   key={job.id}
                   job={job}
@@ -429,7 +452,7 @@ const TraderHome = () => {
           </div>
 
           {scheduleView === "cards" ? (
-            scheduleJobs.length === 0 ? (
+            displayScheduleJobs.length === 0 ? (
               <div className="flex flex-col items-center rounded-2xl bg-card p-6 card-shadow text-center">
                 <CalendarDays className="mb-2 h-8 w-8 text-primary/40" />
                 <p className="text-sm font-semibold text-foreground">No upcoming jobs</p>
@@ -437,7 +460,7 @@ const TraderHome = () => {
               </div>
             ) : (
               <div className="flex flex-col gap-3">
-                {[...scheduleJobs]
+                {[...displayScheduleJobs]
                   .sort((a, b) => a.priority - b.priority)
                   .map((job) => (
                     <button
