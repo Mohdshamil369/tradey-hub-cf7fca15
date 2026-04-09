@@ -161,8 +161,8 @@ const TraderHome = () => {
   const [showEmpty, setShowEmpty] = useState(false);
   const effectiveNewUser = isNewUser || showEmpty;
 
-  const [jobs, setJobs] = useState(isNewUser ? [] : initialIncomingJobs);
-  const [scheduleJobs, setScheduleJobs] = useState(isNewUser ? [] : activeJobs);
+  const [jobs, setJobs] = useState(initialIncomingJobs);
+  const [scheduleJobs, setScheduleJobs] = useState(activeJobs);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [scheduleView, setScheduleView] = useState<"cards" | "calendar" | "empty">("cards");
   const [locationSheetOpen, setLocationSheetOpen] = useState(false);
