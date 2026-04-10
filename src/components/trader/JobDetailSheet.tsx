@@ -147,10 +147,14 @@ const JobDetailSheet = ({ job, isOpen, onOpenChange, onAction }: JobDetailSheetP
 
   return (
     <>
-      <Drawer.Root open={isOpen} onOpenChange={onOpenChange}>
+      <Drawer.Root 
+        open={isOpen} 
+        onOpenChange={onOpenChange}
+        container={typeof document !== 'undefined' ? document.getElementById('mobile-device-content') : null}
+      >
         <Drawer.Portal>
-          <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
-          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 mx-auto flex max-h-[96%] max-w-[430px] flex-col rounded-t-[32px] bg-background outline-none overflow-hidden">
+          <Drawer.Overlay className="absolute inset-0 z-50 bg-black/40 backdrop-blur-sm" />
+          <Drawer.Content className="absolute bottom-0 left-0 right-0 z-50 mx-auto flex max-h-[96%] w-full flex-col rounded-t-[32px] bg-background outline-none overflow-hidden">
             <div className="mx-auto mt-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
 
             <ScrollArea className="flex-1 overflow-y-auto px-6 pt-6 pb-2">

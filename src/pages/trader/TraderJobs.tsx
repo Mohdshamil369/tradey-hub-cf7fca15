@@ -357,7 +357,7 @@ const TraderJobs = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [jobSection, setJobSection] = useState<"incoming" | "committed">("incoming");
-  const [committedFilter, setCommittedFilter] = useState<"all" | "active" | "completed" | "cancelled">("all");
+  const [committedFilter, setCommittedFilter] = useState<Set<string>>(new Set(["all"]));
   
   // Quote detail sheet state
   const [selectedQuote, setSelectedQuote] = useState<SentQuoteData | null>(null);
@@ -386,7 +386,30 @@ const TraderJobs = () => {
   const [filterPriceMaxInput, setFilterPriceMaxInput] = useState<string>("");
   const [filterCategories, setFilterCategories] = useState<Set<string>>(new Set());
   const [filterTimeWindows, setFilterTimeWindows] = useState<Set<string>>(new Set());
-  const [filterJobType, setFilterJobType] = useState<string>("any");
+  const [filterJobType, setFilterJobType] = useState<Set<string>>(new Set(["any"]));
+
+  const toggleCommittedFilter = (status: string) => {
+    setCommittedFilter(prev => {
+      const next = new Set(prev);
+      if (status === "all") return new Set(["all"]);
+      if (next.has("all")) next.delete("all");
+      if (next.has(status)) next.delete(status);
+      else next.add(status);
+      if (next.size === 0) return new Set(["all"]);
+      return next;
+    });
+  };
+  const toggleJobTypeFilter = (type: string) => {
+    setFilterJobType(prev => {
+      const next = new Set(prev);
+      if (type === "any") return new Set(["any"]);
+      if (next.has("any")) next.delete("any");
+      if (next.has(type)) next.delete(type);
+      else next.add(type);
+      if (next.size === 0) return new Set(["any"]);
+      return next;
+    });
+  };
 
   const toggleFilterCategory = (cat: string) => {
     setFilterCategories(prev => { const n = new Set(prev); if (n.has(cat)) n.delete(cat); else n.add(cat); return n; });
@@ -395,12 +418,12 @@ const TraderJobs = () => {
     setFilterTimeWindows(prev => { const n = new Set(prev); if (n.has(tw)) n.delete(tw); else n.add(tw); return n; });
   };
 
-  const activeFilterCount = (filterDistanceKm < 50 ? 1 : 0) + (filterPriceMin > 0 || filterPriceMax < 500 ? 1 : 0) + (filterCategories.size > 0 ? 1 : 0) + (filterTimeWindows.size > 0 ? 1 : 0) + (filterJobType !== "any" ? 1 : 0) + (committedFilter !== "all" ? 1 : 0);
+  const activeFilterCount = (filterDistanceKm < 50 ? 1 : 0) + (filterPriceMin > 0 || filterPriceMax < 500 ? 1 : 0) + (filterCategories.size > 0 ? 1 : 0) + (filterTimeWindows.size > 0 ? 1 : 0) + (!filterJobType.has("any") ? 1 : 0) + (!committedFilter.has("all") ? 1 : 0);
 
   const resetAllFilters = () => {
     setFilterDistanceKm(50); setFilterDistanceInput("");
     setFilterPriceMin(0); setFilterPriceMax(500); setFilterPriceMinInput(""); setFilterPriceMaxInput("");
-    setFilterCategories(new Set()); setFilterTimeWindows(new Set()); setFilterJobType("any");
+    setFilterCategories(new Set()); setFilterTimeWindows(new Set()); setFilterJobType(new Set(["any"])); setCommittedFilter(new Set(["all"]));
   };
 
   const [dispatchJobId, setDispatchJobId] = useState<string | null>(null);
@@ -468,10 +491,16 @@ const TraderJobs = () => {
     } else {
       // committed — exclude incoming jobs
       if (j.status === "incoming") return false;
-      if (committedFilter === "active" && j.committedStatus !== "in_progress" && j.committedStatus !== "upcoming") return false;
-      if (committedFilter === "completed" && j.committedStatus !== "completed") return false;
-      if (committedFilter === "cancelled" && j.committedStatus !== "cancelled") return false;
+      if (!committedFilter.has("all")) {
+        const matchesOverall = (committedFilter.has("active") && (j.committedStatus === "in_progress" || j.committedStatus === "upcoming")) ||
+                             (committedFilter.has("completed") && j.committedStatus === "completed") ||
+                             (committedFilter.has("cancelled") && j.committedStatus === "cancelled");
+        if (!matchesOverall) return false;
+      }
     }
+
+    // Job Type filter
+    if (!filterJobType.has("any") && !filterJobType.has(j.category)) return false;
     // Search filter
     if (searchQuery && !j.title.toLowerCase().includes(searchLower) && !j.customer.toLowerCase().includes(searchLower) && !j.location.toLowerCase().includes(searchLower)) return false;
     return true;
@@ -761,12 +790,7 @@ const TraderJobs = () => {
                     jobSection === "incoming" ? "bg-card text-foreground card-shadow" : "text-muted-foreground"
                   }`}
                 >
-                  Incoming
-                  {jobs.filter(j => j.status === "incoming").length > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground">
-                      {jobs.filter(j => j.status === "incoming").length}
-                    </span>
-                  )}
+                  Incoming ({jobs.filter(j => j.status === "incoming").length})
                 </button>
                 <button
                   onClick={() => setJobSection("committed")}
@@ -774,12 +798,7 @@ const TraderJobs = () => {
                     jobSection === "committed" ? "bg-card text-foreground card-shadow" : "text-muted-foreground"
                   }`}
                 >
-                  Committed
-                  {jobs.filter(j => j.status === "active").length > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
-                      {jobs.filter(j => j.status === "active").length}
-                    </span>
-                  )}
+                  Committed ({jobs.filter(j => j.status !== "incoming").length})
                 </button>
               </div>
 
@@ -943,6 +962,7 @@ const TraderJobs = () => {
                 viewMode={isIndividual ? "individual" : "agency"}
                 showCategoryBadge={false}
                 onRequestPhotos={() => toast.success("Photo request sent!")}
+                onShowSchedule={() => setScheduleJob(job)}
               />
             );
           })}
@@ -1304,15 +1324,15 @@ const TraderJobs = () => {
             id: "jobType",
             label: "Job Type",
             icon: "📋",
-            summary: filterJobType !== "any" ? filterJobType : "Any",
-            hasValue: filterJobType !== "any",
+            summary: !filterJobType.has("any") ? Array.from(filterJobType).map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(", ") : "Any",
+            hasValue: !filterJobType.has("any"),
           },
           {
             id: "status",
             label: "Job Status",
             icon: "📊",
-            summary: committedFilter !== "all" ? committedFilter.charAt(0).toUpperCase() + committedFilter.slice(1) : "All",
-            hasValue: committedFilter !== "all",
+            summary: !committedFilter.has("all") ? Array.from(committedFilter).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(", ") : "All",
+            hasValue: !committedFilter.has("all"),
           },
         ];
 
@@ -1323,11 +1343,12 @@ const TraderJobs = () => {
         ];
         const allTimeWindows = ["Today", "Tomorrow", "This week", "Next week", "This month", "Flexible"];
         const allStatuses = ["all", "active", "completed", "cancelled"];
+        const allJobTypes = ["Any", "Fixed Price", "Quote Required", "Inspection"];
 
         return (
           <>
-            <div className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-sm" onClick={() => setShowFilterSheet(false)} />
-            <div className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-background shadow-2xl border-t border-border/40 animate-in slide-in-from-bottom duration-200 max-h-[85vh] overflow-hidden flex flex-col">
+            <div className="absolute inset-0 z-40 bg-foreground/40 backdrop-blur-sm" onClick={() => setShowFilterSheet(false)} />
+            <div className="absolute inset-x-0 bottom-0 z-50 rounded-t-3xl bg-background shadow-2xl border-t border-border/40 animate-in slide-in-from-bottom duration-200 max-h-[85vh] overflow-hidden flex flex-col">
               <div className="flex justify-center pt-3 pb-1">
                 <div className="h-1 w-10 rounded-full bg-muted-foreground/20" />
               </div>
@@ -1567,44 +1588,44 @@ const TraderJobs = () => {
 
                         {/* Job Type */}
                         {section.id === "jobType" && (
-                          <div className="flex flex-col gap-1.5">
-                            {["any", "Fixed Price", "Quote Required", "Inspection"].map((jt) => (
-                              <button
-                                key={jt}
-                                onClick={() => setFilterJobType(jt)}
-                                className={`flex items-center gap-3 rounded-xl px-3 py-3 text-left transition-all ${
-                                  filterJobType === jt
-                                    ? "bg-primary/10 border border-primary/30"
-                                    : "bg-secondary/50 border border-transparent"
-                                }`}
-                              >
-                                <div className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${
-                                  filterJobType === jt ? "bg-primary" : "border-2 border-border"
-                                }`}>
-                                  {filterJobType === jt && <div className="h-2 w-2 rounded-full bg-primary-foreground" />}
-                                </div>
-                                <span className={`text-xs font-semibold ${filterJobType === jt ? "text-primary" : "text-foreground"}`}>
-                                  {jt === "any" ? "All Types" : jt}
-                                </span>
-                              </button>
-                            ))}
+                          <div className="grid grid-cols-2 gap-2">
+                            {allJobTypes.map((type) => {
+                              const selected = filterJobType.has(type.toLowerCase()) || (type === "Any" && filterJobType.has("any"));
+                              return (
+                                <button
+                                  key={type}
+                                  onClick={() => toggleJobTypeFilter(type.toLowerCase())}
+                                  className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-left border transition-all ${
+                                    selected ? "bg-primary/10 border-primary" : "bg-card border-border/60"
+                                  }`}
+                                >
+                                  <div className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 ${selected ? "border-primary bg-primary" : "border-muted-foreground/30"}`}>
+                                    {selected && <CheckCircle2 className="h-2.5 w-2.5 text-white" />}
+                                  </div>
+                                  <span className={`text-[11px] font-semibold truncate ${selected ? "text-primary" : "text-foreground"}`}>
+                                    {type}
+                                  </span>
+                                </button>
+                              );
+                            })}
                           </div>
                         )}
-                        {/* Filter Sections loop ends here, we need to add the status section rendering */}
+
+                        {/* Job Status */}
                         {section.id === "status" && (
                           <div className="grid grid-cols-2 gap-1.5">
                             {allStatuses.map((s) => {
-                              const selected = committedFilter === s;
+                              const selected = committedFilter.has(s);
                               return (
                                 <button
                                   key={s}
-                                  onClick={() => setCommittedFilter(s as any)}
+                                  onClick={() => toggleCommittedFilter(s)}
                                   className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-left transition-all ${
                                     selected ? "bg-primary/10 border-primary" : "bg-card border-border/60"
                                   } border`}
                                 >
                                   <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${selected ? "border-primary bg-primary" : "border-muted-foreground/30"}`}>
-                                    {selected && <div className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />}
+                                    {selected && <CheckCircle2 className="h-2.5 w-2.5 text-white" />}
                                   </div>
                                   <span className={`text-xs font-semibold ${selected ? "text-primary" : "text-foreground"}`}>
                                     {s.charAt(0).toUpperCase() + s.slice(1)}

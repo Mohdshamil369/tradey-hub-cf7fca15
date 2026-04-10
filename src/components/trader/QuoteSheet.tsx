@@ -73,10 +73,14 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
     : (materials.length > 0 || labour > 0);
 
   return (
-    <Drawer.Root open={isOpen} onOpenChange={onOpenChange}>
+    <Drawer.Root 
+      open={isOpen} 
+      onOpenChange={onOpenChange}
+      container={typeof document !== 'undefined' ? document.getElementById('mobile-device-content') : null}
+    >
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm" />
-        <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[60] mx-auto flex max-h-[96%] max-w-[430px] flex-col rounded-t-[32px] bg-background outline-none overflow-hidden">
+        <Drawer.Overlay className="absolute inset-0 z-[60] bg-black/40 backdrop-blur-sm" />
+        <Drawer.Content className="absolute bottom-0 left-0 right-0 z-[60] mx-auto flex max-h-[96%] w-full flex-col rounded-t-[32px] bg-background outline-none overflow-hidden">
           <div className="mx-auto mt-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
 
           {/* Header */}
