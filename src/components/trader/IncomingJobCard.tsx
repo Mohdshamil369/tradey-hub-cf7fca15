@@ -147,8 +147,8 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
         )}
       </div>
 
-      {/* Info section — compact */}
-      <div className="px-3 py-2">
+      {/* Info section */}
+      <div className="px-3 pt-2 pb-1.5">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="text-base">{job.icon}</span>
@@ -165,28 +165,8 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
 
         <p className="mt-0.5 text-[11px] text-muted-foreground truncate">{job.customer} · {job.location}</p>
 
-        {/* Schedule row */}
-        <div className="mt-1.5 flex items-center justify-between">
-          <span className="flex items-center gap-1 text-[11px] font-semibold text-foreground">
-            <Calendar className="h-3 w-3 text-primary" />
-            {job.timeWindow}
-          </span>
-          {onShowSchedule && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onShowSchedule(job);
-              }}
-              className="flex items-center gap-1 rounded-lg bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary active:bg-primary/20 transition-colors"
-            >
-              <CalendarDays className="h-3 w-3" />
-              My Schedule
-            </button>
-          )}
-        </div>
-
         {/* Metrics row */}
-        <div className="mt-1 flex items-center gap-2 flex-wrap">
+        <div className="mt-1.5 flex items-center gap-2 flex-wrap">
           {estDuration && (
             <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground bg-secondary rounded-md px-1.5 py-0.5">
               <Clock className="h-2.5 w-2.5" />{estDuration}
@@ -197,6 +177,26 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
           </span>
           <span className="ml-auto text-[9px] text-muted-foreground/50">{job.postedAgo || "Just now"}</span>
         </div>
+      </div>
+
+      {/* Schedule footer */}
+      <div className="flex items-center justify-between border-t border-border/50 px-3 py-1.5">
+        <span className="flex items-center gap-1 text-[11px] font-semibold text-foreground">
+          <Calendar className="h-3 w-3 text-primary" />
+          {job.timeWindow}
+        </span>
+        {onShowSchedule && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onShowSchedule(job);
+            }}
+            className="flex items-center gap-1 rounded-lg bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary active:bg-primary/20 transition-colors"
+          >
+            <CalendarDays className="h-3 w-3" />
+            My Schedule
+          </button>
+        )}
       </div>
     </div>
   );
