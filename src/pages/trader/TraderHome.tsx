@@ -169,7 +169,22 @@ const TraderHome = () => {
   const [scheduleJobs, setScheduleJobs] = useState(activeJobs);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [scheduleView, setScheduleView] = useState<"cards" | "calendar" | "empty">("cards");
+  const [likedJobIds, setLikedJobIds] = useState<Set<string>>(new Set());
   const [locationSheetOpen, setLocationSheetOpen] = useState(false);
+
+  const toggleLike = (id: string) => {
+    setLikedJobIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+        toast("Removed from saved", { icon: "🤍" });
+      } else {
+        next.add(id);
+        toast.success("Saved to your list! ❤️");
+      }
+      return next;
+    });
+  };
 
   const displayEarnings = effectiveNewUser ? {
     thisWeek: 0,
@@ -414,10 +429,12 @@ const TraderHome = () => {
               {displayJobs.map((job) => (
                 <IncomingJobCard
                   key={job.id}
-                  job={job}
+                  job={job as any}
                   onViewDetail={() => toast.info("Navigate to Jobs tab for full details")}
                   viewMode={isIndividual ? "individual" : "agency"}
-                  onShowSchedule={() => setScheduleJob(job)}
+                  onShowSchedule={() => setScheduleJob(job as any)}
+                  isSaved={likedJobIds.has(job.id)}
+                  onToggleSave={toggleLike}
                 />
               ))}
             </div>
