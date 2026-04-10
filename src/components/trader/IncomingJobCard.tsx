@@ -49,6 +49,7 @@ interface IncomingJobCardProps {
   onShowSchedule?: (job: IncomingJobData) => void;
   isSaved?: boolean;
   onToggleSave?: (id: string) => void;
+  showCategoryBadge?: boolean;
 }
 
 const categoryConfig: Record<JobCategory, { label: string; emoji: string; className: string }> = {
@@ -57,7 +58,7 @@ const categoryConfig: Record<JobCategory, { label: string; emoji: string; classN
   inspection: { label: "Inspection", emoji: "🔍", className: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]" },
 };
 
-const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequestPhotos, onShowSchedule, isSaved = false, onToggleSave }: IncomingJobCardProps) => {
+const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequestPhotos, onShowSchedule, isSaved = false, onToggleSave, showCategoryBadge = true }: IncomingJobCardProps) => {
   const cat = job.category ? categoryConfig[job.category] : null;
   const photos = job.customerRequest?.photos?.filter(p => p && p !== "/placeholder.svg") ?? [];
   const hasPhotos = photos.length > 0;
@@ -101,14 +102,30 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
                 </div>
               </>
             )}
-            {/* Photo count badge */}
-            <div className="absolute top-1.5 left-1.5 flex items-center gap-1 rounded-md bg-foreground/60 px-1.5 py-0.5 text-[9px] font-bold text-background">
+            {/* Top-left stickers */}
+            <div className="absolute top-1.5 left-1.5 flex flex-col items-start gap-1">
+              {job.proposalsCount !== undefined && (
+                <div className="flex items-center gap-1 rounded-md bg-foreground/60 px-1.5 py-0.5 text-[9px] font-bold text-background backdrop-blur-md shadow-sm">
+                  <Users className="h-2.5 w-2.5" />
+                  {job.proposalsCount} Proposals
+                </div>
+              )}
+            </div>
+            
+            {/* Bottom-right photo count sticker */}
+            <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1 rounded-md bg-background/60 px-1.5 py-0.5 text-[9px] font-bold text-foreground backdrop-blur-sm shadow-sm ring-1 ring-background/10">
               <Camera className="h-2.5 w-2.5" />
               {photos.length}
             </div>
           </>
         ) : (
           <div className="relative flex items-center justify-center h-full bg-muted/20">
+            {job.proposalsCount !== undefined && (
+              <div className="absolute top-1.5 left-1.5 flex items-center gap-1 rounded-md bg-foreground/60 px-1.5 py-0.5 text-[9px] font-bold text-background backdrop-blur-md shadow-sm">
+                <Users className="h-2.5 w-2.5" />
+                {job.proposalsCount} Proposals
+              </div>
+            )}
             <img src={noPhotoPlaceholder} alt="No photo" className="h-14 w-14 object-contain opacity-30" />
             <button
               onClick={(e) => {
@@ -125,33 +142,26 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
           </div>
         )}
 
-        {/* Category & Proposal badges */}
-        <div className="absolute top-1.5 right-1.5 flex flex-col items-end gap-1">
-          {cat && (
+        {/* Favorite & Category badges */}
+        <div className="absolute top-1.5 right-1.5 flex flex-col items-end gap-1.5">
+          {onToggleSave && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleSave(job.id);
+              }}
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground/40 backdrop-blur-sm active:scale-90 transition-transform shadow-sm"
+            >
+              <Heart className={`h-3.5 w-3.5 ${isSaved ? "fill-red-500 text-red-500" : "text-background"}`} />
+            </button>
+          )}
+          {showCategoryBadge && cat && (
             <span className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[9px] font-bold backdrop-blur-sm ${cat.className} bg-opacity-90 shadow-sm whitespace-nowrap`}>
               {cat.emoji} {cat.label}
             </span>
           )}
-          {job.proposalsCount !== undefined && (
-            <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-bold backdrop-blur-md bg-foreground/60 text-background shadow-sm whitespace-nowrap">
-              <Users className="h-2.5 w-2.5" />
-              {job.proposalsCount} Proposals
-            </span>
-          )}
         </div>
 
-        {/* Save / Heart button over image */}
-        {onToggleSave && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleSave(job.id);
-            }}
-            className="absolute bottom-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-foreground/40 backdrop-blur-sm active:scale-90 transition-transform"
-          >
-            <Heart className={`h-3.5 w-3.5 ${isSaved ? "fill-red-500 text-red-500" : "text-background"}`} />
-          </button>
-        )}
       </div>
 
       {/* Info section */}

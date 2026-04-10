@@ -395,7 +395,7 @@ const TraderJobs = () => {
     setFilterTimeWindows(prev => { const n = new Set(prev); if (n.has(tw)) n.delete(tw); else n.add(tw); return n; });
   };
 
-  const activeFilterCount = (filterDistanceKm < 50 ? 1 : 0) + (filterPriceMin > 0 || filterPriceMax < 500 ? 1 : 0) + (filterCategories.size > 0 ? 1 : 0) + (filterTimeWindows.size > 0 ? 1 : 0) + (filterJobType !== "any" ? 1 : 0);
+  const activeFilterCount = (filterDistanceKm < 50 ? 1 : 0) + (filterPriceMin > 0 || filterPriceMax < 500 ? 1 : 0) + (filterCategories.size > 0 ? 1 : 0) + (filterTimeWindows.size > 0 ? 1 : 0) + (filterJobType !== "any" ? 1 : 0) + (committedFilter !== "all" ? 1 : 0);
 
   const resetAllFilters = () => {
     setFilterDistanceKm(50); setFilterDistanceInput("");
@@ -740,62 +740,16 @@ const TraderJobs = () => {
             </div>
             <button
               onClick={() => setShowFilterSheet(true)}
-              className={`relative flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl border transition-all ${
-                activeFilterCount > 0
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border bg-card text-muted-foreground"
-              }`}
+              className="flex items-center justify-center h-9 w-9 rounded-xl bg-accent text-muted-foreground active:scale-95 transition-transform relative"
             >
-              <SlidersHorizontal className="h-4.5 w-4.5" />
+              <Filter className="h-4 w-4" />
               {activeFilterCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+                <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground shadow-sm">
                   {activeFilterCount}
                 </span>
               )}
             </button>
           </div>
-
-          {/* Active filter chips */}
-          {activeFilterCount > 0 && !showSavedJobs && (
-            <div className="flex gap-1.5 mb-2 overflow-x-auto no-scrollbar">
-              {filterDistanceKm < 50 && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary shrink-0">
-                  Within {filterDistanceKm} km
-                  <button onClick={() => { setFilterDistanceKm(50); setFilterDistanceInput(""); }} className="ml-0.5"><X className="h-3 w-3" /></button>
-                </span>
-              )}
-              {(filterPriceMin > 0 || filterPriceMax < 500) && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary shrink-0">
-                  £{filterPriceMin} – £{filterPriceMax === 500 ? "500+" : filterPriceMax}
-                  <button onClick={() => { setFilterPriceMin(0); setFilterPriceMax(500); setFilterPriceMinInput(""); setFilterPriceMaxInput(""); }} className="ml-0.5"><X className="h-3 w-3" /></button>
-                </span>
-              )}
-              {filterCategories.size > 0 && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary shrink-0">
-                  {[...filterCategories].slice(0, 2).join(", ")}{filterCategories.size > 2 ? ` +${filterCategories.size - 2}` : ""}
-                  <button onClick={() => setFilterCategories(new Set())} className="ml-0.5"><X className="h-3 w-3" /></button>
-                </span>
-              )}
-              {filterTimeWindows.size > 0 && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary shrink-0">
-                  {[...filterTimeWindows].slice(0, 2).join(", ")}{filterTimeWindows.size > 2 ? ` +${filterTimeWindows.size - 2}` : ""}
-                  <button onClick={() => setFilterTimeWindows(new Set())} className="ml-0.5"><X className="h-3 w-3" /></button>
-                </span>
-              )}
-              {filterJobType !== "any" && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary shrink-0">
-                  {filterJobType}
-                  <button onClick={() => setFilterJobType("any")} className="ml-0.5"><X className="h-3 w-3" /></button>
-                </span>
-              )}
-              <button
-                onClick={resetAllFilters}
-                className="text-[10px] font-semibold text-destructive shrink-0 px-1"
-              >
-                Clear all
-              </button>
-            </div>
-          )}
 
           {/* Incoming / Committed switch — hide when showing saved */}
           {!showSavedJobs && (
@@ -829,34 +783,6 @@ const TraderJobs = () => {
                 </button>
               </div>
 
-              {/* Status filters for committed section */}
-              {jobSection === "committed" && (
-                <div className="flex gap-2 mb-1 overflow-x-auto no-scrollbar">
-                  {(["all", "active", "completed", "cancelled"] as const).map((filter) => {
-                    const labels: Record<typeof filter, string> = { all: "All", active: "Active", completed: "Completed", cancelled: "Cancelled" };
-                    return (
-                      <button
-                        key={filter}
-                        onClick={() => setCommittedFilter(filter)}
-                        className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all shrink-0 ${
-                          committedFilter === filter
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-secondary text-muted-foreground"
-                        }`}
-                      >
-                        {labels[filter]}
-                      </button>
-                    );
-                  })}
-                  <button
-                    key="quotes"
-                    onClick={() => { setJobSection("committed"); setCommittedFilter("all"); }}
-                    className="rounded-full px-3 py-1.5 text-[11px] font-semibold bg-secondary text-muted-foreground shrink-0"
-                  >
-                    Quotes ({sentQuotes.filter(q => q.status === "pending").length})
-                  </button>
-                </div>
-              )}
             </>
           )}
         </div>
@@ -884,55 +810,14 @@ const TraderJobs = () => {
             ) : (
               <div className="flex flex-col gap-3">
                 {jobs.filter(j => likedJobIds.has(j.id)).map((job) => (
-                  <button
+                  <IncomingJobCard
                     key={job.id}
-                    onClick={() => openJobDetail(job)}
-                    className="w-full rounded-2xl bg-card border border-border overflow-hidden card-shadow transition-all active:scale-[0.98] text-left"
-                  >
-                    {/* Top accent bar */}
-                    <div className="h-1 bg-gradient-to-r from-primary via-primary/60 to-transparent" />
-                    <div className="p-4">
-                      <div className="flex gap-3">
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent text-xl">
-                          {job.icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-bold text-foreground truncate">{job.title}</h4>
-                          <p className="text-xs text-muted-foreground mt-0.5">{job.customer}</p>
-                          <div className="flex items-center gap-3 mt-1.5">
-                            <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                              <MapPin className="h-3 w-3 text-muted-foreground/70" />{job.location}
-                            </span>
-                            <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                              <Clock className="h-3 w-3 text-muted-foreground/70" />{job.timeWindow}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <p className="mt-2.5 text-xs text-muted-foreground line-clamp-2 leading-relaxed">{job.description}</p>
-                    </div>
-                    {/* Footer row — price, tags, and unlike */}
-                    <div className="flex items-center justify-between px-4 py-2.5 border-t border-border/40">
-                      <div className="flex items-center gap-2">
-                        {job.price ? (
-                          <span className="text-sm font-extrabold text-primary">£{job.price}</span>
-                        ) : (
-                          <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">Quote required</span>
-                        )}
-                        {job.type === "catA" && (
-                          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">Fixed price</span>
-                        )}
-                        <span className="text-[10px] text-muted-foreground">{job.postedAgo || job.distance}</span>
-                      </div>
-                      <div
-                        role="button"
-                        onClick={(e) => { e.stopPropagation(); toggleLike(job.id); }}
-                        className="flex h-8 w-8 items-center justify-center rounded-full bg-destructive/10 text-destructive active:scale-95 transition-transform"
-                      >
-                        <Heart className="h-4 w-4 fill-destructive" />
-                      </div>
-                    </div>
-                  </button>
+                    job={job}
+                    onViewDetail={() => openJobDetail(job)}
+                    viewMode={isIndividual ? "individual" : "agency"}
+                    isSaved={true}
+                    onToggleSave={toggleLike}
+                  />
                 ))}
               </div>
             )}
@@ -973,7 +858,16 @@ const TraderJobs = () => {
                     {group.jobs.length}
                   </span>
                 </div>
-                {group.jobs.map((job) => renderCommittedJobCard(job))}
+                {group.jobs.map((job) => (
+                  <IncomingJobCard
+                    key={job.id}
+                    job={job}
+                    onViewDetail={() => openJobDetail(job)}
+                    viewMode={isIndividual ? "individual" : "agency"}
+                    showCategoryBadge={false}
+                    onRequestPhotos={() => toast.success("Photo request sent!")}
+                  />
+                ))}
               </div>
             ));
           })()}
@@ -1041,7 +935,16 @@ const TraderJobs = () => {
               );
             }
 
-            return renderCommittedJobCard(job);
+            return (
+              <IncomingJobCard
+                key={job.id}
+                job={job}
+                onViewDetail={() => openJobDetail(job)}
+                viewMode={isIndividual ? "individual" : "agency"}
+                showCategoryBadge={false}
+                onRequestPhotos={() => toast.success("Photo request sent!")}
+              />
+            );
           })}
 
         </div>
@@ -1404,6 +1307,13 @@ const TraderJobs = () => {
             summary: filterJobType !== "any" ? filterJobType : "Any",
             hasValue: filterJobType !== "any",
           },
+          {
+            id: "status",
+            label: "Job Status",
+            icon: "📊",
+            summary: committedFilter !== "all" ? committedFilter.charAt(0).toUpperCase() + committedFilter.slice(1) : "All",
+            hasValue: committedFilter !== "all",
+          },
         ];
 
         const allCategories = [
@@ -1412,6 +1322,7 @@ const TraderJobs = () => {
           "Flooring", "Landscaping", "General",
         ];
         const allTimeWindows = ["Today", "Tomorrow", "This week", "Next week", "This month", "Flexible"];
+        const allStatuses = ["all", "active", "completed", "cancelled"];
 
         return (
           <>
@@ -1421,11 +1332,17 @@ const TraderJobs = () => {
                 <div className="h-1 w-10 rounded-full bg-muted-foreground/20" />
               </div>
               <div className="flex items-center justify-between px-5 pb-3">
-                <div>
-                  <h3 className="text-base font-bold text-foreground">Filter Jobs</h3>
-                  {activeFilterCount > 0 && (
-                    <p className="text-[11px] text-muted-foreground">{activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""} active</p>
-                  )}
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-bold text-foreground">Filter Jobs</h3>
+                      {activeFilterCount > 0 && (
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-sm">
+                          {activeFilterCount}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <button onClick={() => setShowFilterSheet(false)} className="rounded-full p-1.5 active:bg-muted">
                   <X className="h-4 w-4 text-muted-foreground" />
@@ -1443,7 +1360,14 @@ const TraderJobs = () => {
                       <div className="flex items-center gap-3">
                         <span className="text-base">{section.icon}</span>
                         <div>
-                          <p className="text-sm font-semibold text-foreground">{section.label}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-foreground">{section.label}</p>
+                            {section.hasValue && (
+                              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-sm">
+                                {section.id === "category" ? filterCategories.size : section.id === "timeWindow" ? filterTimeWindows.size : "1"}
+                              </span>
+                            )}
+                          </div>
                           <p className={`text-[11px] ${section.hasValue ? "text-primary font-semibold" : "text-muted-foreground"}`}>
                             {section.summary}
                           </p>
@@ -1666,25 +1590,52 @@ const TraderJobs = () => {
                             ))}
                           </div>
                         )}
+                        {/* Filter Sections loop ends here, we need to add the status section rendering */}
+                        {section.id === "status" && (
+                          <div className="grid grid-cols-2 gap-1.5">
+                            {allStatuses.map((s) => {
+                              const selected = committedFilter === s;
+                              return (
+                                <button
+                                  key={s}
+                                  onClick={() => setCommittedFilter(s as any)}
+                                  className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-left transition-all ${
+                                    selected ? "bg-primary/10 border-primary" : "bg-card border-border/60"
+                                  } border`}
+                                >
+                                  <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${selected ? "border-primary bg-primary" : "border-muted-foreground/30"}`}>
+                                    {selected && <div className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />}
+                                  </div>
+                                  <span className={`text-xs font-semibold ${selected ? "text-primary" : "text-foreground"}`}>
+                                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
                 ))}
               </div>
 
-              {/* Bottom actions */}
-              <div className="flex gap-2 px-5 py-4 border-t border-border/40">
+              {/* Apply/Reset Footer */}
+              <div className="px-5 py-4 border-t border-border/40 bg-accent/5 backdrop-blur-sm flex items-center gap-3">
                 <button
                   onClick={resetAllFilters}
-                  className="flex-1 rounded-xl border border-border py-3 text-sm font-semibold text-muted-foreground transition-colors active:bg-muted"
+                  className="flex-1 py-3 bg-muted text-muted-foreground rounded-xl text-sm font-bold active:bg-muted/70 transition-colors"
                 >
                   Reset All
                 </button>
                 <button
                   onClick={() => setShowFilterSheet(false)}
-                  className="flex-1 rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground transition-transform active:scale-95"
+                  className="flex-[2] py-3 bg-primary text-primary-foreground rounded-xl text-sm font-bold active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2"
                 >
-                  Apply Filters
+                  Show Results
+                  <span className="bg-primary-foreground/20 px-2 py-0.5 rounded-full text-[10px] min-w-[3.5rem] text-center">
+                    {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'}
+                  </span>
                 </button>
               </div>
             </div>
