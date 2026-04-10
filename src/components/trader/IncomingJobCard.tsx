@@ -83,13 +83,13 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
               <>
                 <button
                   onClick={(e) => { e.stopPropagation(); setPhotoIndex(i => (i - 1 + photos.length) % photos.length); }}
-                  className="absolute left-1.5 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full bg-foreground/50 text-background active:bg-foreground/70"
+                  className="absolute left-1.5 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full bg-foreground/50 text-background active:bg-foreground/70 opacity-5"
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); setPhotoIndex(i => (i + 1) % photos.length); }}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full bg-foreground/50 text-background active:bg-foreground/70"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full bg-foreground/50 text-background active:bg-foreground/70 opacity-5"
                 >
                   <ChevronRight className="h-3.5 w-3.5" />
                 </button>
@@ -116,7 +116,7 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
                 onRequestPhotos?.(job.id);
               }}
               disabled={photoRequested}
-              className="absolute bottom-2 inset-x-3 flex items-center justify-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-bold active:opacity-80 disabled:opacity-50 bg-card border border-primary text-primary"
+              className="absolute bottom-2 inset-x-3 flex items-center justify-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-bold active:opacity-80 disabled:opacity-50 bg-card border border-primary text-primary mx-[93px]"
             >
               <Camera className="h-3 w-3" />
               {photoRequested ? "Request Sent" : "Request Photos"}
