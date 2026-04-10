@@ -2,6 +2,7 @@ import MobileLayout from "@/components/layout/MobileLayout";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Drawer } from "vaul";
 import { Plus, X, Clock, PoundSterling, ToggleLeft, ToggleRight, ChevronRight, ChevronDown } from "lucide-react";
 import { catAServices, catBServices } from "@/data/services";
 import { categoryServiceTypes } from "@/data/serviceTypes";

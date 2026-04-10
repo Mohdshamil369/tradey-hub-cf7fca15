@@ -973,8 +973,8 @@ const TraderJobs = () => {
 
       {/* Accept & Assign Multi-Step Modal */}
       <Drawer.Root 
-        open={!!collabQuoteJobId} 
-        onOpenChange={(open) => !open && setCollabQuoteJobId(null)}
+        open={!!dispatchJobId} 
+        onOpenChange={(open) => !open && resetAssignFlow()}
         container={typeof document !== 'undefined' ? document.getElementById('mobile-device-content') : null}
       >
         <Drawer.Portal>
@@ -983,7 +983,7 @@ const TraderJobs = () => {
             <div className="mx-auto mt-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
             <div className="p-5 pb-8 overflow-y-auto">
               {(() => {
-                const job = jobs.find(j => j.id === collabQuoteJobId);
+                const job = jobs.find(j => j.id === dispatchJobId);
                 if (!job) return null;
                 return (
                   <>
@@ -998,7 +998,7 @@ const TraderJobs = () => {
                           {assignStep === "choose" ? "Quick Assign" : "Confirm Assignment"}
                         </h2>
                       </div>
-                      <button onClick={() => setCollabQuoteJobId(null)} className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-muted/80">
+                      <button onClick={resetAssignFlow} className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-muted/80">
                         <X className="h-4 w-4" />
                       </button>
                     </div>
@@ -1074,8 +1074,7 @@ const TraderJobs = () => {
                           <button
                             onClick={() => {
                               toast.success("Job accepted & assigned!");
-                              setCollabQuoteJobId(null);
-                              setAssignStep("choose");
+                              resetAssignFlow();
                             }}
                             className="flex-[2] rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
                           >
@@ -1205,10 +1204,12 @@ const TraderJobs = () => {
                 const allStatuses = ["all", "active", "completed", "cancelled"];
                 const allJobTypes = ["Any", "Fixed Price", "Quote Required", "Inspection"];
 
-                return filterSections.map((section) => (
-                  <div key={section.id} className="border-b border-border/30">
-                    <button
-                      onClick={() => setExpandedFilter(expandedFilter === section.id ? null : section.id)}
+                return (
+                  <>
+                    {filterSections.map((section) => (
+                      <div key={section.id} className="border-b border-border/30">
+                        <button
+                          onClick={() => setExpandedFilter(expandedFilter === section.id ? null : section.id)}
                       className="flex items-center justify-between w-full px-5 py-3.5 text-left active:bg-accent/50 transition-colors"
                     >
                       <div className="flex items-center gap-3">
@@ -1233,6 +1234,12 @@ const TraderJobs = () => {
                     {expandedFilter === section.id && (
                       <div className="px-5 pb-5 pt-2 animate-in fade-in duration-200 slide-in-from-top-1">
                         {section.id === "distance" && (
+                          <div className="flex flex-col gap-4 py-2">
+                            <div className="flex items-center gap-4">
+                              <input
+                                type="range"
+                                min={1}
+                                max={50}
                                 value={filterDistanceKm}
                                 onChange={(e) => {
                                   const v = Number(e.target.value);
@@ -1463,32 +1470,33 @@ const TraderJobs = () => {
                       </div>
                     )}
                   </div>
-                ))}
-              </div>
-
-              {/* Apply/Reset Footer */}
-              <div className="px-5 py-4 border-t border-border/40 bg-accent/5 backdrop-blur-sm flex items-center gap-3">
-                <button
-                  onClick={resetAllFilters}
-                  className="flex-1 py-3 bg-muted text-muted-foreground rounded-xl text-sm font-bold active:bg-muted/70 transition-colors"
-                >
-                  Reset All
-                </button>
-                <button
-                  onClick={() => setShowFilterSheet(false)}
-                  className="flex-[2] py-3 bg-primary text-primary-foreground rounded-xl text-sm font-bold active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2"
-                >
-                  Show Results
-                  <span className="bg-primary-foreground/20 px-2 py-0.5 rounded-full text-[10px] min-w-[3.5rem] text-center">
-                    {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'}
-                  </span>
-                </button>
-              </div>
+                    ))}
+                  </>
+                );
+              })()}
             </div>
-          </>
-        );
-      })()}
 
+            {/* Apply/Reset Footer */}
+            <div className="px-5 py-4 border-t border-border/40 bg-accent/5 backdrop-blur-sm flex items-center gap-3">
+              <button
+                onClick={resetAllFilters}
+                className="flex-1 py-3 bg-muted text-muted-foreground rounded-xl text-sm font-bold active:bg-muted/70 transition-colors"
+              >
+                Reset All
+              </button>
+              <button
+                onClick={() => setShowFilterSheet(false)}
+                className="flex-[2] py-3 bg-primary text-primary-foreground rounded-xl text-sm font-bold active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2"
+              >
+                Show Results
+                <span className="bg-primary-foreground/20 px-2 py-0.5 rounded-full text-[10px] min-w-[3.5rem] text-center">
+                  {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'}
+                </span>
+              </button>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
     </MobileLayout>
   );
 };
