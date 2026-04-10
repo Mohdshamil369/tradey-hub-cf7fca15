@@ -719,7 +719,7 @@ const TraderJobs = () => {
             >
               <Heart className={`h-5 w-5 transition-all ${showSavedJobs ? "fill-destructive text-destructive" : "text-foreground"}`} />
               {likedJobIds.size > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground">
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground opacity-0">
                   {likedJobIds.size}
                 </span>
               )}
