@@ -3,6 +3,7 @@ import { useState } from "react";
 import jobTapImg from "@/assets/job-tap-repair.jpg";
 import jobBathroomImg from "@/assets/job-bathroom-reno.jpg";
 import { useNavigate } from "react-router-dom";
+import { Drawer } from "vaul";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import {
@@ -11,7 +12,7 @@ import {
   UserCheck, User, UsersRound, Timer, Building2,
   Send, PoundSterling, FileText, Eye, RotateCcw, Car,
   Search, SlidersHorizontal, Filter, Heart, HeartOff,
-  Bookmark, ArrowRight, ChevronRight,
+  Bookmark, ArrowRight, ChevronRight, ShieldCheck,
 } from "lucide-react";
 import Avatar from "boring-avatars";
 import IncomingJobCard from "@/components/trader/IncomingJobCard";
@@ -856,7 +857,7 @@ const TraderJobs = () => {
 
         <div className={`flex flex-col gap-3 ${isAgencyProfile && jobSection === "incoming" ? "max-h-[calc(100vh-200px)] overflow-y-auto pr-1" : ""}`}>
           {/* When committed + "All" filter, group by status with section headers */}
-          {jobSection === "committed" && committedFilter === "all" && (() => {
+          {jobSection === "committed" && committedFilter.has("all") && (() => {
             const statusOrder: Array<{ key: string; label: string; icon: typeof Clock; color: string }> = [
               { key: "in_progress", label: "In Progress", icon: Clock, color: "text-primary" },
               { key: "upcoming", label: "Upcoming", icon: Calendar, color: "text-blue-600" },
@@ -890,7 +891,7 @@ const TraderJobs = () => {
             ));
           })()}
           {/* Render jobs that aren't handled by grouped view above */}
-          {(jobSection !== "committed" || committedFilter !== "all") && filteredJobs.map((job) => {
+          {(! (jobSection === "committed" && committedFilter.has("all"))) && filteredJobs.map((job) => {
             // Use shared IncomingJobCard for incoming section
             if (job.status === "incoming") {
               return (
@@ -971,406 +972,241 @@ const TraderJobs = () => {
       </div>
 
       {/* Accept & Assign Multi-Step Modal */}
-      {dispatchJobId && (() => {
-        const job = jobs.find((j) => j.id === dispatchJobId);
-        if (!job) return null;
-        const selectedGroup = mockGroups.find((g) => g.id === selectedGroupId);
-
-        return (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
-            <div className="w-full max-w-[390px] rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom max-h-[85vh] overflow-y-auto">
-              {/* Header */}
-              <div className="mb-4 flex items-center justify-between">
-                {assignStep !== "choose" ? (
-                  <button
-                    onClick={() => {
-                      if (assignStep === "confirm") {
-                        setAssignStep(selectedGroupId ? "select-members" : "choose");
-                      } else {
-                        setAssignStep("choose");
-                        setSelectedGroupId(null);
-                        setSelectedMemberIds(new Set());
-                      }
-                    }}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted"
-                  >
-                    <ChevronDown className="h-4 w-4 text-foreground rotate-90" />
-                  </button>
-                ) : <div />}
-                <h2 className="text-lg font-extrabold text-foreground font-heading">
-                  {assignStep === "choose" ? "Pickup" : assignStep === "select-members" ? "Select Members" : "Confirm Assignment"}
-                </h2>
-                <button onClick={resetAssignFlow} className="rounded-full bg-muted p-2">
-                  <XIcon className="h-4 w-4 text-muted-foreground" />
-                </button>
-              </div>
-
-              {/* Job info */}
-              <div className="mb-4 flex items-center gap-3 rounded-2xl bg-card p-3 card-shadow">
-                <div>
-                  <h4 className="text-sm font-bold text-foreground">{job.title}</h4>
-                  <p className="text-xs text-muted-foreground">{job.customer} · {job.location}</p>
-                </div>
-              </div>
-
-              {/* Step 1: Choose group or individual */}
-              {assignStep === "choose" && (
-                <>
-                  <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Assign to a Group</p>
-                  <div className="flex flex-col gap-2 mb-4">
-                    {mockGroups.map((group) => (
-                      <button
-                        key={group.id}
-                        onClick={() => {
-                          setSelectedGroupId(group.id);
-                          setSelectedMemberIds(new Set(group.members.map((m) => m.id)));
-                          setAssignStep("select-members");
-                        }}
-                        className="flex items-center gap-3 rounded-2xl bg-card p-4 card-shadow transition-all active:scale-[0.98]"
-                      >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                          <Users className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="flex-1 text-left">
-                          <p className="text-sm font-bold text-foreground">{group.name}</p>
-                          <p className="text-[11px] text-muted-foreground">{group.members.length} members</p>
-                        </div>
-                        <ChevronDown className="h-4 w-4 text-muted-foreground -rotate-90" />
-                      </button>
-                    ))}
-                  </div>
-
-                  <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Or Assign to Individuals</p>
-
-                  {/* Selected tags */}
-                  {selectedIndividuals.length > 0 && (
-                    <div className="mb-2 flex flex-wrap gap-1.5">
-                      {selectedIndividuals.map((person) => (
-                        <span
-                          key={person.id}
-                          className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1.5 text-[11px] font-semibold text-primary"
-                        >
-                          {person.name}
-                          <button
-                            onClick={() => setSelectedIndividuals((prev) => prev.filter((p) => p.id !== person.id))}
-                            className="ml-0.5 rounded-full hover:bg-primary/20 p-0.5"
-                          >
-                            <X className="h-3 w-3" />
+      <Drawer.Root 
+        open={!!collabQuoteJobId} 
+        onOpenChange={(open) => !open && setCollabQuoteJobId(null)}
+        container={typeof document !== 'undefined' ? document.getElementById('mobile-device-content') : null}
+      >
+        <Drawer.Portal>
+          <Drawer.Overlay className="absolute inset-0 z-50 bg-black/40 backdrop-blur-sm" />
+          <Drawer.Content className="absolute bottom-0 left-0 right-0 z-50 mx-auto flex max-h-[96%] max-w-[430px] flex-col rounded-t-[32px] bg-background outline-none overflow-hidden">
+            <div className="mx-auto mt-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
+            <div className="p-5 pb-8 overflow-y-auto">
+              {(() => {
+                const job = jobs.find(j => j.id === collabQuoteJobId);
+                if (!job) return null;
+                return (
+                  <>
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {assignStep !== "choose" && (
+                          <button onClick={() => setAssignStep("choose")} className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-muted-foreground hover:text-foreground">
+                            <ChevronDown className="h-4 w-4 rotate-90" />
                           </button>
-                        </span>
-                      ))}
+                        )}
+                        <h2 className="text-lg font-bold text-foreground">
+                          {assignStep === "choose" ? "Quick Assign" : "Confirm Assignment"}
+                        </h2>
+                      </div>
+                      <button onClick={() => setCollabQuoteJobId(null)} className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-muted/80">
+                        <X className="h-4 w-4" />
+                      </button>
                     </div>
-                  )}
 
-                  {/* Search input */}
-                  <div className="relative mb-2">
-                    <input
-                      type="text"
-                      placeholder="Search workers..."
-                      value={individualSearch}
-                      onChange={(e) => setIndividualSearch(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-card px-3.5 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
-                    />
-                  </div>
+                    <div className="mb-6 rounded-2xl bg-accent/30 p-4 border border-border/50">
+                      <div className="flex items-center justify-between mb-1">
+                        <h4 className="text-sm font-bold text-foreground">{job.title}</h4>
+                        <span className="text-primary font-bold text-xs">{job.price ? `£${job.price}` : "—"}</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">{job.customer} · {job.location}</p>
+                    </div>
 
-                  {/* Dropdown results */}
-                  {(() => {
-                    const query = individualSearch.toLowerCase();
-                    const filtered = mockIndividuals.filter(
-                      (p) =>
-                        !selectedIndividuals.some((s) => s.id === p.id) &&
-                        (p.name.toLowerCase().includes(query) || p.role.toLowerCase().includes(query))
-                    );
-                    if (filtered.length === 0 && individualSearch) {
-                      return (
-                        <p className="py-4 text-center text-xs text-muted-foreground">No workers found</p>
-                      );
-                    }
-                    return (
-                      <div className="flex flex-col gap-1 max-h-[180px] overflow-y-auto rounded-xl border border-border bg-card">
-                        {filtered.map((person) => (
+                    {assignStep === "choose" ? (
+                      <div className="space-y-3">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">Assign to a Group</p>
+                        {mockGroups.map((group) => (
                           <button
-                            key={person.id}
-                            onClick={() => {
-                              setSelectedIndividuals((prev) => [...prev, person]);
-                              setIndividualSearch("");
-                            }}
-                            className="flex items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-accent active:bg-accent"
+                            key={group.id}
+                            onClick={() => { setSelectedGroupId(group.id); setAssignStep("confirm"); }}
+                            className="flex w-full items-center gap-4 rounded-2xl border-2 border-border bg-card p-4 text-left transition-all active:scale-[0.98] hover:border-primary/20"
                           >
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-foreground">
-                              {person.name.split(" ").map((n) => n[0]).join("")}
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                              <Users className="h-6 w-6 text-primary" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-semibold text-foreground truncate">{person.name}</p>
-                              <p className="text-[10px] text-muted-foreground">{person.role}</p>
+                              <p className="text-sm font-bold text-foreground">{group.name}</p>
+                              <p className="text-xs text-muted-foreground">{group.members.length} members available</p>
                             </div>
+                            <ChevronRight className="h-5 w-5 text-muted-foreground/30" />
                           </button>
                         ))}
-                      </div>
-                    );
-                  })()}
 
-                  {/* Bottom actions */}
-                  <div className="mt-4 flex gap-2">
-                    <button
-                      onClick={resetAssignFlow}
-                      className="flex-1 rounded-xl border border-border py-3 text-sm font-semibold text-muted-foreground transition-colors active:bg-muted"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (selectedIndividuals.length > 0) {
-                          setSelectedGroupId(null);
-                          setSelectedIndividual(selectedIndividuals[0]);
-                          setAssignStep("confirm");
-                        }
-                      }}
-                      disabled={selectedIndividuals.length === 0}
-                      className="flex-1 rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground transition-transform active:scale-95 disabled:opacity-40"
-                    >
-                      Continue ({selectedIndividuals.length})
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {/* Step 2: Select members from group */}
-              {assignStep === "select-members" && selectedGroup && (
-                <>
-                  <div className="mb-3 flex items-center gap-2 rounded-xl bg-primary/5 border border-primary/20 px-3 py-2.5">
-                    <Users className="h-4 w-4 text-primary shrink-0" />
-                    <span className="text-xs font-bold text-primary">{selectedGroup.name}</span>
-                    <span className="text-[10px] text-muted-foreground">· {selectedMemberIds.size} selected</span>
-                  </div>
-
-                  <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Select workers for this job</p>
-                  <div className="flex flex-col gap-2">
-                    {selectedGroup.members.map((member) => {
-                      const isSelected = selectedMemberIds.has(member.id);
-                      return (
-                        <button
-                          key={member.id}
-                          onClick={() => toggleMember(member.id)}
-                          className={`flex items-center gap-3 rounded-2xl p-3.5 transition-all active:scale-[0.98] ${
-                            isSelected ? "bg-primary/5 border-2 border-primary" : "bg-card border-2 border-transparent card-shadow"
-                          }`}
-                        >
-                          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
-                            isSelected ? "bg-primary text-primary-foreground" : "bg-accent text-foreground"
-                          }`}>
-                            {member.name.split(" ").map((n) => n[0]).join("")}
-                          </div>
-                          <div className="flex-1 text-left">
-                            <p className="text-sm font-bold text-foreground">{member.name}</p>
-                            <p className="text-[11px] text-muted-foreground">{member.role}</p>
-                          </div>
-                          <div className={`flex h-6 w-6 items-center justify-center rounded-full ${
-                            isSelected ? "bg-primary" : "border-2 border-border"
-                          }`}>
-                            {isSelected && <CheckCircle2 className="h-4 w-4 text-primary-foreground" />}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <button
-                    onClick={() => selectedMemberIds.size > 0 && setAssignStep("confirm")}
-                    disabled={selectedMemberIds.size === 0}
-                    className="mt-4 w-full rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-transform active:scale-95 disabled:opacity-40"
-                  >
-                    Continue ({selectedMemberIds.size} selected)
-                  </button>
-                </>
-              )}
-
-              {/* Step 3: Confirm */}
-              {assignStep === "confirm" && (
-                <>
-                  <div className="mb-3 rounded-2xl bg-accent/50 border border-border p-4">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Assignment Summary</p>
-                    {selectedGroup ? (
-                      <>
-                        <div className="flex items-center gap-2 mb-2">
-                          <Users className="h-4 w-4 text-primary" />
-                          <span className="text-sm font-bold text-foreground">{selectedGroup.name}</span>
-                        </div>
-                        <div className="flex flex-col gap-1.5 pl-6">
-                          {selectedGroup.members
-                            .filter((m) => selectedMemberIds.has(m.id))
-                            .map((m) => (
-                              <div key={m.id} className="flex items-center gap-2">
-                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[8px] font-bold text-primary">
-                                  {m.name.split(" ").map((n) => n[0]).join("")}
+                        <div className="pt-2">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-3">Or to Individual</p>
+                          <div className="grid grid-cols-2 gap-3">
+                            {mockGroups[0].members.slice(0, 4).map((member) => (
+                              <button
+                                key={member.id}
+                                onClick={() => { setSelectedGroupId(member.id); setAssignStep("confirm"); }}
+                                className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border bg-card p-4 transition-all active:scale-[0.98] hover:border-primary/20 text-center"
+                              >
+                                <div className="h-12 w-12 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-foreground overflow-hidden">
+                                  {member.name.split(" ").map(n => n[0]).join("")}
                                 </div>
-                                <span className="text-xs font-semibold text-foreground">{m.name}</span>
-                                <span className="text-[10px] text-muted-foreground">{m.role}</span>
-                              </div>
+                                <div>
+                                  <p className="text-xs font-bold text-foreground truncate max-w-full">{member.name.split(" ")[0]}</p>
+                                  <p className="text-[10px] text-muted-foreground">{member.role}</p>
+                                </div>
+                              </button>
                             ))}
-                        </div>
-                      </>
-                    ) : selectedIndividuals.length > 0 ? (
-                      <div className="flex flex-col gap-1.5">
-                        {selectedIndividuals.map((p) => (
-                          <div key={p.id} className="flex items-center gap-2">
-                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[8px] font-bold text-primary">
-                              {p.name.split(" ").map((n) => n[0]).join("")}
-                            </div>
-                            <span className="text-xs font-semibold text-foreground">{p.name}</span>
-                            <span className="text-[10px] text-muted-foreground">{p.role}</span>
                           </div>
-                        ))}
+                        </div>
                       </div>
-                    ) : null}
-                  </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="rounded-2xl bg-primary/5 border border-primary/20 p-5 text-center">
+                          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-3">
+                            <ShieldCheck className="h-8 w-8 text-primary" />
+                          </div>
+                          <h3 className="text-base font-bold text-foreground">Confirm Assignment</h3>
+                          <p className="text-xs text-muted-foreground mt-1 max-w-[200px] mx-auto">
+                            By confirming, this job will be dispatched to the selected team members instantly.
+                          </p>
+                        </div>
 
-                  <div className="flex gap-2">
-                    <button
-                      onClick={resetAssignFlow}
-                      className="flex-1 rounded-xl border border-border py-3.5 text-sm font-semibold text-muted-foreground transition-colors active:bg-muted"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (selectedGroup) {
-                          const memberNames = selectedGroup.members
-                            .filter((m) => selectedMemberIds.has(m.id))
-                            .map((m) => m.name);
-                          acceptJob(dispatchJobId, { type: "group", name: selectedGroup.name, memberNames });
-                        } else if (selectedIndividuals.length > 0) {
-                          acceptJob(dispatchJobId, { type: "individual", name: selectedIndividuals.map((p) => p.name).join(", "), memberNames: selectedIndividuals.map((p) => p.name) });
-                        }
-                      }}
-                      className="flex-1 rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-transform active:scale-95"
-                    >
-                      <CheckCircle2 className="mr-1.5 inline h-4 w-4" />
-                      Confirm
-                    </button>
-                  </div>
-                </>
-              )}
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => setAssignStep("choose")}
+                            className="flex-1 rounded-2xl border border-border py-4 text-sm font-bold text-muted-foreground active:bg-muted"
+                          >
+                            Go Back
+                          </button>
+                          <button
+                            onClick={() => {
+                              toast.success("Job accepted & assigned!");
+                              setCollabQuoteJobId(null);
+                              setAssignStep("choose");
+                            }}
+                            className="flex-[2] rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
+                          >
+                            Confirm & Accept
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
-          </div>
-        );
-      })()}
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
 
-      {/* Schedule bottom sheet — calendar day view */}
-      {scheduleJob && (
-        <>
-          <div
-            className="absolute inset-0 z-40 bg-foreground/40"
-            onClick={() => setScheduleJob(null)}
-          />
-          <div className="absolute inset-x-0 bottom-0 z-50 rounded-t-3xl bg-background shadow-2xl border-t border-border/40 animate-in slide-in-from-bottom duration-200 max-h-[80vh] overflow-hidden flex flex-col">
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="h-1 w-10 rounded-full bg-muted-foreground/20" />
-            </div>
-            <div className="flex items-center justify-between px-5 pb-2">
-              <h3 className="text-sm font-bold text-foreground">My Schedule</h3>
-              <button onClick={() => setScheduleJob(null)} className="rounded-full p-1 active:bg-muted">
-                <X className="h-4 w-4 text-muted-foreground" />
-              </button>
-            </div>
-            {/* This job reference */}
-            <div className="mx-4 mb-2 rounded-xl bg-primary/5 border border-primary/15 px-3 py-2">
-              <p className="text-[10px] font-bold text-primary mb-0.5">Viewing schedule for</p>
-              <p className="text-[11px] font-semibold text-foreground">{scheduleJob.title} · {scheduleJob.timeWindow}</p>
-              <p className="text-[10px] text-muted-foreground">{scheduleJob.location} · {scheduleJob.distance}</p>
-            </div>
-            <div className="flex-1 overflow-y-auto px-2 pb-6">
-              <CalendarDayView />
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Filter Bottom Sheet — Accordion Style */}
-      {showFilterSheet && (() => {
-        const filterSections = [
-          {
-            id: "distance",
-            label: "Distance",
-            icon: "📍",
-            summary: filterDistanceKm < 50 ? `Within ${filterDistanceKm} km` : "Any",
-            hasValue: filterDistanceKm < 50,
-          },
-          {
-            id: "price",
-            label: "Price Range",
-            icon: "💷",
-            summary: filterPriceMin > 0 || filterPriceMax < 500 ? `£${filterPriceMin} – £${filterPriceMax === 500 ? "500+" : filterPriceMax}` : "Any",
-            hasValue: filterPriceMin > 0 || filterPriceMax < 500,
-          },
-          {
-            id: "category",
-            label: "Category",
-            icon: "🔧",
-            summary: filterCategories.size > 0 ? `${filterCategories.size} selected` : "Any",
-            hasValue: filterCategories.size > 0,
-          },
-          {
-            id: "timeWindow",
-            label: "Time Window",
-            icon: "🕐",
-            summary: filterTimeWindows.size > 0 ? `${filterTimeWindows.size} selected` : "Any",
-            hasValue: filterTimeWindows.size > 0,
-          },
-          {
-            id: "jobType",
-            label: "Job Type",
-            icon: "📋",
-            summary: !filterJobType.has("any") ? Array.from(filterJobType).map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(", ") : "Any",
-            hasValue: !filterJobType.has("any"),
-          },
-          {
-            id: "status",
-            label: "Job Status",
-            icon: "📊",
-            summary: !committedFilter.has("all") ? Array.from(committedFilter).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(", ") : "All",
-            hasValue: !committedFilter.has("all"),
-          },
-        ];
-
-        const allCategories = [
-          "Plumbing", "Electrical", "Painting", "Tiling", "Carpentry",
-          "Cleaning", "HVAC", "Roofing", "Bathroom", "Kitchen",
-          "Flooring", "Landscaping", "General",
-        ];
-        const allTimeWindows = ["Today", "Tomorrow", "This week", "Next week", "This month", "Flexible"];
-        const allStatuses = ["all", "active", "completed", "cancelled"];
-        const allJobTypes = ["Any", "Fixed Price", "Quote Required", "Inspection"];
-
-        return (
-          <>
-            <div className="absolute inset-0 z-40 bg-foreground/40 backdrop-blur-sm" onClick={() => setShowFilterSheet(false)} />
-            <div className="absolute inset-x-0 bottom-0 z-50 rounded-t-3xl bg-background shadow-2xl border-t border-border/40 animate-in slide-in-from-bottom duration-200 max-h-[85vh] overflow-hidden flex flex-col">
-              <div className="flex justify-center pt-3 pb-1">
-                <div className="h-1 w-10 rounded-full bg-muted-foreground/20" />
-              </div>
-              <div className="flex items-center justify-between px-5 pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-base font-bold text-foreground">Filter Jobs</h3>
-                      {activeFilterCount > 0 && (
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-sm">
-                          {activeFilterCount}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <button onClick={() => setShowFilterSheet(false)} className="rounded-full p-1.5 active:bg-muted">
+      {/* Schedule bottom sheet */}
+      <Drawer.Root 
+        open={!!scheduleJob} 
+        onOpenChange={(open) => !open && setScheduleJob(null)}
+        container={typeof document !== 'undefined' ? document.getElementById('mobile-device-content') : null}
+      >
+        <Drawer.Portal>
+          <Drawer.Overlay className="absolute inset-0 z-50 bg-black/40 backdrop-blur-sm" />
+          <Drawer.Content className="absolute bottom-0 left-0 right-0 z-50 mx-auto flex max-h-[96%] max-w-[430px] flex-col rounded-t-[32px] bg-background outline-none overflow-hidden">
+            <div className="mx-auto mt-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
+            <div className="p-5 pb-8 overflow-y-auto">
+              <div className="flex items-center justify-between pb-2">
+                <h3 className="text-sm font-bold text-foreground">My Schedule</h3>
+                <button onClick={() => setScheduleJob(null)} className="rounded-full p-1 active:bg-muted">
                   <X className="h-4 w-4 text-muted-foreground" />
                 </button>
               </div>
+              {scheduleJob && (
+                <div className="mb-4 rounded-xl bg-primary/5 border border-primary/15 px-3 py-2">
+                  <p className="text-[10px] font-bold text-primary mb-0.5">Viewing schedule for</p>
+                  <p className="text-[11px] font-semibold text-foreground">{scheduleJob.title} · {scheduleJob.timeWindow}</p>
+                  <p className="text-[10px] text-muted-foreground">{scheduleJob.location} · {scheduleJob.distance}</p>
+                </div>
+              )}
+              <div className="mt-2">
+                <CalendarDayView />
+              </div>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
 
-              <div className="flex-1 overflow-y-auto pb-4">
-                {filterSections.map((section) => (
+      {/* Filter Bottom Sheet */}
+      <Drawer.Root 
+        open={showFilterSheet} 
+        onOpenChange={setShowFilterSheet}
+        container={typeof document !== 'undefined' ? document.getElementById('mobile-device-content') : null}
+      >
+        <Drawer.Portal>
+          <Drawer.Overlay className="absolute inset-0 z-50 bg-black/40 backdrop-blur-sm" />
+          <Drawer.Content className="absolute bottom-0 left-0 right-0 z-50 mx-auto flex max-h-[96%] max-w-[430px] flex-col rounded-t-[32px] bg-background outline-none overflow-hidden">
+            <div className="mx-auto mt-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
+            
+            <div className="flex items-center justify-between px-5 pt-4 pb-2">
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-foreground">Filter Jobs</h3>
+                {activeFilterCount > 0 && (
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-sm">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </div>
+              <button onClick={() => setShowFilterSheet(false)} className="rounded-full p-1.5 text-muted-foreground hover:bg-muted transition-colors">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto pb-20">
+              {(() => {
+                const filterSections = [
+                  {
+                    id: "distance",
+                    label: "Distance",
+                    icon: "📍",
+                    summary: filterDistanceKm < 50 ? `Within ${filterDistanceKm} km` : "Any",
+                    hasValue: filterDistanceKm < 50,
+                  },
+                  {
+                    id: "price",
+                    label: "Price Range",
+                    icon: "💷",
+                    summary: filterPriceMin > 0 || filterPriceMax < 500 ? `£${filterPriceMin} – £${filterPriceMax === 500 ? "500+" : filterPriceMax}` : "Any",
+                    hasValue: filterPriceMin > 0 || filterPriceMax < 500,
+                  },
+                  {
+                    id: "category",
+                    label: "Category",
+                    icon: "🔧",
+                    summary: filterCategories.size > 0 ? `${filterCategories.size} selected` : "Any",
+                    hasValue: filterCategories.size > 0,
+                  },
+                  {
+                    id: "timeWindow",
+                    label: "Time Window",
+                    icon: "🕐",
+                    summary: filterTimeWindows.size > 0 ? `${filterTimeWindows.size} selected` : "Any",
+                    hasValue: filterTimeWindows.size > 0,
+                  },
+                  {
+                    id: "jobType",
+                    label: "Job Type",
+                    icon: "📋",
+                    summary: !filterJobType.has("any") ? Array.from(filterJobType).map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(", ") : "Any",
+                    hasValue: !filterJobType.has("any"),
+                  },
+                  {
+                    id: "status",
+                    label: "Job Status",
+                    icon: "📊",
+                    summary: !committedFilter.has("all") ? Array.from(committedFilter).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(", ") : "All",
+                    hasValue: !committedFilter.has("all"),
+                  },
+                ];
+
+                const allCategories = [
+                  "Plumbing", "Electrical", "Painting", "Tiling", "Carpentry",
+                  "Cleaning", "HVAC", "Roofing", "Bathroom", "Kitchen",
+                  "Flooring", "Landscaping", "General",
+                ];
+                const allTimeWindows = ["Today", "Tomorrow", "This week", "Next week", "This month", "Flexible"];
+                const allStatuses = ["all", "active", "completed", "cancelled"];
+                const allJobTypes = ["Any", "Fixed Price", "Quote Required", "Inspection"];
+
+                return filterSections.map((section) => (
                   <div key={section.id} className="border-b border-border/30">
-                    {/* Accordion header */}
                     <button
                       onClick={() => setExpandedFilter(expandedFilter === section.id ? null : section.id)}
                       className="flex items-center justify-between w-full px-5 py-3.5 text-left active:bg-accent/50 transition-colors"
@@ -1394,17 +1230,9 @@ const TraderJobs = () => {
                       <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${expandedFilter === section.id ? "rotate-180" : ""}`} />
                     </button>
 
-                    {/* Accordion content */}
                     {expandedFilter === section.id && (
-                      <div className="px-5 pb-4 pt-1 animate-in fade-in duration-150">
-                        {/* Distance */}
+                      <div className="px-5 pb-5 pt-2 animate-in fade-in duration-200 slide-in-from-top-1">
                         {section.id === "distance" && (
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-3">
-                              <input
-                                type="range"
-                                min={1}
-                                max={50}
                                 value={filterDistanceKm}
                                 onChange={(e) => {
                                   const v = Number(e.target.value);

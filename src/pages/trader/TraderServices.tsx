@@ -174,165 +174,178 @@ const TraderServicesPage = () => {
       </div>
 
       {/* Add Service Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
-          <div className="w-full max-w-[390px] max-h-[85vh] overflow-y-auto rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-extrabold text-foreground font-heading">
-                  {modalStep === 0 ? "Select Category" : modalStep === 1 ? "Select Service" : "Service Details"}
-                </h2>
-                {modalStep > 0 && (
-                  <button 
-                    onClick={() => setModalStep((modalStep - 1) as any)}
-                    className="text-[10px] font-bold text-primary uppercase tracking-wider"
-                  >
-                    ← Back
-                  </button>
-                )}
-              </div>
-              <button 
-                onClick={() => { setShowAddModal(false); resetModal(); }} 
-                className="rounded-full bg-muted p-2"
-              >
-                <X className="h-4 w-4 text-muted-foreground" />
-              </button>
-            </div>
-
-            {/* Step 0: Category Selection */}
-            {modalStep === 0 && (
-              <div className="flex flex-col gap-2.5">
-                {categoryServiceTypes.map((cat) => {
-                  const IconNode = (() => { 
-                    const n = categoryIconMap[cat.categoryId] || "wrench"; 
-                    const I = iconMap[n]; 
-                    const c = categoryColorMap[cat.categoryId]; 
-                    return I ? <I size={24} weight="regular" className={c?.color || "text-muted-foreground"} /> : null; 
-                  })();
-
-                  return (
-                    <button
-                      key={cat.categoryId}
-                      onClick={() => {
-                        setActiveCategoryId(cat.categoryId);
-                        setModalStep(1);
-                      }}
-                      className="flex w-full items-center gap-3 rounded-2xl border-2 border-border bg-card p-4 text-left transition-all active:scale-[0.98]"
+      <Drawer.Root 
+        open={showAddModal} 
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowAddModal(false);
+            resetModal();
+          }
+        }}
+        container={typeof document !== 'undefined' ? document.getElementById('mobile-device-content') : null}
+      >
+        <Drawer.Portal>
+          <Drawer.Overlay className="absolute inset-0 z-50 bg-black/40 backdrop-blur-sm" />
+          <Drawer.Content className="absolute bottom-0 left-0 right-0 z-50 mx-auto flex max-h-[96%] max-w-[430px] flex-col rounded-t-[32px] bg-background outline-none overflow-hidden">
+            <div className="mx-auto mt-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
+            <div className="p-5 pb-8 overflow-y-auto">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-extrabold text-foreground font-heading">
+                    {modalStep === 0 ? "Select Category" : modalStep === 1 ? "Select Service" : "Service Details"}
+                  </h2>
+                  {modalStep > 0 && (
+                    <button 
+                      onClick={() => setModalStep((modalStep - 1) as any)}
+                      className="text-[10px] font-bold text-primary uppercase tracking-wider"
                     >
-                      {IconNode}
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-bold text-foreground">{cat.label}</h4>
-                        <p className="text-[10px] text-muted-foreground">{cat.serviceTypes.length} service types</p>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                      ← Back
                     </button>
-                  );
-                })}
+                  )}
+                </div>
+                <button 
+                  onClick={() => { setShowAddModal(false); resetModal(); }} 
+                  className="rounded-full bg-muted p-2"
+                >
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
               </div>
-            )}
 
-            {/* Step 1: Service Type Selection (Hierarchical) */}
-            {modalStep === 1 && activeCategoryId && (() => {
-              const cat = categoryServiceTypes.find((c) => c.categoryId === activeCategoryId);
-              if (!cat) return null;
-              return (
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2 mb-2 p-1">
-                    <span className="text-lg">{cat.emoji}</span>
-                    <h3 className="text-sm font-bold text-foreground">{cat.label}</h3>
-                  </div>
-                  {cat.serviceTypes.map((st) => {
-                    const isExpanded = expandedServiceType === st.id;
+              {/* Step 0: Category Selection */}
+              {modalStep === 0 && (
+                <div className="flex flex-col gap-2.5">
+                  {categoryServiceTypes.map((cat) => {
+                    const IconNode = (() => { 
+                      const n = categoryIconMap[cat.categoryId] || "wrench"; 
+                      const I = iconMap[n]; 
+                      const c = categoryColorMap[cat.categoryId]; 
+                      return I ? <I size={24} weight="regular" className={c?.color || "text-muted-foreground"} /> : null; 
+                    })();
+
                     return (
-                      <div key={st.id} className="rounded-2xl border-2 border-border bg-card overflow-hidden transition-all">
-                        <button
-                          onClick={() => setExpandedServiceType(isExpanded ? null : st.id)}
-                          className="flex w-full items-center gap-3 p-3.5 text-left active:bg-muted/50 transition-colors"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-bold text-foreground">{st.label}</h4>
-                            <p className="text-[10px] text-muted-foreground">{st.options.length} options</p>
-                          </div>
-                          <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                        </button>
-
-                        {isExpanded && (
-                          <div className="border-t border-border">
-                            {st.options.map((option) => (
-                              <button
-                                key={option.id}
-                                onClick={() => {
-                                  setSelectedOption(option);
-                                  setModalStep(2);
-                                }}
-                                className="flex w-full items-center gap-3 px-4 py-3 text-left border-b border-border last:border-b-0 active:bg-muted/50 transition-colors"
-                              >
-                                <div className="h-2 w-2 rounded-full bg-primary/40" />
-                                <p className="text-xs font-semibold text-foreground">{option.label}</p>
-                                <ChevronRight className="h-3 w-3 text-muted-foreground ml-auto" />
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                      <button
+                        key={cat.categoryId}
+                        onClick={() => {
+                          setActiveCategoryId(cat.categoryId);
+                          setModalStep(1);
+                        }}
+                        className="flex w-full items-center gap-3 rounded-2xl border-2 border-border bg-card p-4 text-left transition-all active:scale-[0.98]"
+                      >
+                        {IconNode}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-bold text-foreground">{cat.label}</h4>
+                          <p className="text-[10px] text-muted-foreground">{cat.serviceTypes.length} service types</p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                      </button>
                     );
                   })}
                 </div>
-              );
-            })()}
+              )}
 
-            {/* Step 2: Details */}
-            {modalStep === 2 && selectedOption && (
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-3 rounded-2xl bg-primary/5 p-4 border border-primary/10">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                    <Plus className="h-5 w-5" />
+              {/* Step 1: Service Type Selection (Hierarchical) */}
+              {modalStep === 1 && activeCategoryId && (() => {
+                const cat = categoryServiceTypes.find((c) => c.categoryId === activeCategoryId);
+                if (!cat) return null;
+                return (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2 mb-2 p-1">
+                      <span className="text-lg">{cat.emoji}</span>
+                      <h3 className="text-sm font-bold text-foreground">{cat.label}</h3>
+                    </div>
+                    {cat.serviceTypes.map((st) => {
+                      const isExpanded = expandedServiceType === st.id;
+                      return (
+                        <div key={st.id} className="rounded-2xl border-2 border-border bg-card overflow-hidden transition-all">
+                          <button
+                            onClick={() => setExpandedServiceType(isExpanded ? null : st.id)}
+                            className="flex w-full items-center gap-3 p-3.5 text-left active:bg-muted/50 transition-colors"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-sm font-bold text-foreground">{st.label}</h4>
+                              <p className="text-[10px] text-muted-foreground">{st.options.length} options</p>
+                            </div>
+                            <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                          </button>
+
+                          {isExpanded && (
+                            <div className="border-t border-border">
+                              {st.options.map((option) => (
+                                <button
+                                  key={option.id}
+                                  onClick={() => {
+                                    setSelectedOption(option);
+                                    setModalStep(2);
+                                  }}
+                                  className="flex w-full items-center gap-3 px-4 py-3 text-left border-b border-border last:border-b-0 active:bg-muted/50 transition-colors"
+                                >
+                                  <div className="h-2 w-2 rounded-full bg-primary/40" />
+                                  <p className="text-xs font-semibold text-foreground">{option.label}</p>
+                                  <ChevronRight className="h-3 w-3 text-muted-foreground ml-auto" />
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
+                );
+              })()}
+
+              {/* Step 2: Details */}
+              {modalStep === 2 && selectedOption && (
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-3 rounded-2xl bg-primary/5 p-4 border border-primary/10">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                      <Plus className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-foreground">{selectedOption.label}</h4>
+                      <p className="text-[10px] text-muted-foreground capitalize">{activeCategoryId} Service</p>
+                    </div>
+                  </div>
+
                   <div>
-                    <h4 className="text-sm font-bold text-foreground">{selectedOption.label}</h4>
-                    <p className="text-[10px] text-muted-foreground capitalize">{activeCategoryId} Service</p>
+                    <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Service Price (£)</label>
+                    <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
+                      <PoundSterling className="h-5 w-5 text-muted-foreground" />
+                      <input
+                        type="number"
+                        placeholder="e.g. 65"
+                        value={customPrice}
+                        onChange={(e) => setCustomPrice(e.target.value)}
+                        className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Service Price (£)</label>
-                  <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
-                    <PoundSterling className="h-5 w-5 text-muted-foreground" />
-                    <input
-                      type="number"
-                      placeholder="e.g. 65"
-                      value={customPrice}
-                      onChange={(e) => setCustomPrice(e.target.value)}
-                      className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-                    />
+                  <div>
+                    <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Estimated Duration</label>
+                    <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
+                      <Clock className="h-5 w-5 text-muted-foreground" />
+                      <input
+                        type="text"
+                        placeholder="e.g. 1-2 hours"
+                        value={customDuration}
+                        onChange={(e) => setCustomDuration(e.target.value)}
+                        className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Estimated Duration</label>
-                  <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
-                    <Clock className="h-5 w-5 text-muted-foreground" />
-                    <input
-                      type="text"
-                      placeholder="e.g. 1-2 hours"
-                      value={customDuration}
-                      onChange={(e) => setCustomDuration(e.target.value)}
-                      className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-                    />
-                  </div>
+                  <button
+                    onClick={addService}
+                    className="w-full rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-transform active:scale-95"
+                  >
+                    Confirm & Add Service
+                  </button>
                 </div>
-
-                <button
-                  onClick={addService}
-                  className="w-full rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-transform active:scale-95"
-                >
-                  Confirm & Add Service
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+              )}
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
     </MobileLayout>
   );
 };
