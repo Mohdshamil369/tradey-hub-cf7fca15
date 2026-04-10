@@ -156,7 +156,7 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
             </button>
           )}
           {showCategoryBadge && cat && (
-            <span className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[9px] font-bold backdrop-blur-sm ${cat.className} bg-opacity-90 shadow-sm whitespace-nowrap`}>
+            <span className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[9px] font-bold backdrop-blur-sm ${cat.className} bg-opacity-90 shadow-sm whitespace-nowrap opacity-0`}>
               {cat.emoji} {cat.label}
             </span>
           )}
