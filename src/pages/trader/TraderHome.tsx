@@ -413,6 +413,7 @@ const TraderHome = () => {
                   job={job}
                   onViewDetail={() => toast.info("Navigate to Jobs tab for full details")}
                   viewMode={isIndividual ? "individual" : "agency"}
+                  onShowSchedule={() => setScheduleJob(job)}
                 />
               ))}
             </div>
