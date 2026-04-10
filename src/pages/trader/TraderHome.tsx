@@ -191,6 +191,7 @@ const TraderHome = () => {
   const [individualSearch, setIndividualSearch] = useState("");
   const [quoteJobId, setQuoteJobId] = useState<string | null>(null);
   const [quoteAmount, setQuoteAmount] = useState("");
+  const [scheduleJob, setScheduleJob] = useState<IncomingJob | null>(null);
 
   const mockGroups = [
     { id: "g1", name: "Plumbing Squad", members: [
