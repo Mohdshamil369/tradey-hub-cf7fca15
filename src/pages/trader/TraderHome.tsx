@@ -43,6 +43,7 @@ interface IncomingJob {
   description: string;
   hasVoiceNote: boolean;
   voiceDuration?: string;
+  proposalsCount?: number;
 }
 
 const initialIncomingJobs: IncomingJob[] = [
@@ -61,6 +62,7 @@ const initialIncomingJobs: IncomingJob[] = [
     description: "Kitchen tap is dripping constantly, it's a single-lever mixer tap. Tried tightening it but no luck. Need it fixed ASAP please!",
     hasVoiceNote: true,
     voiceDuration: "0:23",
+    proposalsCount: 2,
   },
   {
     id: "j2",
@@ -76,6 +78,7 @@ const initialIncomingJobs: IncomingJob[] = [
     postedAgo: "12 min ago",
     description: "Two light switches in the hallway need replacing. Standard dimmer switches preferred. The current ones are loose and sparking a little.",
     hasVoiceNote: false,
+    proposalsCount: 5,
   },
   {
     id: "j3",
@@ -92,6 +95,7 @@ const initialIncomingJobs: IncomingJob[] = [
     description: "Complete bathroom renovation including re-tiling floors and walls, new shower unit, vanity, and toilet. Room is approx 6m². Happy to discuss details.",
     hasVoiceNote: true,
     voiceDuration: "1:12",
+    proposalsCount: 12,
   },
 ];
 

@@ -1,4 +1,4 @@
-import { MapPin, Clock, Camera, Calendar, ChevronLeft, ChevronRight, Heart, CalendarDays } from "lucide-react";
+import { MapPin, Clock, Camera, Calendar, ChevronLeft, ChevronRight, Heart, CalendarDays, Users } from "lucide-react";
 import { useState } from "react";
 import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 
@@ -28,6 +28,7 @@ export interface IncomingJobData {
   voiceDuration?: string;
   customerRequest?: CustomerRequestMeta;
   inspectionFee?: number;
+  proposalsCount?: number;
 }
 
 export type JobCardViewMode = "individual" | "agency" | "agency-worker";
@@ -124,14 +125,20 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
           </div>
         )}
 
-        {/* Category badge */}
-        {cat && (
-          <div className="absolute top-1.5 right-1.5">
-            <span className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[9px] font-bold backdrop-blur-sm ${cat.className} bg-opacity-90`}>
+        {/* Category & Proposal badges */}
+        <div className="absolute top-1.5 right-1.5 flex flex-col items-end gap-1">
+          {cat && (
+            <span className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[9px] font-bold backdrop-blur-sm ${cat.className} bg-opacity-90 shadow-sm whitespace-nowrap`}>
               {cat.emoji} {cat.label}
             </span>
-          </div>
-        )}
+          )}
+          {job.proposalsCount !== undefined && (
+            <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-bold backdrop-blur-md bg-foreground/60 text-background shadow-sm whitespace-nowrap">
+              <Users className="h-2.5 w-2.5" />
+              {job.proposalsCount} Proposals
+            </span>
+          )}
+        </div>
 
         {/* Save / Heart button over image */}
         {onToggleSave && (

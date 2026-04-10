@@ -22,6 +22,7 @@ const initialSavedJobs: IncomingJobData[] = [
     estimatedDuration: "1–2 hrs",
     postedAgo: "2 hours ago",
     description: "Kitchen tap is leaking and needs replacement.",
+    proposalsCount: 2,
     customerRequest: { photos: [jobTapImg] },
   },
   {
@@ -38,6 +39,7 @@ const initialSavedJobs: IncomingJobData[] = [
     estimatedDuration: "Multi-day",
     postedAgo: "1 day ago",
     description: "Complete bathroom reno including tiling and plumbing.",
+    proposalsCount: 15,
     customerRequest: { photos: [jobBathroomImg] },
   },
   {
@@ -54,6 +56,7 @@ const initialSavedJobs: IncomingJobData[] = [
     timeWindow: "This week",
     postedAgo: "3 days ago",
     description: "Damp patches appearing on interior wall, need inspection.",
+    proposalsCount: 6,
   },
 ];
 
