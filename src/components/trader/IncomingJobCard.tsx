@@ -168,7 +168,6 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
       <div className="px-3 pt-2 pb-1.5">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-base">{job.icon}</span>
             <h4 className="text-[13px] font-bold text-foreground leading-tight truncate">{job.title}</h4>
           </div>
           {job.price ? (

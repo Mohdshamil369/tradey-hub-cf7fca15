@@ -37,11 +37,11 @@ interface QuoteDetailSheetProps {
   onViewJob: (id: string) => void;
 }
 
-const statusConfig: Record<SentQuoteData["status"], { label: string; emoji: string; className: string }> = {
-  pending: { label: "Awaiting Response", emoji: "⏳", className: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]" },
-  accepted: { label: "Accepted", emoji: "✅", className: "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]" },
-  declined: { label: "Declined", emoji: "❌", className: "bg-destructive/10 text-destructive" },
-  expired: { label: "Expired", emoji: "⌛", className: "bg-muted text-muted-foreground" },
+const statusConfig: Record<SentQuoteData["status"], { label: string; className: string }> = {
+  pending: { label: "Awaiting Response", className: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]" },
+  accepted: { label: "Accepted", className: "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]" },
+  declined: { label: "Declined", className: "bg-destructive/10 text-destructive" },
+  expired: { label: "Expired", className: "bg-muted text-muted-foreground" },
 };
 
 const avatarPalette = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7"];
@@ -71,13 +71,10 @@ const QuoteDetailSheet = ({
           <ScrollArea className="flex-1 overflow-y-auto px-6 pt-6 pb-2">
             {/* Header */}
             <div className="flex items-start gap-4 mb-5">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[22px] bg-accent text-[32px] shadow-sm">
-                {quote.icon}
-              </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${sc.className}`}>
-                    {sc.emoji} {sc.label}
+                    {sc.label}
                   </span>
                 </div>
                 <h2 className="text-xl font-bold text-foreground leading-tight">{quote.jobTitle}</h2>

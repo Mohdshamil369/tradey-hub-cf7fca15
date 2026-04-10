@@ -575,7 +575,6 @@ const TraderJobs = () => {
         )}
         <button onClick={() => openJobDetail(job)} className="w-full px-4 py-3.5 text-left">
           <div className="flex gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-xl mt-0.5">{job.icon}</div>
             <div className="flex-1 min-w-0">
               <h4 className="text-[14px] font-bold text-foreground truncate leading-snug">{job.title}</h4>
               <div className="mt-1 flex items-center gap-2 text-[11.5px] text-muted-foreground">
@@ -901,7 +900,6 @@ const TraderJobs = () => {
                     <div className="rounded-2xl border border-primary/20 bg-card overflow-hidden">
                       {/* Job header summary */}
                       <div className="flex items-center gap-3 border-b border-border px-4 py-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent text-lg">{job.icon}</div>
                         <div className="flex-1 min-w-0">
                           <h4 className="text-sm font-bold text-foreground truncate">{job.title}</h4>
                           <p className="text-[11px] text-muted-foreground">{job.customer} · {job.location}</p>
@@ -1009,7 +1007,6 @@ const TraderJobs = () => {
 
               {/* Job info */}
               <div className="mb-4 flex items-center gap-3 rounded-2xl bg-card p-3 card-shadow">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-lg">{job.icon}</div>
                 <div>
                   <h4 className="text-sm font-bold text-foreground">{job.title}</h4>
                   <p className="text-xs text-muted-foreground">{job.customer} · {job.location}</p>
@@ -1279,7 +1276,7 @@ const TraderJobs = () => {
             {/* This job reference */}
             <div className="mx-4 mb-2 rounded-xl bg-primary/5 border border-primary/15 px-3 py-2">
               <p className="text-[10px] font-bold text-primary mb-0.5">Viewing schedule for</p>
-              <p className="text-[11px] font-semibold text-foreground">{scheduleJob.icon} {scheduleJob.title} · {scheduleJob.timeWindow}</p>
+              <p className="text-[11px] font-semibold text-foreground">{scheduleJob.title} · {scheduleJob.timeWindow}</p>
               <p className="text-[10px] text-muted-foreground">{scheduleJob.location} · {scheduleJob.distance}</p>
             </div>
             <div className="flex-1 overflow-y-auto px-2 pb-6">

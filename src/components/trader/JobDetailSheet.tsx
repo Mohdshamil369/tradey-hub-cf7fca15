@@ -56,10 +56,10 @@ interface JobDetailSheetProps {
   onAction: (jobId: string, action: string, data?: any) => void;
 }
 
-const categoryConfig: Record<JobCategory, { label: string; emoji: string; className: string }> = {
-  fixed: { label: "Fixed Rate", emoji: "⚡", className: "bg-primary/10 text-primary" },
-  estimate: { label: "Estimate Required", emoji: "📝", className: "bg-blue-500/10 text-blue-600" },
-  inspection: { label: "Site Inspection", emoji: "🔍", className: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]" },
+const categoryConfig: Record<JobCategory, { label: string; className: string }> = {
+  fixed: { label: "Fixed Rate", className: "bg-primary/10 text-primary" },
+  estimate: { label: "Estimate Required", className: "bg-blue-500/10 text-blue-600" },
+  inspection: { label: "Site Inspection", className: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]" },
 };
 
 const JobDetailSheet = ({ job, isOpen, onOpenChange, onAction }: JobDetailSheetProps) => {
@@ -160,13 +160,10 @@ const JobDetailSheet = ({ job, isOpen, onOpenChange, onAction }: JobDetailSheetP
             <ScrollArea className="flex-1 overflow-y-auto px-6 pt-6 pb-2">
               {/* Header */}
               <div className="flex items-start gap-4 mb-6">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[22px] bg-accent text-[32px] shadow-sm">
-                  {job.icon}
-                </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${cat.className}`}>
-                      {cat.emoji} {cat.label}
+                      {cat.label}
                     </span>
                   </div>
                   <h2 className="text-xl font-bold text-foreground leading-tight">{job.title}</h2>

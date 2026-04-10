@@ -79,9 +79,6 @@ const ActiveJobCard = ({ job, isUpNext = false, expanded = false, onToggleExpand
       {/* Main content */}
       <div className="px-4 py-3.5" onClick={onToggleExpand}>
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-xl">
-            {job.icon}
-          </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
               <h4 className="text-[14px] font-bold text-foreground truncate">{job.title}</h4>

@@ -86,10 +86,6 @@ const CompanyJobCard = ({ job, expanded, onToggleExpand, onAccept, onDecline, on
       {/* Header */}
       <button onClick={onToggleExpand} className="w-full px-4 py-3.5 text-left">
         <div className="flex gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-xl mt-0.5">
-            {job.companyLogo || <Building2 className="h-5 w-5 text-primary" />}
-          </div>
-
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
