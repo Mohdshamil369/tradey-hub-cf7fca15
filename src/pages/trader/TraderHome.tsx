@@ -191,6 +191,7 @@ const TraderHome = () => {
   const [individualSearch, setIndividualSearch] = useState("");
   const [quoteJobId, setQuoteJobId] = useState<string | null>(null);
   const [quoteAmount, setQuoteAmount] = useState("");
+  const [scheduleJob, setScheduleJob] = useState<IncomingJob | null>(null);
 
   const mockGroups = [
     { id: "g1", name: "Plumbing Squad", members: [
@@ -412,6 +413,7 @@ const TraderHome = () => {
                   job={job}
                   onViewDetail={() => toast.info("Navigate to Jobs tab for full details")}
                   viewMode={isIndividual ? "individual" : "agency"}
+                  onShowSchedule={() => setScheduleJob(job)}
                 />
               ))}
             </div>
@@ -692,6 +694,35 @@ const TraderHome = () => {
             </div>
           );
         })()}
+
+        {/* Schedule bottom sheet */}
+        {scheduleJob && (
+          <>
+            <div
+              className="absolute inset-0 z-40 bg-foreground/40"
+              onClick={() => setScheduleJob(null)}
+            />
+            <div className="absolute inset-x-0 bottom-0 z-50 rounded-t-3xl bg-background shadow-2xl border-t border-border/40 animate-in slide-in-from-bottom duration-200 max-h-[80vh] overflow-hidden flex flex-col">
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="h-1 w-10 rounded-full bg-muted-foreground/20" />
+              </div>
+              <div className="flex items-center justify-between px-5 pb-2">
+                <h3 className="text-sm font-bold text-foreground">My Schedule</h3>
+                <button onClick={() => setScheduleJob(null)} className="rounded-full p-1 active:bg-muted">
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </div>
+              <div className="mx-4 mb-2 rounded-xl bg-primary/5 border border-primary/15 px-3 py-2">
+                <p className="text-[10px] font-bold text-primary mb-0.5">Viewing schedule for</p>
+                <p className="text-[11px] font-semibold text-foreground">{scheduleJob.icon} {scheduleJob.title} · {scheduleJob.timeWindow}</p>
+                <p className="text-[10px] text-muted-foreground">{scheduleJob.location} · {scheduleJob.distance}</p>
+              </div>
+              <div className="flex-1 overflow-y-auto px-2 pb-6">
+                <CalendarDayView />
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </MobileLayout>
   );
