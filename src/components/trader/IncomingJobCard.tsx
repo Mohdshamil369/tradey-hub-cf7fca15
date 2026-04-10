@@ -197,6 +197,7 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
             My Schedule
           </button>
         )}
+      </div>
     </div>
   );
 };
