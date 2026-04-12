@@ -4,12 +4,14 @@ import {
   MapPin, Clock, Star, Play, 
   Info, ChevronRight, 
   ShieldCheck, Timer,
-  MessageCircle, XCircle, FileText
+  MessageCircle, XCircle, FileText,
+  Sparkles
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Avatar from "boring-avatars";
 import { toast } from "sonner";
 import QuoteSheet, { type QuoteSheetData } from "./QuoteSheet";
+import OfferOptionsSheet from "./OfferOptionsSheet";
 
 export type JobCategory = "fixed" | "estimate" | "inspection";
 
@@ -64,9 +66,14 @@ const categoryConfig: Record<JobCategory, { label: string; className: string }> 
 
 const JobDetailSheet = ({ job, isOpen, onOpenChange, onAction }: JobDetailSheetProps) => {
   const [showQuoteSheet, setShowQuoteSheet] = useState(false);
+  const [showOptionsSheet, setShowOptionsSheet] = useState(false);
+  const [quoteMode, setQuoteMode] = useState<"estimate" | "inspection">("estimate");
 
   React.useEffect(() => {
-    if (!isOpen) setShowQuoteSheet(false);
+    if (!isOpen) {
+      setShowQuoteSheet(false);
+      setShowOptionsSheet(false);
+    }
   }, [isOpen]);
 
   if (!job) return null;
@@ -75,74 +82,58 @@ const JobDetailSheet = ({ job, isOpen, onOpenChange, onAction }: JobDetailSheetP
   const showMessageCTA = job.category !== "fixed";
 
   const handleQuoteSubmit = (data: QuoteSheetData) => {
-    const action = job.category === "inspection" ? "approve_inspection" : "send_estimate";
+    const action = quoteMode === "inspection" ? "approve_inspection" : "send_estimate";
     onAction(job.id, action, data);
     setShowQuoteSheet(false);
     onOpenChange(false);
-    toast.success("Quote sent successfully!");
+    toast.success(`${quoteMode === "inspection" ? "Inspection" : "Quote"} sent successfully!`);
+  };
+
+  const handleOptionSelect = (option: "inspection" | "quote") => {
+    setQuoteMode(option === "inspection" ? "inspection" : "estimate");
+    setShowOptionsSheet(false);
+    setShowQuoteSheet(true);
   };
 
   const renderFooter = () => {
-    switch (job.category) {
-      case "fixed":
-        return (
-          <div className="flex gap-3 p-4 bg-background border-t border-border">
-            <button
-              onClick={() => { onAction(job.id, "decline"); onOpenChange(false); }}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-2xl border border-border py-4 text-sm font-bold text-muted-foreground active:bg-muted"
-            >
-              <XCircle className="h-4 w-4" />
-              Decline
-            </button>
-            <button
-              onClick={() => onAction(job.id, "accept")}
-              className="flex-[2] rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
-            >
-              Pickup Job • £{job.price}
-            </button>
-          </div>
-        );
-      case "estimate":
-        return (
-          <div className="flex gap-3 p-4 bg-background border-t border-border">
-            <button
-              onClick={() => { onAction(job.id, "decline"); onOpenChange(false); }}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-2xl border border-border py-4 text-sm font-bold text-muted-foreground active:bg-muted"
-            >
-              <XCircle className="h-4 w-4" />
-              Decline
-            </button>
-            <button
-              onClick={() => setShowQuoteSheet(true)}
-              className="flex-[2] rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-            >
-              <FileText className="h-4 w-4" />
-              Create Estimate
-            </button>
-          </div>
-        );
-      case "inspection":
-        return (
-          <div className="flex gap-3 p-4 bg-background border-t border-border">
-            <button
-              onClick={() => { onAction(job.id, "decline"); onOpenChange(false); }}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-2xl border border-border py-4 text-sm font-bold text-muted-foreground active:bg-muted"
-            >
-              <XCircle className="h-4 w-4" />
-              Decline
-            </button>
-            <button
-              onClick={() => setShowQuoteSheet(true)}
-              className="flex-[2] rounded-2xl bg-[hsl(25,90%,55%)] py-4 text-sm font-bold text-white shadow-lg shadow-orange-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-            >
-              <FileText className="h-4 w-4" />
-              Create Inspection Quote
-            </button>
-          </div>
-        );
-      default:
-        return null;
+    if (job.category === "fixed") {
+      return (
+        <div className="flex gap-3 p-4 bg-background border-t border-border">
+          <button
+            onClick={() => { onAction(job.id, "decline"); onOpenChange(false); }}
+            className="flex-1 flex items-center justify-center gap-1.5 rounded-2xl border border-border py-4 text-sm font-bold text-muted-foreground active:bg-muted"
+          >
+            <XCircle className="h-4 w-4" />
+            Decline
+          </button>
+          <button
+            onClick={() => onAction(job.id, "accept")}
+            className="flex-[2] rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
+          >
+            Pickup Job • £{job.price}
+          </button>
+        </div>
+      );
     }
+
+    return (
+      <div className="flex gap-3 p-4 bg-background border-t border-border">
+        <button
+          onClick={() => { onAction(job.id, "decline"); onOpenChange(false); }}
+          className="flex-1 flex items-center justify-center gap-1.5 rounded-2xl border border-border py-4 text-sm font-bold text-muted-foreground active:bg-muted"
+        >
+          <XCircle className="h-4 w-4" />
+          Decline
+        </button>
+        <button
+          onClick={() => setShowOptionsSheet(true)}
+          className="flex-[2] rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+        >
+          <Sparkles className="h-4 w-4" />
+          Create Offer
+        </button>
+      </div>
+    );
   };
 
   return (
@@ -327,16 +318,22 @@ const JobDetailSheet = ({ job, isOpen, onOpenChange, onAction }: JobDetailSheetP
         </Drawer.Portal>
       </Drawer.Root>
 
+      {/* Offer Options Sheet — separate intermediate sheet */}
+      <OfferOptionsSheet
+        isOpen={showOptionsSheet}
+        onOpenChange={setShowOptionsSheet}
+        onSelect={handleOptionSelect}
+        jobTitle={job.title}
+      />
+
       {/* Quote Sheet — separate bottom sheet */}
-      {job.category !== "fixed" && (
-        <QuoteSheet
-          isOpen={showQuoteSheet}
-          onOpenChange={setShowQuoteSheet}
-          category={job.category}
-          jobTitle={job.title}
-          onSubmit={handleQuoteSubmit}
-        />
-      )}
+      <QuoteSheet
+        isOpen={showQuoteSheet}
+        onOpenChange={setShowQuoteSheet}
+        category={quoteMode}
+        jobTitle={job.title}
+        onSubmit={handleQuoteSubmit}
+      />
     </>
   );
 };

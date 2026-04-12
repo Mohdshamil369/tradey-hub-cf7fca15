@@ -1,4 +1,4 @@
-import { MapPin, Clock, Camera, Calendar, ChevronLeft, ChevronRight, Heart, CalendarDays, Users } from "lucide-react";
+import { MapPin, Clock, Camera, Calendar, ChevronLeft, ChevronRight, Heart, Users } from "lucide-react";
 import { useState } from "react";
 import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 
@@ -52,81 +52,54 @@ interface IncomingJobCardProps {
   showCategoryBadge?: boolean;
 }
 
-const categoryConfig: Record<JobCategory, { label: string; emoji: string; className: string }> = {
-  fixed: { label: "Fixed Rate", emoji: "⚡", className: "bg-primary/10 text-primary" },
-  estimate: { label: "Estimate", emoji: "📝", className: "bg-blue-500/10 text-blue-600" },
-  inspection: { label: "Inspection", emoji: "🔍", className: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]" },
-};
-
-const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequestPhotos, onShowSchedule, isSaved = false, onToggleSave, showCategoryBadge = true }: IncomingJobCardProps) => {
-  const cat = job.category ? categoryConfig[job.category] : null;
+const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequestPhotos, onShowSchedule, isSaved = false, onToggleSave }: IncomingJobCardProps) => {
   const photos = job.customerRequest?.photos?.filter(p => p && p !== "/placeholder.svg") ?? [];
   const hasPhotos = photos.length > 0;
-  const estDuration = job.customerRequest?.expectedDuration || job.estimatedDuration;
   const [photoRequested, setPhotoRequested] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
 
   return (
     <div
-      className="rounded-2xl bg-card overflow-hidden border border-border card-shadow transition-all active:scale-[0.99]"
+      className="rounded-[32px] bg-card overflow-hidden border border-border/50 card-shadow transition-all active:scale-[0.985] group"
       onClick={onViewDetail}
     >
-      {/* Photo area — reduced height */}
-      <div className="relative w-full h-[110px] bg-muted/30">
+      {/* Photo area */}
+      <div className="relative w-full h-[180px] bg-[#F8F9FB]">
         {hasPhotos ? (
           <>
             <img
               src={photos[photoIndex]}
-              alt=""
-              className="h-full w-full object-cover"
+              alt={job.title}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
             />
             {photos.length > 1 && (
-              <>
+              <div className="absolute inset-0 flex items-center justify-between px-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                   onClick={(e) => { e.stopPropagation(); setPhotoIndex(i => (i - 1 + photos.length) % photos.length); }}
-                  className="absolute left-1.5 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full bg-foreground/50 text-background active:bg-foreground/70 opacity-5"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-foreground shadow-sm active:scale-90"
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" />
+                  <ChevronLeft className="h-4 w-4" />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); setPhotoIndex(i => (i + 1) % photos.length); }}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full bg-foreground/50 text-background active:bg-foreground/70 opacity-5"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-foreground shadow-sm active:scale-90"
                 >
-                  <ChevronRight className="h-3.5 w-3.5" />
+                  <ChevronRight className="h-4 w-4" />
                 </button>
-                <div className="absolute bottom-1.5 inset-x-0 flex justify-center gap-1">
-                  {photos.map((_, i) => (
-                    <div key={i} className={`h-1 rounded-full transition-all ${i === photoIndex ? "w-3 bg-background" : "w-1 bg-background/50"}`} />
-                  ))}
-                </div>
-              </>
+              </div>
             )}
-            {/* Top-left stickers */}
-            <div className="absolute top-1.5 left-1.5 flex flex-col items-start gap-1">
-              {job.proposalsCount !== undefined && (
-                <div className="flex items-center gap-1 rounded-md bg-foreground/60 px-1.5 py-0.5 text-[9px] font-bold text-background backdrop-blur-md shadow-sm">
-                  <Users className="h-2.5 w-2.5" />
-                  {job.proposalsCount} Proposals
-                </div>
-              )}
-            </div>
-            
-            {/* Bottom-right photo count sticker */}
-            <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1 rounded-md bg-background/60 px-1.5 py-0.5 text-[9px] font-bold text-foreground backdrop-blur-sm shadow-sm ring-1 ring-background/10">
-              <Camera className="h-2.5 w-2.5" />
+            <div className="absolute bottom-3 right-3 flex items-center gap-1 rounded-full bg-black/50 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold text-white border border-white/10">
+              <Camera className="h-3 w-3" />
               {photos.length}
             </div>
           </>
         ) : (
-          <div className="relative flex items-center justify-center h-full bg-muted/20">
-            {job.proposalsCount !== undefined && (
-              <div className="absolute top-1.5 left-1.5 flex items-center gap-1 rounded-md bg-foreground/60 px-1.5 py-0.5 text-[9px] font-bold text-background backdrop-blur-md shadow-sm">
-                <Users className="h-2.5 w-2.5" />
-                {job.proposalsCount} Proposals
-              </div>
-            )}
-            <img src={noPhotoPlaceholder} alt="No photo" className="h-14 w-14 object-contain opacity-30" />
+          <div className="flex flex-col items-center justify-center h-full gap-4">
+            <div className="relative">
+              <img src={noPhotoPlaceholder} alt="No photo" className="h-16 w-16 object-contain opacity-[0.15]" />
+              <Camera className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground/30" />
+            </div>
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -134,83 +107,88 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
                 onRequestPhotos?.(job.id);
               }}
               disabled={photoRequested}
-              className="absolute bottom-2 inset-x-3 flex items-center justify-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-bold active:opacity-80 disabled:opacity-50 bg-card border border-primary text-primary mx-[93px]"
+              className="flex items-center justify-center gap-2 rounded-xl bg-white border border-[#E2E8F0] px-6 py-2.5 text-xs font-bold text-[#1E293B] shadow-sm active:scale-95 disabled:opacity-50 transition-all hover:border-primary/30"
             >
-              <Camera className="h-3 w-3" />
+              <Camera className="h-4 w-4" />
               {photoRequested ? "Request Sent" : "Request Photos"}
             </button>
           </div>
         )}
 
-        {/* Favorite & Category badges */}
-        <div className="absolute top-1.5 right-1.5 flex flex-col items-end gap-1.5">
+        {/* Action badges */}
+        <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
           {onToggleSave && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleSave(job.id);
               }}
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground/40 backdrop-blur-sm active:scale-90 transition-transform shadow-sm"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm active:scale-90 transition-all shadow-md hover:bg-white"
             >
-              <Heart className={`h-3.5 w-3.5 ${isSaved ? "fill-red-500 text-red-500" : "text-background"}`} />
+              <Heart className={`h-4 w-4 ${isSaved ? "fill-red-500 text-red-500" : "text-[#64748B]"}`} />
             </button>
           )}
-          {showCategoryBadge && cat && (
-            <span className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[9px] font-bold backdrop-blur-sm ${cat.className} bg-opacity-90 shadow-sm whitespace-nowrap opacity-0`}>
-              {cat.emoji} {cat.label}
-            </span>
+          {job.proposalsCount !== undefined && job.proposalsCount > 0 && (
+            <div className="flex items-center gap-1 rounded-full bg-white/90 backdrop-blur-sm px-2.5 py-1 text-[10px] font-bold text-[#64748B] shadow-md border border-white/20">
+              <Users className="h-3 w-3 text-primary" />
+              {job.proposalsCount} Proposals
+            </div>
           )}
         </div>
-
       </div>
 
-      {/* Info section */}
-      <div className="px-3 pt-2 pb-1.5">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <h4 className="text-[13px] font-bold text-foreground leading-tight truncate">{job.title}</h4>
+      {/* Content Section */}
+      <div className="px-5 pt-4 pb-4">
+        <div className="flex items-start justify-between mb-1">
+          <h4 className="text-[17px] font-bold text-[#1E293B] leading-tight flex-1 mr-4">{job.title}</h4>
+          <div className="text-right shrink-0">
+            {job.price ? (
+              <span className="text-[17px] font-extrabold text-[#1E293B]">£{job.price}</span>
+            ) : job.inspectionFee ? (
+              <div className="flex flex-col items-end">
+                <span className="text-[17px] font-extrabold text-[#F97316]">£{job.inspectionFee}</span>
+                <span className="text-[9px] font-semibold text-orange-500/70 uppercase tracking-wider">Inspect</span>
+              </div>
+            ) : (
+              <span className="text-sm font-bold text-blue-600">Quote Req.</span>
+            )}
           </div>
-          {job.price ? (
-            <span className="font-extrabold text-primary text-[15px] shrink-0">£{job.price}</span>
-          ) : job.inspectionFee ? (
-            <span className="font-bold text-[hsl(25,90%,55%)] text-[13px] shrink-0">£{job.inspectionFee} <span className="text-[9px] font-medium">inspect</span></span>
-          ) : (
-            <span className="font-bold text-blue-600 text-[11px] shrink-0">Quote TBD</span>
-          )}
         </div>
 
-        <p className="mt-0.5 text-[11px] text-muted-foreground truncate">{job.customer} · {job.location}</p>
+        <p className="text-[13px] font-medium text-[#64748B] mb-3">{job.customer} · {job.location}</p>
 
-        {/* Metrics row */}
-        <div className="mt-1.5 flex items-center gap-2 flex-wrap">
-          {estDuration && (
-            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground bg-secondary rounded-md px-1.5 py-0.5">
-              <Clock className="h-2.5 w-2.5" />{estDuration}
-            </span>
-          )}
-          <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground bg-secondary rounded-md px-1.5 py-0.5">
-            <MapPin className="h-2.5 w-2.5" />{job.distance}
-          </span>
-          <span className="ml-auto text-[9px] text-muted-foreground/50">{job.postedAgo || "Just now"}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 rounded-lg bg-[#F1F5F9] px-2.5 py-1.5">
+              <MapPin className="h-3.5 w-3.5 text-primary" />
+              <span className="text-[11px] font-bold text-[#475569]">{job.distance}</span>
+            </div>
+            {job.estimatedDuration && (
+              <div className="flex items-center gap-1.5 rounded-lg bg-[#F1F5F9] px-2.5 py-1.5">
+                <Clock className="h-3.5 w-3.5 text-[#475569]" />
+                <span className="text-[11px] font-bold text-[#475569]">{job.estimatedDuration}</span>
+              </div>
+            )}
+          </div>
+          <span className="text-[11px] font-medium text-[#94A3B8]">{job.postedAgo || "Just now"}</span>
         </div>
       </div>
 
-      {/* Schedule footer */}
-      <div className="flex items-center justify-between border-t border-border/50 px-3 py-1.5">
-        <span className="flex items-center gap-1 text-[11px] font-semibold text-foreground">
-          <Calendar className="h-3 w-3 text-primary" />
-          {job.timeWindow}
-        </span>
+      {/* Footer / Time Window */}
+      <div className="bg-[#F8FAFC] border-t border-[#F1F5F9] px-5 py-3.5 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-primary" />
+          <span className="text-[12px] font-bold text-[#1E293B]">{job.timeWindow}</span>
+        </div>
         {onShowSchedule && (
           <button
             onClick={(e) => {
               e.stopPropagation();
               onShowSchedule(job);
             }}
-            className="flex items-center gap-1 rounded-lg bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary active:bg-primary/20 transition-colors"
+            className="text-[11px] font-bold text-primary active:opacity-60"
           >
-            <CalendarDays className="h-3 w-3" />
-            My Schedule
+            Schedule →
           </button>
         )}
       </div>
