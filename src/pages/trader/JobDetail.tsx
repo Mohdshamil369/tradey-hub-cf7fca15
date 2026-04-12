@@ -706,8 +706,8 @@ const JobDetail = () => {
 
       {/* Quote Options Bottom Sheet */}
       <Sheet open={showQuoteOptions} onOpenChange={setShowQuoteOptions}>
-        <SheetContent side="bottom" className="rounded-t-3xl px-4 pb-8 pt-2">
-          <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-muted-foreground/20" />
+        <SheetContent side="bottom" className="rounded-t-[32px] px-4 pb-8 pt-2 sm:max-w-[420px] sm:mx-auto">
+          <div className="mx-auto mb-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
           <h3 className="text-base font-bold text-foreground mb-1">Choose Quote Type</h3>
           <p className="text-[11px] text-muted-foreground mb-4">
             Select how you'd like to respond to this job
@@ -721,7 +721,7 @@ const JobDetail = () => {
                 onClick={() => handleQuoteOptionSelect(option.key)}
                 className={`relative flex items-start gap-3 rounded-2xl p-3.5 text-left transition-all active:scale-[0.98] ${
                   option.isRecommended
-                    ? "bg-primary/8 border-2 border-primary/30 shadow-sm"
+                    ? "bg-primary/5 border-2 border-primary/30 shadow-sm"
                     : "bg-muted/50 border border-border/50"
                 }`}
               >
