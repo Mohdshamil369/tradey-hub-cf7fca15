@@ -942,235 +942,238 @@ const Bookings = () => {
           : 0;
 
         return (
-          <div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
-            <div className="w-full max-h-[85%] overflow-y-auto rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-extrabold text-foreground font-heading">Cancel Booking</h2>
-                <button onClick={() => setCancelBookingId(null)} className="rounded-full bg-muted p-2">
-                  <X className="h-4 w-4 text-muted-foreground" />
-                </button>
-              </div>
-
-              <div className="mb-4 flex items-center gap-3 rounded-2xl bg-card p-3 card-shadow">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconColorMap[cancelBooking.iconColor]?.bg || "bg-accent"}`}>
-                  <cancelBooking.icon size={20} weight="duotone" className={iconColorMap[cancelBooking.iconColor]?.color || "text-muted-foreground"} />
+          <DevicePortal>
+            <div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
+              <div className="w-full max-h-[85%] overflow-y-auto rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-lg font-extrabold text-foreground font-heading">Cancel Booking</h2>
+                  <button onClick={() => setCancelBookingId(null)} className="rounded-full bg-muted p-2">
+                    <X className="h-4 w-4 text-muted-foreground" />
+                  </button>
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-foreground">{cancelBooking.service}</h4>
-                  <p className="text-xs text-muted-foreground">{cancelBooking.provider} · {cancelBooking.date}</p>
-                </div>
-              </div>
 
-              <div className={`mb-4 rounded-2xl p-4 ${
-                fee > 0 ? "bg-destructive/5 border border-destructive/20" : "bg-accent/50"
-              }`}>
-                <div className="flex items-start gap-2.5">
-                  {fee > 0 ? (
-                    <AlertTriangle className="h-5 w-5 shrink-0 text-destructive" />
-                  ) : (
-                    <Shield className="h-5 w-5 shrink-0 text-primary" />
-                  )}
+                <div className="mb-4 flex items-center gap-3 rounded-2xl bg-card p-3 card-shadow">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconColorMap[cancelBooking.iconColor]?.bg || "bg-accent"}`}>
+                    <cancelBooking.icon size={20} weight="duotone" className={iconColorMap[cancelBooking.iconColor]?.color || "text-muted-foreground"} />
+                  </div>
                   <div>
-                    {status === "free" && (
-                      <>
-                        <p className="text-sm font-bold text-foreground">Free Cancellation</p>
-                        <p className="mt-0.5 text-xs text-muted-foreground">
-                          Your booking is more than 48 hours away ({hoursLeft}h). You can cancel at no cost.
-                        </p>
-                      </>
-                    )}
-                    {status === "partial-fee" && (
-                      <>
-                        <p className="text-sm font-bold text-foreground">Cancellation Fee Applies</p>
-                        <p className="mt-0.5 text-xs text-muted-foreground">
-                          Your booking is within 24–48 hours ({hoursLeft}h away). A {CANCELLATION_POLICY.LATE_CANCEL_FEE_PCT}% cancellation fee of <span className="font-bold text-destructive">£{fee}</span> will apply.
-                        </p>
-                      </>
-                    )}
-                    {status === "late-fee" && (
-                      <>
-                        <p className="text-sm font-bold text-foreground">Late Cancellation Fee</p>
-                        <p className="mt-0.5 text-xs text-muted-foreground">
-                          Your booking is less than 24 hours away ({hoursLeft}h). A {CANCELLATION_POLICY.LATE_CANCEL_FEE_PCT}% fee of <span className="font-bold text-destructive">£{fee}</span> will be charged.
-                        </p>
-                      </>
-                    )}
+                    <h4 className="text-sm font-bold text-foreground">{cancelBooking.service}</h4>
+                    <p className="text-xs text-muted-foreground">{cancelBooking.provider} · {cancelBooking.date}</p>
                   </div>
                 </div>
-              </div>
 
-              <div className="mb-5 flex flex-col gap-1.5 rounded-xl bg-muted p-3 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Booking total</span>
-                  <span className="font-semibold text-foreground">£{cancelBooking.price}</span>
+                <div className={`mb-4 rounded-2xl p-4 ${
+                  fee > 0 ? "bg-destructive/5 border border-destructive/20" : "bg-accent/50"
+                }`}>
+                  <div className="flex items-start gap-2.5">
+                    {fee > 0 ? (
+                      <AlertTriangle className="h-5 w-5 shrink-0 text-destructive" />
+                    ) : (
+                      <Shield className="h-5 w-5 shrink-0 text-primary" />
+                    )}
+                    <div>
+                      {status === "free" && (
+                        <>
+                          <p className="text-sm font-bold text-foreground">Free Cancellation</p>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            Your booking is more than 48 hours away ({hoursLeft}h). You can cancel at no cost.
+                          </p>
+                        </>
+                      )}
+                      {status === "partial-fee" && (
+                        <>
+                          <p className="text-sm font-bold text-foreground">Cancellation Fee Applies</p>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            Your booking is within 24–48 hours ({hoursLeft}h away). A {CANCELLATION_POLICY.LATE_CANCEL_FEE_PCT}% cancellation fee of <span className="font-bold text-destructive">£{fee}</span> will apply.
+                          </p>
+                        </>
+                      )}
+                      {status === "late-fee" && (
+                        <>
+                          <p className="text-sm font-bold text-foreground">Late Cancellation Fee</p>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            Your booking is less than 24 hours away ({hoursLeft}h). A {CANCELLATION_POLICY.LATE_CANCEL_FEE_PCT}% fee of <span className="font-bold text-destructive">£{fee}</span> will be charged.
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                {fee > 0 && (
+
+                <div className="mb-5 flex flex-col gap-1.5 rounded-xl bg-muted p-3 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Cancellation fee</span>
-                    <span className="font-semibold text-destructive">-£{fee}</span>
+                    <span className="text-muted-foreground">Booking total</span>
+                    <span className="font-semibold text-foreground">£{cancelBooking.price}</span>
                   </div>
-                )}
-                <div className="flex justify-between border-t border-border pt-2 text-sm">
-                  <span className="font-bold text-foreground">Refund amount</span>
-                  <span className="font-bold text-primary">£{cancelBooking.price - fee}</span>
+                  {fee > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Cancellation fee</span>
+                      <span className="font-semibold text-destructive">-£{fee}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between border-t border-border pt-2 text-sm">
+                    <span className="font-bold text-foreground">Refund amount</span>
+                    <span className="font-bold text-primary">£{cancelBooking.price - fee}</span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Cancellation Notes */}
-              <div className="mb-5">
-                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Reason for cancellation
-                </label>
-                <textarea
-                  value={cancelNotes}
-                  onChange={(e) => setCancelNotes(e.target.value)}
-                  placeholder="Please let us know why you're cancelling..."
-                  rows={3}
-                  className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary"
-                />
-              </div>
+                <div className="mb-5">
+                  <label className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Reason for cancellation
+                  </label>
+                  <textarea
+                    value={cancelNotes}
+                    onChange={(e) => setCancelNotes(e.target.value)}
+                    placeholder="Please let us know why you're cancelling..."
+                    rows={3}
+                    className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary"
+                  />
+                </div>
 
-              <div className="flex gap-3">
-                <button
-                  onClick={() => { setCancelBookingId(null); setCancelNotes(""); }}
-                  className="flex-1 rounded-xl bg-card py-3 text-sm font-bold text-foreground card-shadow transition-transform active:scale-95"
-                >
-                  Keep Booking
-                </button>
-                <button
-                  onClick={() => {
-                    if (!cancelNotes.trim()) {
-                      toast.error("Please provide a reason for cancellation");
-                      return;
-                    }
-                    setUpcomingList((prev) => prev.filter((b) => b.id !== cancelBooking.id));
-                    setCancelBookingId(null);
-                    setCancelNotes("");
-                    toast.success("Booking cancelled");
-                  }}
-                  disabled={!cancelNotes.trim()}
-                  className={`flex-1 rounded-xl py-3 text-sm font-bold transition-transform active:scale-95 ${
-                    cancelNotes.trim()
-                      ? "bg-destructive text-destructive-foreground"
-                      : "bg-muted text-muted-foreground cursor-not-allowed"
-                  }`}
-                >
-                  {fee > 0 ? `Cancel (£${fee} fee)` : "Cancel Booking"}
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => { setCancelBookingId(null); setCancelNotes(""); }}
+                    className="flex-1 rounded-xl bg-card py-3 text-sm font-bold text-foreground card-shadow transition-transform active:scale-95"
+                  >
+                    Keep Booking
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!cancelNotes.trim()) {
+                        toast.error("Please provide a reason for cancellation");
+                        return;
+                      }
+                      setUpcomingList((prev) => prev.filter((b) => b.id !== cancelBooking.id));
+                      setCancelBookingId(null);
+                      setCancelNotes("");
+                      toast.success("Booking cancelled");
+                    }}
+                    disabled={!cancelNotes.trim()}
+                    className={`flex-1 rounded-xl py-3 text-sm font-bold transition-transform active:scale-95 ${
+                      cancelNotes.trim()
+                        ? "bg-destructive text-destructive-foreground"
+                        : "bg-muted text-muted-foreground cursor-not-allowed"
+                    }`}
+                  >
+                    {fee > 0 ? `Cancel (£${fee} fee)` : "Cancel Booking"}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          </DevicePortal>
         );
       })()}
 
       {/* Reschedule Modal */}
       {rescheduleBooking && (
-        <div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
-          <div className="w-full max-h-[85%] overflow-y-auto rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-extrabold text-foreground font-heading">Reschedule</h2>
-              <button onClick={() => { setRescheduleBookingId(null); setRescheduleDate(null); setRescheduleTime(null); }} className="rounded-full bg-muted p-2">
-                <X className="h-4 w-4 text-muted-foreground" />
-              </button>
-            </div>
-
-            <div className="mb-4 flex items-center gap-3 rounded-2xl bg-card p-3 card-shadow">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconColorMap[rescheduleBooking.iconColor]?.bg || "bg-accent"}`}>
-                <rescheduleBooking.icon size={20} weight="duotone" className={iconColorMap[rescheduleBooking.iconColor]?.color || "text-muted-foreground"} />
+        <DevicePortal>
+          <div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
+            <div className="w-full max-h-[85%] overflow-y-auto rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-extrabold text-foreground font-heading">Reschedule</h2>
+                <button onClick={() => { setRescheduleBookingId(null); setRescheduleDate(null); setRescheduleTime(null); }} className="rounded-full bg-muted p-2">
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
               </div>
-              <div>
-                <h4 className="text-sm font-bold text-foreground">{rescheduleBooking.service}</h4>
-                <p className="text-xs text-muted-foreground">{rescheduleBooking.provider}</p>
-              </div>
-            </div>
 
-            <div className="mb-4 rounded-2xl bg-accent/50 p-3">
-              <div className="flex items-start gap-2.5">
-                <Info className="h-4 w-4 shrink-0 text-primary mt-0.5" />
-                <p className="text-xs text-muted-foreground">
-                  Free rescheduling up to <span className="font-semibold text-foreground">4 hours</span> before. Subject to trader availability.
-                </p>
+              <div className="mb-4 flex items-center gap-3 rounded-2xl bg-card p-3 card-shadow">
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconColorMap[rescheduleBooking.iconColor]?.bg || "bg-accent"}`}>
+                  <rescheduleBooking.icon size={20} weight="duotone" className={iconColorMap[rescheduleBooking.iconColor]?.color || "text-muted-foreground"} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-foreground">{rescheduleBooking.service}</h4>
+                  <p className="text-xs text-muted-foreground">{rescheduleBooking.provider}</p>
+                </div>
               </div>
-            </div>
 
-            <div className="mb-4">
-              <label className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider">Current</label>
-              <div className="flex items-center gap-3 rounded-xl bg-muted p-3 text-sm text-foreground">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                {rescheduleBooking.date} · {rescheduleBooking.time}
+              <div className="mb-4 rounded-2xl bg-accent/50 p-3">
+                <div className="flex items-start gap-2.5">
+                  <Info className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+                  <p className="text-xs text-muted-foreground">
+                    Free rescheduling up to <span className="font-semibold text-foreground">4 hours</span> before. Subject to trader availability.
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div className="mb-4">
-              <HorizontalScroll
-                className="gap-2 pb-1"
-                title={
-                  <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
-                    <Calendar className="h-4 w-4 text-primary" />
-                    New Date
-                  </h3>
-                }
-              >
-                {availableDates.map((date) => {
-                  const isSelected = rescheduleDate && format(date, "yyyy-MM-dd") === format(rescheduleDate, "yyyy-MM-dd");
-                  return (
+              <div className="mb-4">
+                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider">Current</label>
+                <div className="flex items-center gap-3 rounded-xl bg-muted p-3 text-sm text-foreground">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  {rescheduleBooking.date} · {rescheduleBooking.time}
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <HorizontalScroll
+                  className="gap-2 pb-1"
+                  title={
+                    <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+                      <Calendar className="h-4 w-4 text-primary" />
+                      New Date
+                    </h3>
+                  }
+                >
+                  {availableDates.map((date) => {
+                    const isSelected = rescheduleDate && format(date, "yyyy-MM-dd") === format(rescheduleDate, "yyyy-MM-dd");
+                    return (
+                      <button
+                        key={date.toISOString()}
+                        onClick={() => setRescheduleDate(date)}
+                        className={`flex shrink-0 flex-col items-center rounded-2xl px-3.5 py-2.5 transition-all ${
+                          isSelected
+                            ? "bg-primary text-primary-foreground chip-active-shadow"
+                            : "bg-card text-foreground card-shadow"
+                        }`}
+                      >
+                        <span className="text-[10px] font-semibold uppercase">{format(date, "EEE")}</span>
+                        <span className="text-lg font-bold">{format(date, "d")}</span>
+                        <span className="text-[10px]">{format(date, "MMM")}</span>
+                      </button>
+                    );
+                  })}
+                </HorizontalScroll>
+              </div>
+
+              <div className="mb-5">
+                <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-foreground">
+                  <Clock className="h-4 w-4 text-primary" />
+                  Select Time
+                </h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {timeSlots.map((time) => (
                     <button
-                      key={date.toISOString()}
-                      onClick={() => setRescheduleDate(date)}
-                      className={`flex shrink-0 flex-col items-center rounded-2xl px-3.5 py-2.5 transition-all ${
-                        isSelected
+                      key={time}
+                      onClick={() => setRescheduleTime(time)}
+                      className={`rounded-xl py-2.5 text-sm font-semibold transition-all ${
+                        rescheduleTime === time
                           ? "bg-primary text-primary-foreground chip-active-shadow"
                           : "bg-card text-foreground card-shadow"
                       }`}
                     >
-                      <span className="text-[10px] font-semibold uppercase">{format(date, "EEE")}</span>
-                      <span className="text-lg font-bold">{format(date, "d")}</span>
-                      <span className="text-[10px]">{format(date, "MMM")}</span>
+                      {time}
                     </button>
-                  );
-                })}
-              </HorizontalScroll>
-            </div>
-
-            <div className="mb-5">
-              <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-foreground">
-                <Clock className="h-4 w-4 text-primary" />
-                Select Time
-              </h3>
-              <div className="grid grid-cols-3 gap-2">
-                {timeSlots.map((time) => (
-                  <button
-                    key={time}
-                    onClick={() => setRescheduleTime(time)}
-                    className={`rounded-xl py-2.5 text-sm font-semibold transition-all ${
-                      rescheduleTime === time
-                        ? "bg-primary text-primary-foreground chip-active-shadow"
-                        : "bg-card text-foreground card-shadow"
-                    }`}
-                  >
-                    {time}
-                  </button>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <button
-              onClick={() => {
-                if (!rescheduleDate || !rescheduleTime) return;
-                toast.success("Booking rescheduled! ✅", {
-                  description: `Moved to ${format(rescheduleDate, "PPP")} at ${rescheduleTime}`,
-                });
-                setRescheduleBookingId(null);
-                setRescheduleDate(null);
-                setRescheduleTime(null);
-              }}
-              disabled={!rescheduleDate || !rescheduleTime}
-              className="w-full rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-transform active:scale-95 disabled:opacity-50"
-            >
-              Confirm New Time
-            </button>
+              <button
+                onClick={() => {
+                  if (!rescheduleDate || !rescheduleTime) return;
+                  toast.success("Booking rescheduled! ✅", {
+                    description: `Moved to ${format(rescheduleDate, "PPP")} at ${rescheduleTime}`,
+                  });
+                  setRescheduleBookingId(null);
+                  setRescheduleDate(null);
+                  setRescheduleTime(null);
+                }}
+                disabled={!rescheduleDate || !rescheduleTime}
+                className="w-full rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-transform active:scale-95 disabled:opacity-50"
+              >
+                Confirm New Time
+              </button>
+            </div>
           </div>
-        </div>
+        </DevicePortal>
       )}
     </MobileLayout>
   );
