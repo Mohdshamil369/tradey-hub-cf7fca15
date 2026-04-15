@@ -1,4 +1,5 @@
 import MobileLayout from "@/components/layout/MobileLayout";
+import DevicePortal from "@/components/layout/DevicePortal";
 import { ArrowLeft, Plus, MapPin, Trash2, CheckCircle2, Pencil, X, Save, Home, Building2, Star } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";

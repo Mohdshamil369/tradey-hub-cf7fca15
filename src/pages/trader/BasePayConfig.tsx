@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import MobileLayout from "@/components/layout/MobileLayout";
+import DevicePortal from "@/components/layout/DevicePortal";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, PoundSterling, ChevronDown, Save, Undo2 } from "lucide-react";
 import { serviceCategories, catAServices, catBServices } from "@/data/services";

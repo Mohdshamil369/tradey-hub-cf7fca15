@@ -1,4 +1,5 @@
 import MobileLayout from "@/components/layout/MobileLayout";
+import DevicePortal from "@/components/layout/DevicePortal";
 import { ArrowLeft, CreditCard, Plus, Building2, Smartphone, CheckCircle2, Lock, ChevronDown, Trash2, X, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
