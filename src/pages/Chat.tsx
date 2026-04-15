@@ -361,7 +361,7 @@ const Chat = () => {
 
               {showMenu && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
+                  <div className="absolute inset-0 z-40" onClick={() => setShowMenu(false)} />
                   <div className="absolute right-0 top-full mt-1 z-50 w-56 rounded-xl bg-card border border-border card-shadow overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                     <button
                       onClick={() => setShowMenu(false)}

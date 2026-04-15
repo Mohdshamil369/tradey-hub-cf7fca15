@@ -435,8 +435,8 @@ const Payments = () => {
 
       {/* Delete confirmation modal */}
       {deleteId && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
-          <div className="w-full max-w-[390px] rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom duration-200">
+        <div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
+          <div className="w-full rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom duration-200">
             <h3 className="text-base font-bold text-foreground mb-2">Remove payment method?</h3>
             <p className="text-sm text-muted-foreground mb-5">
               This payment method will be removed from your account. You can always add it back later.

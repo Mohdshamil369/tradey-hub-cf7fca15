@@ -289,8 +289,8 @@ const ReviewModal = ({ booking, onClose, onSubmit }: ReviewModalProps) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
-      <div className="w-full max-w-[390px] max-h-[85vh] overflow-y-auto rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
+    <div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
+      <div className="w-full max-h-[85%] overflow-y-auto rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-lg font-extrabold text-foreground font-heading">Leave a Review</h2>
           <button onClick={onClose} className="rounded-full bg-muted p-2">
@@ -586,8 +586,8 @@ const QuotesTab = () => {
 
       {/* Decline reason modal */}
       {declineQuoteId && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
-          <div className="w-full max-w-[390px] rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
+        <div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
+          <div className="w-full rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-extrabold text-foreground font-heading">Decline Quote</h2>
               <button onClick={() => { setDeclineQuoteId(null); setDeclineReason(""); }} className="rounded-full bg-muted p-2">
@@ -937,8 +937,8 @@ const Bookings = () => {
           : 0;
 
         return (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
-            <div className="w-full max-w-[390px] rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
+          <div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
+            <div className="w-full max-h-[85%] overflow-y-auto rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-extrabold text-foreground font-heading">Cancel Booking</h2>
                 <button onClick={() => setCancelBookingId(null)} className="rounded-full bg-muted p-2">
@@ -1060,8 +1060,8 @@ const Bookings = () => {
 
       {/* Reschedule Modal */}
       {rescheduleBooking && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
-          <div className="w-full max-w-[390px] max-h-[85vh] overflow-y-auto rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
+        <div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
+          <div className="w-full max-h-[85%] overflow-y-auto rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-extrabold text-foreground font-heading">Reschedule</h2>
               <button onClick={() => { setRescheduleBookingId(null); setRescheduleDate(null); setRescheduleTime(null); }} className="rounded-full bg-muted p-2">

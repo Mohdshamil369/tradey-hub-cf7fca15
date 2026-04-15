@@ -153,8 +153,8 @@ const BasePayConfig = () => {
 
       {/* Universal Save / Discard bar */}
       {hasChanges && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 flex justify-center">
-          <div className="w-full max-w-[390px] border-t border-border bg-background/95 backdrop-blur-md px-4 py-3 flex items-center gap-3">
+        <div className="absolute bottom-0 left-0 right-0 z-30 flex justify-center">
+          <div className="w-full border-t border-border bg-background/95 backdrop-blur-md px-4 py-3 flex items-center gap-3">
             <button
               onClick={handleDiscard}
               className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-border bg-secondary py-3 text-sm font-bold text-foreground transition-all active:scale-95"
