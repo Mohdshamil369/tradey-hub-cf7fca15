@@ -2,6 +2,7 @@ import MobileLayout from "@/components/layout/MobileLayout";
 import HeroBanner from "@/components/home/HeroBanner";
 import ServiceBundles from "@/components/home/ServiceBundles";
 import SavedTradersList from "@/components/home/SavedTradersList";
+import PopularServiceCard from "@/components/home/PopularServiceCard";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Briefcase, ArrowRight, Bell, Search, MapPin, ChevronDown } from "lucide-react";
@@ -9,6 +10,7 @@ import { Wrench, Lightning, PaintBrush, Hammer, Broom, Snowflake, Bathtub, House
 import { catAServices } from "@/data/services";
 import { useAddressStore } from "@/stores/addressStore";
 import { serviceIconMap, iconMap, getCategoryColors, getServiceColors } from "@/lib/icons";
+import { categoryImages } from "@/data/categoryImages";
 import LocationSheet from "@/components/home/LocationSheet";
 import { useState } from "react";
 
@@ -115,32 +117,25 @@ const Index = () => {
               View all
             </button>
           </div>
-          <div className="flex flex-col gap-2">
-            {popularServices.map((service) => {
+          <div className="flex flex-col gap-2.5">
+            {popularServices.map((service, index) => {
               const iconName = serviceIconMap[service.id] || "wrench";
               const IconComponent = iconMap[iconName] || Wrench;
               const colors = getServiceColors(service.id);
+              // Alternate: even index gets a thumbnail image, odd does not
+              const serviceImage = index % 2 === 0 ? categoryImages[service.categoryId] : undefined;
               return (
-                <button
+                <PopularServiceCard
                   key={service.id}
-                  onClick={() => navigate(`/services/${service.id}/book`)}
-                  className="flex items-center gap-3 rounded-2xl bg-card p-4 card-shadow transition-all hover:card-shadow-hover active:scale-[0.98]"
-                >
-                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${colors.bg} bg-opacity-40`}>
-                    <IconComponent size={24} weight="duotone" className={colors.color} />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <h4 className="text-sm font-medium text-foreground font-sans">{service.name}</h4>
-                    <p className="text-xs text-muted-foreground">{service.description}</p>
-                    <div className="mt-1 flex items-center gap-2">
-                      <span className="text-sm font-bold text-primary">£{service.price}</span>
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock size={12} /> {service.duration}
-                      </span>
-                    </div>
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-muted-foreground" />
-                </button>
+                  id={service.id}
+                  name={service.name}
+                  description={service.description}
+                  price={service.price}
+                  duration={service.duration}
+                  icon={IconComponent}
+                  iconColors={colors}
+                  image={serviceImage}
+                />
               );
             })}
           </div>
