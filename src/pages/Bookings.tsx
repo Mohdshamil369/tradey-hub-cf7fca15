@@ -1,4 +1,5 @@
 import MobileLayout from "@/components/layout/MobileLayout";
+import DevicePortal from "@/components/layout/DevicePortal";
 import HorizontalScroll from "@/components/ui/HorizontalScroll";
 import { Calendar, Clock, MapPin, Star, MessageSquare, X, ChevronRight, ChevronDown, AlertTriangle, RefreshCw, Ban, Info, Shield, FileText, CheckCircle2, XCircle, Package, PoundSterling, Hourglass, Image as ImageIcon, Mic } from "lucide-react";
 import { Wrench, Lightbulb, Broom, Shower, PaintBrush, type Icon } from "@phosphor-icons/react";
