@@ -587,8 +587,9 @@ const QuotesTab = () => {
 
       {/* Decline reason modal */}
       {declineQuoteId && (
-        <div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
-          <div className="w-full rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
+        <DevicePortal>
+          <div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
+            <div className="w-full max-h-[85%] overflow-y-auto rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-extrabold text-foreground font-heading">Decline Quote</h2>
               <button onClick={() => { setDeclineQuoteId(null); setDeclineReason(""); }} className="rounded-full bg-muted p-2">
@@ -922,11 +923,13 @@ const Bookings = () => {
 
       {/* Review Modal */}
       {reviewBooking && (
-        <ReviewModal
-          booking={reviewBooking}
-          onClose={() => setReviewBookingId(null)}
-          onSubmit={handleReviewSubmit}
-        />
+        <DevicePortal>
+          <ReviewModal
+            booking={reviewBooking}
+            onClose={() => setReviewBookingId(null)}
+            onSubmit={handleReviewSubmit}
+          />
+        </DevicePortal>
       )}
 
       {/* Cancel Modal */}
