@@ -186,10 +186,10 @@ const TraderServicesPage = () => {
         container={typeof document !== 'undefined' ? document.getElementById('mobile-device-content') : null}
       >
         <Drawer.Portal>
-          <Drawer.Overlay className="absolute inset-0 z-50 bg-black/40 backdrop-blur-sm" />
-          <Drawer.Content className="absolute bottom-0 left-0 right-0 z-50 mx-auto flex max-h-[96%] max-w-[430px] flex-col rounded-t-[32px] bg-background outline-none overflow-hidden">
+          <Drawer.Overlay className="!absolute inset-0 z-50 bg-black/40 backdrop-blur-sm" />
+          <Drawer.Content className="!absolute bottom-0 left-0 right-0 z-50 mx-auto flex max-h-[96%] w-full flex-col rounded-t-[32px] bg-background outline-none overflow-hidden">
             <div className="mx-auto mt-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
-            <div className="p-5 pb-8 overflow-y-auto">
+            <div className="p-5 pb-8 flex-1 overflow-y-auto">
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <h2 className="text-lg font-extrabold text-foreground font-heading">
