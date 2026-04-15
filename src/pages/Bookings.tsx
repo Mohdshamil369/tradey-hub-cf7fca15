@@ -590,34 +590,35 @@ const QuotesTab = () => {
         <DevicePortal>
           <div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
             <div className="w-full max-h-[85%] overflow-y-auto rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-extrabold text-foreground font-heading">Decline Quote</h2>
-              <button onClick={() => { setDeclineQuoteId(null); setDeclineReason(""); }} className="rounded-full bg-muted p-2">
-                <X className="h-4 w-4 text-muted-foreground" />
-              </button>
-            </div>
-            <div className="mb-4">
-              <label className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reason</label>
-              <textarea
-                value={declineReason}
-                onChange={(e) => setDeclineReason(e.target.value)}
-                placeholder="Let the trader know why you're declining..."
-                rows={3}
-                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary"
-              />
-            </div>
-            <div className="flex gap-3">
-              <button onClick={() => { setDeclineQuoteId(null); setDeclineReason(""); }} className="flex-1 rounded-xl bg-card py-3 text-sm font-bold text-foreground card-shadow active:scale-95">Keep</button>
-              <button
-                onClick={() => handleDecline(declineQuoteId)}
-                disabled={!declineReason.trim()}
-                className={`flex-1 rounded-xl py-3 text-sm font-bold active:scale-95 ${declineReason.trim() ? "bg-destructive text-destructive-foreground" : "bg-muted text-muted-foreground cursor-not-allowed"}`}
-              >
-                Decline Quote
-              </button>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-extrabold text-foreground font-heading">Decline Quote</h2>
+                <button onClick={() => { setDeclineQuoteId(null); setDeclineReason(""); }} className="rounded-full bg-muted p-2">
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </div>
+              <div className="mb-4">
+                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reason</label>
+                <textarea
+                  value={declineReason}
+                  onChange={(e) => setDeclineReason(e.target.value)}
+                  placeholder="Let the trader know why you're declining..."
+                  rows={3}
+                  className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary"
+                />
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => { setDeclineQuoteId(null); setDeclineReason(""); }} className="flex-1 rounded-xl bg-card py-3 text-sm font-bold text-foreground card-shadow active:scale-95">Keep</button>
+                <button
+                  onClick={() => handleDecline(declineQuoteId)}
+                  disabled={!declineReason.trim()}
+                  className={`flex-1 rounded-xl py-3 text-sm font-bold active:scale-95 ${declineReason.trim() ? "bg-destructive text-destructive-foreground" : "bg-muted text-muted-foreground cursor-not-allowed"}`}
+                >
+                  Decline Quote
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </DevicePortal>
       )}
     </div>
   );
