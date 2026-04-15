@@ -2,6 +2,7 @@ import MobileLayout from "@/components/layout/MobileLayout";
 import HeroBanner from "@/components/home/HeroBanner";
 import ServiceBundles from "@/components/home/ServiceBundles";
 import SavedTradersList from "@/components/home/SavedTradersList";
+import PopularServiceCard from "@/components/home/PopularServiceCard";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Briefcase, ArrowRight, Bell, Search, MapPin, ChevronDown } from "lucide-react";
@@ -9,6 +10,7 @@ import { Wrench, Lightning, PaintBrush, Hammer, Broom, Snowflake, Bathtub, House
 import { catAServices } from "@/data/services";
 import { useAddressStore } from "@/stores/addressStore";
 import { serviceIconMap, iconMap, getCategoryColors, getServiceColors } from "@/lib/icons";
+import { categoryImages } from "@/data/categoryImages";
 import LocationSheet from "@/components/home/LocationSheet";
 import { useState } from "react";
 
