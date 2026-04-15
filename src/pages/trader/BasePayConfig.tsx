@@ -154,24 +154,26 @@ const BasePayConfig = () => {
 
       {/* Universal Save / Discard bar */}
       {hasChanges && (
-        <div className="absolute bottom-0 left-0 right-0 z-30 flex justify-center">
-          <div className="w-full border-t border-border bg-background/95 backdrop-blur-md px-4 py-3 flex items-center gap-3">
-            <button
-              onClick={handleDiscard}
-              className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-border bg-secondary py-3 text-sm font-bold text-foreground transition-all active:scale-95"
-            >
-              <Undo2 className="h-4 w-4" />
-              Discard
-            </button>
-            <button
-              onClick={handleSave}
-              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground transition-all active:scale-95"
-            >
-              <Save className="h-4 w-4" />
-              Save All
-            </button>
+        <DevicePortal>
+          <div className="absolute bottom-0 left-0 right-0 z-30">
+            <div className="w-full border-t border-border bg-background/95 backdrop-blur-md px-4 py-3 flex items-center gap-3">
+              <button
+                onClick={handleDiscard}
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-border bg-secondary py-3 text-sm font-bold text-foreground transition-all active:scale-95"
+              >
+                <Undo2 className="h-4 w-4" />
+                Discard
+              </button>
+              <button
+                onClick={handleSave}
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground transition-all active:scale-95"
+              >
+                <Save className="h-4 w-4" />
+                Save All
+              </button>
+            </div>
           </div>
-        </div>
+        </DevicePortal>
       )}
     </MobileLayout>
   );
