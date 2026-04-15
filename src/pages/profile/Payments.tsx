@@ -436,28 +436,30 @@ const Payments = () => {
 
       {/* Delete confirmation modal */}
       {deleteId && (
-        <div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
-          <div className="w-full rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom duration-200">
-            <h3 className="text-base font-bold text-foreground mb-2">Remove payment method?</h3>
-            <p className="text-sm text-muted-foreground mb-5">
-              This payment method will be removed from your account. You can always add it back later.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setDeleteId(null)}
-                className="flex-1 rounded-xl bg-muted py-3 text-sm font-semibold text-foreground transition-transform active:scale-95"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDelete(deleteId)}
-                className="flex-1 rounded-xl bg-destructive py-3 text-sm font-semibold text-destructive-foreground transition-transform active:scale-95"
-              >
-                Remove
-              </button>
+        <DevicePortal>
+          <div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
+            <div className="w-full max-h-[85%] overflow-y-auto rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom duration-200">
+              <h3 className="text-base font-bold text-foreground mb-2">Remove payment method?</h3>
+              <p className="text-sm text-muted-foreground mb-5">
+                This payment method will be removed from your account. You can always add it back later.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteId(null)}
+                  className="flex-1 rounded-xl bg-muted py-3 text-sm font-semibold text-foreground transition-transform active:scale-95"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDelete(deleteId)}
+                  className="flex-1 rounded-xl bg-destructive py-3 text-sm font-semibold text-destructive-foreground transition-transform active:scale-95"
+                >
+                  Remove
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </DevicePortal>
       )}
     </MobileLayout>
   );
