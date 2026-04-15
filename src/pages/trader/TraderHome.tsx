@@ -490,44 +490,26 @@ const TraderHome = () => {
                 {[...displayScheduleJobs]
                   .sort((a, b) => a.priority - b.priority)
                   .map((job) => (
-                    <button
+                    <IncomingJobCard
                       key={job.id}
-                      onClick={() => navigate(`/trader/jobs/${job.id}`)}
-                      className="flex items-start gap-4 rounded-2xl bg-card p-3 card-shadow transition-all hover:card-shadow-hover active:scale-[0.98] text-left w-full overflow-hidden"
-                    >
-                      {/* Image Thumbnail — 25% width */}
-                      <div className="w-[28%] shrink-0">
-                        <div className="aspect-square w-full rounded-xl overflow-hidden bg-accent">
-                          <img 
-                            src={job.image} 
-                            alt={job.title}
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex-1 min-w-0 pt-0.5">
-                        <div className="flex items-start justify-between gap-2">
-                          <h4 className="text-[13px] font-bold text-foreground leading-tight">{job.title}</h4>
-                          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
-                            job.status === "In Progress"
-                              ? "bg-primary/10 text-primary"
-                              : "bg-secondary text-muted-foreground"
-                          }`}>
-                            {job.status}
-                          </span>
-                        </div>
-                        <p className="text-[11px] font-medium text-muted-foreground mt-1">{job.customer}</p>
-                        <div className="flex flex-col gap-1 mt-2">
-                          <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground/80">
-                            <Clock className="h-3 w-3 text-primary/60" /> {job.date}
-                          </span>
-                          <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground/80 font-medium">
-                            <MapPin className="h-3 w-3 text-primary/60" /> {job.location}
-                          </span>
-                        </div>
-                      </div>
-                    </button>
+                      job={{
+                        id: job.id,
+                        type: "catA",
+                        category: "fixed",
+                        title: job.title,
+                        icon: job.icon,
+                        customer: job.customer,
+                        location: job.location.split(",")[0],
+                        distance: job.location.match(/[\d.]+\s*km/)?.[0] || "Nearby",
+                        price: null,
+                        timeWindow: job.date,
+                        postedAgo: job.status,
+                        description: "",
+                        customerRequest: job.image ? { photos: [job.image] } : undefined,
+                      }}
+                      onViewDetail={() => navigate(`/trader/jobs/${job.id}`)}
+                      viewMode={isIndividual ? "individual" : "agency"}
+                    />
                   ))}
               </div>
             )
