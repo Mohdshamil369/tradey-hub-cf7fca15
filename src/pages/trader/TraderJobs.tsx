@@ -1484,10 +1484,7 @@ const TraderJobs = () => {
                 onClick={() => setShowFilterSheet(false)}
                 className="flex-[2] py-3 bg-primary text-primary-foreground rounded-xl text-sm font-bold active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2"
               >
-                Show Results
-                <span className="bg-primary-foreground/20 px-2 py-0.5 rounded-full text-[10px] min-w-[3.5rem] text-center">
-                  {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'}
-                </span>
+                View {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'}
               </button>
             </div>
           </Drawer.Content>
