@@ -1,4 +1,4 @@
-import { ChevronRight, Clock, MapPin, Users } from "lucide-react";
+import { ChevronRight, Clock, MapPin, Users, Star } from "lucide-react";
 import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 
 type MinimalJobCardProps = {
@@ -12,6 +12,7 @@ type MinimalJobCardProps = {
     statusLabel?: string;
     assignLabel?: string;
     price?: number | null;
+    rating?: number;
   };
   onClick?: () => void;
 };
@@ -53,7 +54,7 @@ export const MinimalJobCard = ({ job, onClick }: MinimalJobCardProps) => {
             </span>
           )}
         </div>
-        {/* Customer · Location */}
+        
         {/* Customer & Location Tags */}
         <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
           <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-secondary/60 text-[10px] font-medium text-muted-foreground max-w-[100px] truncate">
@@ -64,11 +65,13 @@ export const MinimalJobCard = ({ job, onClick }: MinimalJobCardProps) => {
             <span className="truncate max-w-[100px]">{job.location.split(",")[0]}</span>
           </span>
         </div>
+
         {/* Time */}
         <div className="flex items-center gap-1 mt-1 text-[10.5px] text-muted-foreground/70">
           <Clock className="h-2.5 w-2.5 shrink-0" />
           <span className="truncate">{job.timeWindow}</span>
         </div>
+
         {/* Assign label (optional) */}
         {job.assignLabel && (
           <div className="flex items-center gap-1 mt-0.5 text-[10px] text-muted-foreground/60">
@@ -78,15 +81,24 @@ export const MinimalJobCard = ({ job, onClick }: MinimalJobCardProps) => {
         )}
       </div>
 
-      {/* Right: price + chevron */}
-      <div className="flex items-center gap-1 shrink-0">
+      {/* Right Column: Price and/or Rating + Chevron */}
+      <div className="flex flex-col items-end gap-1.5 shrink-0 self-center">
         {job.price && (
-          <span className="text-[13px] font-extrabold text-foreground mr-0.5">£{job.price}</span>
+          <span className="text-[13px] font-extrabold text-foreground">£{job.price}</span>
         )}
-        <ChevronRight className="h-4 w-4 text-muted-foreground/30" />
+        <div className="flex items-center gap-2">
+          {job.rating && (
+            <div className="flex items-center gap-0.5">
+              <Star className="h-3 w-3 fill-star text-star" />
+              <span className="text-[11px] font-extrabold text-foreground">{job.rating.toFixed(1)}</span>
+            </div>
+          )}
+          <ChevronRight className="h-4 w-4 text-muted-foreground/30" />
+        </div>
       </div>
     </button>
   );
 };
 
 export default MinimalJobCard;
+

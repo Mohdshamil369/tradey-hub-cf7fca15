@@ -538,6 +538,7 @@ const TraderJobs = () => {
           statusLabel: statusTag?.label,
           assignLabel: assignLabel || undefined,
           price: job.price,
+          rating: job.committedStatus === "completed" ? (job.customerData?.rating || 5.0) : undefined,
         }}
         onClick={() => openJobDetail(job)}
       />
