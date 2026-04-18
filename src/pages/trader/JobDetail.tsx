@@ -85,16 +85,22 @@ const categoryConfig: Record<JobCategory, { label: string; emoji: string; classN
   inspection: { label: "Site Inspection", emoji: "🔍", className: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]" },
 };
 
+type TabKey =
+  | "details" | "quotes" | "subtasks" | "attachments"
+  | "finances" | "progress" | "docs" | "chat";
+
 const JobDetail = () => {
   const navigate = useNavigate();
   const { jobId } = useParams();
   const [searchParams] = useSearchParams();
-  const initialTab = searchParams.get("tab") === "quotes" ? "quotes" : "details";
-  const [activeTab, setActiveTab] = useState<"details" | "quotes" | "attachments" | "notes" | "subtasks">(initialTab as any);
+  const initialTab: TabKey = searchParams.get("tab") === "quotes" ? "quotes" : "details";
+  const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
   const [showQuoteSheet, setShowQuoteSheet] = useState(false);
   const [showQuoteOptions, setShowQuoteOptions] = useState(false);
   const [selectedQuoteCategory, setSelectedQuoteCategory] = useState<"fixed" | "estimate" | "inspection">("estimate");
   const [heroIndex, setHeroIndex] = useState(0);
+  const [adminMode, setAdminMode] = useState(true);
+  const [showMoreActions, setShowMoreActions] = useState(false);
 
   const stored = sessionStorage.getItem(`job_detail_${jobId}`);
   const job: JobDetailPageData | null = stored ? JSON.parse(stored) : null;
@@ -112,20 +118,34 @@ const JobDetail = () => {
 
   const cat = categoryConfig[job.category];
   const showQuotesTab = job.category !== "fixed";
-  // Subtasks tab is for "big" jobs that need breakdown — estimate / inspection
   const showSubtasksTab = job.category === "estimate" || job.category === "inspection";
   const photos = job.media?.photos?.filter(p => p && p !== "/placeholder.svg") ?? [];
   const hasPhotos = photos.length > 0;
   const hasVoice = !!job.media?.voiceNote;
   const isCommitted = !!job.committedStatus;
+  const isCompleted = job.status === "completed" || job.committedStatus === "completed";
+  const isCancelled = job.committedStatus === "cancelled";
+  const isLongTerm = !!job.isLongTerm;
   const hasAttachments = hasPhotos || hasVoice || isCommitted;
 
-  const tabs: { key: "details" | "quotes" | "subtasks" | "attachments"; label: string; icon: any }[] = [
-    { key: "details", label: "Details", icon: ClipboardList },
-    ...(showQuotesTab ? [{ key: "quotes" as const, label: "Quote", icon: FileText }] : []),
-    ...(showSubtasksTab ? [{ key: "subtasks" as const, label: "Subtasks", icon: ListChecks }] : []),
-    ...(hasAttachments ? [{ key: "attachments" as const, label: "Attachments", icon: Image }] : []),
-  ];
+  // Long-term committed jobs in admin mode get the full workspace
+  const showAdminTabs = isCommitted && isLongTerm && adminMode && !isCompleted && !isCancelled;
+
+  const tabs: { key: TabKey; label: string; icon: any }[] = showAdminTabs
+    ? [
+        { key: "details",  label: "Details",   icon: ClipboardList },
+        { key: "progress", label: "Progress",  icon: PlayCircle },
+        { key: "subtasks", label: "Subtasks",  icon: ListChecks },
+        { key: "finances", label: "Finances",  icon: PoundSterling },
+        { key: "chat",     label: "Customer",  icon: MessageCircle },
+        { key: "docs",     label: "Docs",      icon: FolderOpen },
+      ]
+    : [
+        { key: "details", label: "Details", icon: ClipboardList },
+        ...(showQuotesTab ? [{ key: "quotes" as const, label: "Quote", icon: FileText }] : []),
+        ...(showSubtasksTab ? [{ key: "subtasks" as const, label: "Subtasks", icon: ListChecks }] : []),
+        ...(hasAttachments ? [{ key: "attachments" as const, label: "Attachments", icon: Image }] : []),
+      ];
 
   const handleAction = (action: string) => {
     switch (action) {
