@@ -20,9 +20,10 @@ export const MinimalJobCard = ({ job, onClick }: MinimalJobCardProps) => {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left rounded-[20px] bg-card p-4 flex items-start gap-4 border border-border card-shadow active:scale-[0.99] transition-all"
+      className="w-full text-left rounded-2xl bg-card p-3.5 flex items-center gap-3 border border-border card-shadow active:scale-[0.99] transition-all"
     >
-      <div className="h-14 w-14 shrink-0 rounded-2xl bg-muted/30 overflow-hidden flex items-center justify-center border border-border/50">
+      {/* Thumbnail */}
+      <div className="h-12 w-12 shrink-0 rounded-xl bg-muted/30 overflow-hidden flex items-center justify-center border border-border/40">
         {job.image ? (
           <img
             src={job.image}
@@ -36,43 +37,47 @@ export const MinimalJobCard = ({ job, onClick }: MinimalJobCardProps) => {
           <img
             src={noPhotoPlaceholder}
             alt="Placeholder"
-            className="h-8 w-8 object-contain opacity-30"
+            className="h-7 w-7 object-contain opacity-25"
           />
         )}
       </div>
+
+      {/* Content */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5">
-          <h4 className="text-[14px] font-bold text-foreground truncate">{job.title}</h4>
+        {/* Title + Badge */}
+        <div className="flex items-center gap-2">
+          <h4 className="text-[13px] font-bold text-foreground truncate leading-snug">{job.title}</h4>
           {job.statusLabel && (
-            <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-foreground whitespace-nowrap">
+            <span className="shrink-0 rounded-md bg-secondary px-1.5 py-px text-[9px] font-semibold text-muted-foreground whitespace-nowrap">
               {job.statusLabel}
             </span>
           )}
         </div>
-        <p className="text-[13px] text-muted-foreground mb-2">{job.customer}</p>
-        
-        <div className="flex flex-col gap-1 text-[12px] text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
-            <span className="truncate">{job.timeWindow}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
-            <span className="truncate">{job.location}</span>
-          </div>
-          {job.assignLabel && (
-             <div className="flex items-center gap-1.5 mt-0.5">
-                <Users className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
-                <span className="truncate text-[11px] font-semibold">{job.assignLabel}</span>
-             </div>
-          )}
+        {/* Customer */}
+        <p className="text-[11.5px] text-muted-foreground truncate mt-0.5">{job.customer}</p>
+        {/* Meta row: time · location */}
+        <div className="flex items-center gap-1 mt-1 text-[10.5px] text-muted-foreground/70">
+          <Clock className="h-2.5 w-2.5 shrink-0" />
+          <span className="truncate max-w-[45%]">{job.timeWindow}</span>
+          <span className="opacity-40">·</span>
+          <MapPin className="h-2.5 w-2.5 shrink-0" />
+          <span className="truncate">{job.location}</span>
         </div>
-      </div>
-      <div className="flex flex-col items-end gap-2 shrink-0 self-center">
-        {job.price && (
-          <span className="text-sm font-extrabold text-foreground">£{job.price}</span>
+        {/* Assign label (optional) */}
+        {job.assignLabel && (
+          <div className="flex items-center gap-1 mt-0.5 text-[10px] text-muted-foreground/60">
+            <Users className="h-2.5 w-2.5 shrink-0" />
+            <span className="truncate font-medium">{job.assignLabel}</span>
+          </div>
         )}
-        <ChevronRight className="h-4 w-4 text-muted-foreground/50 mt-1" />
+      </div>
+
+      {/* Right: price + chevron */}
+      <div className="flex items-center gap-1 shrink-0">
+        {job.price && (
+          <span className="text-[13px] font-extrabold text-foreground mr-0.5">£{job.price}</span>
+        )}
+        <ChevronRight className="h-4 w-4 text-muted-foreground/30" />
       </div>
     </button>
   );
