@@ -396,6 +396,19 @@ const Chat = () => {
           </div>
         )}
       </div>
+
+      <CreateGroupSheet
+        open={showCreateGroupSheet}
+        onOpenChange={setShowCreateGroupSheet}
+        onCreated={(g) => {
+          setGroups((prev) => [g, ...prev]);
+          toast.success(`Group "${g.name}" created`, {
+            description: `${g.members.length} member${g.members.length === 1 ? "" : "s"}`,
+          });
+          // Open the new group's workspace
+          navigate(`/chat/group/${g.id}`);
+        }}
+      />
     </MobileLayout>
   );
 };
