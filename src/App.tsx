@@ -62,6 +62,7 @@ import GroupDetail from "./pages/trader/GroupDetail";
 import WorkerDetail from "./pages/trader/WorkerDetail";
 import MemberPayouts from "./pages/trader/MemberPayouts";
 import Payouts from "./pages/profile/Payouts";
+import ReferFriends from "./pages/profile/ReferFriends";
 import CompanyTax from "./pages/profile/CompanyTax";
 import ServiceAreaSelection from "./pages/profile/ServiceAreaSelection";
 import NotFound from "./pages/NotFound";
@@ -176,6 +177,7 @@ const App = () => (
             <Route path="/profile/language" element={<ProtectedRoute><LanguageRegion /></ProtectedRoute>} />
             <Route path="/profile/favourites" element={<ProtectedRoute><SavedTraders /></ProtectedRoute>} />
             <Route path="/profile/saved-items" element={<ProtectedRoute><SavedItems /></ProtectedRoute>} />
+            <Route path="/profile/refer" element={<ProtectedRoute><ReferFriends /></ProtectedRoute>} />
             <Route path="/profile/help" element={<ProtectedRoute><HelpCentre /></ProtectedRoute>} />
             <Route path="/profile/feedback" element={<ProtectedRoute><GiveFeedback /></ProtectedRoute>} />
             <Route path="/profile/legal" element={<ProtectedRoute><Legal /></ProtectedRoute>} />
