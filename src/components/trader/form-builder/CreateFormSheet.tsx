@@ -1,6 +1,6 @@
 import { Drawer } from "vaul";
-import { X, ArrowLeft, Plus, Hash, FileText, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { X, ArrowLeft, FileText, LayoutGrid, Check } from "lucide-react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { FormTemplate } from "./schema";
 
@@ -17,27 +17,40 @@ export const CreateFormSheet = ({
 }: CreateFormSheetProps) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [tags, setTags] = useState<string[]>(["Feedback", "Survey"]);
+  const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
   const [startFrom, setStartFrom] = useState<"blank" | "template">("blank");
 
+  useEffect(() => {
+    if (isOpen) {
+      setName("");
+      setDescription("");
+      setTags([]);
+      setNewTag("");
+      setStartFrom("blank");
+    }
+  }, [isOpen]);
+
   const handleAddTag = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && newTag.trim()) {
-      setTags([...tags, newTag.trim()]);
+      e.preventDefault();
+      if (!tags.includes(newTag.trim())) setTags([...tags, newTag.trim()]);
       setNewTag("");
     }
   };
 
-  const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter(t => t !== tagToRemove));
-  };
+  const removeTag = (tagToRemove: string) =>
+    setTags(tags.filter((t) => t !== tagToRemove));
 
   const handleCreate = () => {
     if (!name.trim()) {
       toast.error("Please enter a form name");
       return;
     }
-    onContinue({ title: name, description, tags, status: "draft" }, startFrom);
+    onContinue(
+      { title: name.trim(), description: description.trim(), tags, status: "draft" },
+      startFrom
+    );
   };
 
   return (
@@ -48,103 +61,116 @@ export const CreateFormSheet = ({
     >
       <Drawer.Portal>
         <Drawer.Overlay className="!absolute inset-0 z-50 bg-black/40 backdrop-blur-sm" />
-        <Drawer.Content className="!absolute bottom-0 left-0 right-0 z-50 mx-auto flex h-[95%] max-h-[96%] w-full flex-col rounded-t-[32px] bg-[#f9f9f9] outline-none overflow-hidden">
-          <div className="mx-auto mt-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
-          
-          <div className="flex items-center gap-4 px-5 pt-4 pb-2 border-b border-border/40 bg-white shrink-0">
-            <button onClick={() => onOpenChange(false)} className="rounded-full p-2 text-foreground active:scale-95 transition-transform">
-              <ArrowLeft className="h-5 w-5" />
+        <Drawer.Content className="!absolute bottom-0 left-0 right-0 z-50 flex h-[92%] w-full flex-col rounded-t-[28px] bg-background outline-none overflow-hidden">
+          <div className="mx-auto mt-2.5 mb-1 h-1.5 w-10 shrink-0 rounded-full bg-muted-foreground/20" />
+
+          {/* Header */}
+          <div className="flex items-center gap-2 px-4 pt-2 pb-3 border-b border-border bg-card shrink-0">
+            <button
+              onClick={() => onOpenChange(false)}
+              className="rounded-full p-1.5 text-foreground active:bg-muted"
+              aria-label="Close"
+            >
+              <ArrowLeft className="h-4 w-4" />
             </button>
-            <h3 className="text-lg font-bold text-foreground">Create New Form</h3>
+            <h3 className="text-[15px] font-bold text-foreground">New Form</h3>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-6 py-6 space-y-8">
+          {/* Body */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
             {/* Form Name */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-foreground">Form Name</label>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Form name
+              </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter form name..."
-                className="w-full rounded-2xl border border-border/60 bg-white px-4 py-4 text-[13px] text-foreground outline-none focus:border-black transition-all placeholder:text-muted-foreground/40"
+                placeholder="e.g. Site safety check"
+                className="w-full rounded-xl border border-border bg-card px-3 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/50"
               />
             </div>
 
             {/* Description */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-foreground">Description (optional)</label>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Description (optional)
+              </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Add a brief description..."
-                rows={4}
-                className="w-full rounded-2xl border border-border/60 bg-white px-4 py-4 text-[13px] text-foreground outline-none focus:border-black transition-all placeholder:text-muted-foreground/40 resize-none"
+                placeholder="What is this form for?"
+                rows={3}
+                className="w-full rounded-xl border border-border bg-card px-3 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/50 resize-none"
               />
             </div>
 
             {/* Tags */}
-            <div className="space-y-3">
-              <label className="text-xs font-bold text-foreground">Tags</label>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Tags
+              </label>
               <input
                 type="text"
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
                 onKeyDown={handleAddTag}
-                placeholder="Add tags..."
-                className="w-full rounded-2xl border border-border/60 bg-white px-4 py-4 text-[13px] text-foreground outline-none focus:border-black transition-all placeholder:text-muted-foreground/40"
+                placeholder="Type tag and press Enter"
+                className="w-full rounded-xl border border-border bg-card px-3 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/50"
               />
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-[#edf2ff] px-4 py-2 text-[11px] font-bold text-[#4c6ef5]"
-                  >
-                    {tag}
-                    <button onClick={() => removeTag(tag)} className="p-0.5 hover:bg-black/10 rounded-full transition-colors">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                ))}
-              </div>
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary"
+                    >
+                      {tag}
+                      <button
+                        onClick={() => removeTag(tag)}
+                        className="ml-0.5 rounded-full p-0.5 hover:bg-primary/20 transition-colors"
+                        aria-label={`Remove ${tag}`}
+                      >
+                        <X className="h-2.5 w-2.5" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Start From */}
-            <div className="space-y-3">
-              <label className="text-xs font-bold text-foreground">Start From</label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
+            {/* Start from */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Start from
+              </label>
+              <div className="grid grid-cols-2 gap-2.5">
+                <StartFromCard
+                  selected={startFrom === "blank"}
                   onClick={() => setStartFrom("blank")}
-                  className={`flex flex-col items-center justify-center gap-3 rounded-[24px] border-2 p-6 transition-all ${
-                    startFrom === "blank" ? "border-black bg-white shadow-sm" : "border-transparent bg-white shadow-sm opacity-60"
-                  }`}
-                >
-                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-[#f0f0f0]">
-                    <FileText className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <span className="text-[13px] font-bold text-foreground">Blank Form</span>
-                </button>
-                <button
+                  icon={<FileText className="h-5 w-5" />}
+                  label="Blank"
+                  desc="Build from scratch"
+                />
+                <StartFromCard
+                  selected={startFrom === "template"}
                   onClick={() => setStartFrom("template")}
-                  className={`flex flex-col items-center justify-center gap-3 rounded-[24px] border-2 p-6 transition-all ${
-                    startFrom === "template" ? "border-black bg-white shadow-sm" : "border-transparent bg-white shadow-sm opacity-60"
-                  }`}
-                >
-                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-[#f0f0f0]">
-                    <Plus className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <span className="text-[13px] font-bold text-foreground">Templates</span>
-                </button>
+                  icon={<LayoutGrid className="h-5 w-5" />}
+                  label="Template"
+                  desc="Pick a starter"
+                />
               </div>
             </div>
           </div>
 
-          <div className="p-4 bg-white border-t border-border/40">
+          {/* Footer */}
+          <div className="px-4 py-3 bg-card border-t border-border shrink-0">
             <button
               onClick={handleCreate}
-              className="w-full py-4 bg-black text-white rounded-2xl text-[14px] font-bold active:scale-[0.98] transition-all shadow-md"
+              className="w-full py-3 bg-primary text-primary-foreground rounded-xl text-[13px] font-bold active:opacity-90 transition-opacity"
             >
-              Create Form
+              Continue
             </button>
           </div>
         </Drawer.Content>
@@ -152,5 +178,39 @@ export const CreateFormSheet = ({
     </Drawer.Root>
   );
 };
+
+const StartFromCard = ({
+  selected,
+  onClick,
+  icon,
+  label,
+  desc,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  desc: string;
+}) => (
+  <button
+    onClick={onClick}
+    className={`relative flex flex-col items-start gap-1.5 rounded-xl border p-3 text-left transition-all ${
+      selected
+        ? "border-primary bg-primary/5"
+        : "border-border bg-card active:bg-muted/50"
+    }`}
+  >
+    {selected && (
+      <div className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
+        <Check className="h-2.5 w-2.5" />
+      </div>
+    )}
+    <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${selected ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
+      {icon}
+    </div>
+    <span className="text-[12px] font-bold text-foreground">{label}</span>
+    <span className="text-[10px] text-muted-foreground leading-tight">{desc}</span>
+  </button>
+);
 
 export default CreateFormSheet;
