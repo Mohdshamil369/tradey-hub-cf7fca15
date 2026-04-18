@@ -15,6 +15,8 @@ import { toast } from "sonner";
 import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 import QuoteSheet, { type QuoteSheetData } from "@/components/trader/QuoteSheet";
 import JobNotesTab from "@/components/trader/form-builder/JobNotesTab";
+import JobSubtasksTab from "@/components/trader/JobSubtasksTab";
+import { ListChecks } from "lucide-react";
 
 export type JobCategory = "fixed" | "estimate" | "inspection";
 
@@ -82,7 +84,7 @@ const JobDetail = () => {
   const { jobId } = useParams();
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") === "quotes" ? "quotes" : "details";
-  const [activeTab, setActiveTab] = useState<"details" | "quotes" | "attachments" | "notes">(initialTab as any);
+  const [activeTab, setActiveTab] = useState<"details" | "quotes" | "attachments" | "notes" | "subtasks">(initialTab as any);
   const [showQuoteSheet, setShowQuoteSheet] = useState(false);
   const [showQuoteOptions, setShowQuoteOptions] = useState(false);
   const [selectedQuoteCategory, setSelectedQuoteCategory] = useState<"fixed" | "estimate" | "inspection">("estimate");
@@ -104,15 +106,18 @@ const JobDetail = () => {
 
   const cat = categoryConfig[job.category];
   const showQuotesTab = job.category !== "fixed";
+  // Subtasks tab is for "big" jobs that need breakdown — estimate / inspection
+  const showSubtasksTab = job.category === "estimate" || job.category === "inspection";
   const photos = job.media?.photos?.filter(p => p && p !== "/placeholder.svg") ?? [];
   const hasPhotos = photos.length > 0;
   const hasVoice = !!job.media?.voiceNote;
   const isCommitted = !!job.committedStatus;
   const hasAttachments = hasPhotos || hasVoice || isCommitted;
 
-  const tabs: { key: "details" | "quotes" | "attachments"; label: string; icon: any }[] = [
+  const tabs: { key: "details" | "quotes" | "subtasks" | "attachments"; label: string; icon: any }[] = [
     { key: "details", label: "Details", icon: ClipboardList },
     ...(showQuotesTab ? [{ key: "quotes" as const, label: "Quote", icon: FileText }] : []),
+    ...(showSubtasksTab ? [{ key: "subtasks" as const, label: "Subtasks", icon: ListChecks }] : []),
     ...(hasAttachments ? [{ key: "attachments" as const, label: "Attachments", icon: Image }] : []),
   ];
 
@@ -797,6 +802,7 @@ const JobDetail = () => {
         <ScrollArea className="flex-1 overflow-y-auto px-4 pt-4">
           {activeTab === "details" && renderDetailsTab()}
           {activeTab === "quotes" && renderQuotesTab()}
+          {activeTab === "subtasks" && <JobSubtasksTab jobId={job.id} jobTitle={job.title} />}
           {activeTab === "attachments" && renderAttachmentsTab()}
         </ScrollArea>
 
