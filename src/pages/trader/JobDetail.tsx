@@ -8,7 +8,8 @@ import {
   ShieldCheck, Timer, MessageCircle, XCircle, FileText, StickyNote,
   Image, Mic, ClipboardList, Package, Wrench, Ban, RotateCcw, Plus, Sparkles,
   Camera, Calendar, User, Briefcase, Heart, Share2, CheckCircle2,
-  Image as ImageIcon,
+  Image as ImageIcon, MoreHorizontal, PoundSterling, FolderOpen,
+  PlayCircle, Truck, UserCog,
 } from "lucide-react";
 import Avatar from "boring-avatars";
 import { toast } from "sonner";
@@ -16,6 +17,10 @@ import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 import QuoteSheet, { type QuoteSheetData } from "@/components/trader/QuoteSheet";
 import JobNotesTab from "@/components/trader/form-builder/JobNotesTab";
 import JobSubtasksTab from "@/components/trader/JobSubtasksTab";
+import JobFinancesTab from "@/components/trader/job-admin/JobFinancesTab";
+import JobProgressTab from "@/components/trader/job-admin/JobProgressTab";
+import JobDocsTab from "@/components/trader/job-admin/JobDocsTab";
+import JobCustomerChatTab from "@/components/trader/job-admin/JobCustomerChatTab";
 import { ListChecks } from "lucide-react";
 
 export type JobCategory = "fixed" | "estimate" | "inspection";
