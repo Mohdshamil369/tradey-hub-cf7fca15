@@ -527,6 +527,8 @@ const TraderJobs = () => {
 
     // Job Type filter
     if (!filterJobType.has("any") && !filterJobType.has(j.category)) return false;
+    // Org-only filter (worker toggle)
+    if (showOrgOnly && j.source !== "org") return false;
     // Search filter
     if (searchQuery && !j.title.toLowerCase().includes(searchLower) && !j.customer.toLowerCase().includes(searchLower) && !j.location.toLowerCase().includes(searchLower)) return false;
     return true;
@@ -564,6 +566,7 @@ const TraderJobs = () => {
           price: job.price,
           rating: job.committedStatus === "completed" ? (job.jobRating || job.customerData?.rating || 5.0) : undefined,
           review: job.committedStatus === "completed" ? job.jobReview : undefined,
+          viaOrg: job.source === "org" ? job.orgName : undefined,
         }}
         onClick={() => openJobDetail(job)}
       />
