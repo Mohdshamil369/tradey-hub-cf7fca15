@@ -85,6 +85,7 @@ export default {
   			},
   			star: 'hsl(var(--star))',
   			success: 'hsl(var(--success))',
+  			warning: 'hsl(var(--warning))',
   			online: 'hsl(var(--online))',
   			info: 'hsl(var(--info))',
   			midnight: 'hsl(var(--midnight))',
