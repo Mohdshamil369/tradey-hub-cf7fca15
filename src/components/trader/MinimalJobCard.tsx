@@ -83,7 +83,7 @@ export const MinimalJobCard = ({ job, onClick }: MinimalJobCardProps) => {
         </div>
 
         {/* Right Column: Price + Chevron */}
-        <div className="flex flex-col items-end gap-1.5 shrink-0 self-center">
+        <div className="flex flex-col items-end justify-end gap-1.5 shrink-0 self-stretch pb-0.5">
           {job.price && (
             <span className="text-[13px] font-extrabold text-foreground">£{job.price}</span>
           )}
