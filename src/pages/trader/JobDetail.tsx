@@ -105,6 +105,7 @@ const JobDetail = () => {
   const photos = job.media?.photos?.filter(p => p && p !== "/placeholder.svg") ?? [];
   const hasPhotos = photos.length > 0;
   const hasVoice = !!job.media?.voiceNote;
+  const hasAttachments = hasPhotos || hasVoice;
 
   const isCommitted = job.status === "active" || job.status === "completed" || !!job.committedStatus;
   
