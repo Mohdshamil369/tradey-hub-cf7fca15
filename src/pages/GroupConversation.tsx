@@ -85,21 +85,6 @@ const GroupConversationPage = () => {
             </button>
           </div>
 
-          {/* Member preview avatars */}
-          <div className="mt-2 flex items-center gap-1.5 pl-12">
-            {group.members.slice(0, 5).map((m) => (
-              <div
-                key={m.id}
-                className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary border border-card"
-                title={m.name}
-              >
-                {m.initial}
-              </div>
-            ))}
-            {group.members.length > 5 && (
-              <span className="text-[10px] text-muted-foreground">+{group.members.length - 5}</span>
-            )}
-          </div>
         </div>
 
         {/* Tabs */}
