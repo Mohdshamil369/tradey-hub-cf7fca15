@@ -74,6 +74,12 @@ export const MinimalJobCard = ({ job, onClick }: MinimalJobCardProps) => {
               <MapPin className="h-2.5 w-2.5 shrink-0" />
               <span className="truncate max-w-[100px]">{job.location.split(",")[0]}</span>
             </span>
+            {job.viaOrg && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-[10px] font-semibold text-primary max-w-[120px] truncate">
+                <Building2 className="h-2.5 w-2.5 shrink-0" />
+                <span className="truncate">via {job.viaOrg}</span>
+              </span>
+            )}
           </div>
 
           {/* Time */}
