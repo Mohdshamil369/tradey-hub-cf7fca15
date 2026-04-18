@@ -456,7 +456,11 @@ const TraderJobs = () => {
   const [selectedIndividuals, setSelectedIndividuals] = useState<{ id: string; name: string; role: string }[]>([]);
   const [individualSearch, setIndividualSearch] = useState("");
   const [showSavedJobs, setShowSavedJobs] = useState(false);
+  const [showOrgOnly, setShowOrgOnly] = useState(false);
   const [likedJobIds, setLikedJobIds] = useState<Set<string>>(new Set(["j1", "j3"]));
+  // Worker is "part of an org" — for the demo, individual traders see this toggle since they may also receive jobs forwarded by orgs they collaborate with.
+  const orgJobCount = jobs.filter(j => j.source === "org").length;
+  const showOrgToggle = isIndividual && orgJobCount > 0;
   const toggleLike = (id: string) => {
     setLikedJobIds(prev => {
       const next = new Set(prev);
