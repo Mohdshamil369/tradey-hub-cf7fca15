@@ -1,5 +1,6 @@
 import { Drawer } from "vaul";
-import { X, FileText, Plus, Library } from "lucide-react";
+import { X, Search, ChevronRight, Layout, Briefcase, Users, Calendar, MoreHorizontal } from "lucide-react";
+import { useState } from "react";
 import { FormTemplate } from "./schema";
 
 interface FormLibrarySheetProps {
@@ -10,6 +11,8 @@ interface FormLibrarySheetProps {
   onCreateNew: () => void;
 }
 
+const CATEGORIES = ["All", "Business", "HR", "Events", "Other"];
+
 export const FormLibrarySheet = ({
   isOpen,
   onOpenChange,
@@ -17,8 +20,14 @@ export const FormLibrarySheet = ({
   onSelectTemplate,
   onCreateNew,
 }: FormLibrarySheetProps) => {
-  const customTemplates = templates.filter((t) => t.isCustom);
-  const adminTemplates = templates.filter((t) => !t.isCustom);
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredTemplates = templates.filter(t => {
+    const matchesSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = activeCategory === "All" || t.category === activeCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <Drawer.Root
@@ -28,95 +37,78 @@ export const FormLibrarySheet = ({
     >
       <Drawer.Portal>
         <Drawer.Overlay className="!absolute inset-0 z-50 bg-black/40 backdrop-blur-sm" />
-        <Drawer.Content className="!absolute bottom-0 left-0 right-0 z-50 mx-auto flex h-[85%] max-h-[96%] w-full flex-col rounded-t-[32px] bg-background outline-none overflow-hidden">
+        <Drawer.Content className="!absolute bottom-0 left-0 right-0 z-50 mx-auto flex h-[95%] max-h-[96%] w-full flex-col rounded-t-[32px] bg-[#f9f9f9] outline-none overflow-hidden">
           <div className="mx-auto mt-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
           
-          <div className="flex items-center justify-between px-5 pt-4 pb-2 border-b border-border/40 shrink-0">
-            <div>
-              <h3 className="text-lg font-bold text-foreground">Form Library</h3>
-              <p className="text-[11px] text-muted-foreground mt-0.5">Select a template or build a new one</p>
-            </div>
-            <button onClick={() => onOpenChange(false)} className="rounded-full p-2 text-muted-foreground hover:bg-muted transition-colors active:scale-95">
-              <X className="h-4 w-4" />
+          <div className="flex items-center gap-4 px-5 pt-4 pb-2 border-b border-border/40 bg-white shrink-0">
+            <button onClick={() => onOpenChange(false)} className="rounded-full p-2 text-foreground active:scale-95 transition-transform">
+              <ChevronRight className="h-5 w-5 rotate-180" />
             </button>
+            <h3 className="text-lg font-bold text-foreground">Templates</h3>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6 pb-20">
-            
-            {/* Create New Action */}
-            <button
-              onClick={onCreateNew}
-              className="w-full flex items-center justify-between rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 p-4 text-left active:bg-primary/10 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
-                  <Plus className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-[13px] font-bold text-foreground">Build Custom Form</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Start from scratch and add your own fields</p>
-                </div>
-              </div>
-            </button>
-
-            {/* Custom Libary (If exists) */}
-            {customTemplates.length > 0 && (
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground mb-3 flex items-center gap-1.5">
-                  <Library className="h-3.5 w-3.5" /> My Templates
-                </h4>
-                <div className="grid gap-2">
-                  {customTemplates.map((t) => (
-                     <button
-                       key={t.id}
-                       onClick={() => onSelectTemplate(t)}
-                       className="w-full flex items-center gap-3 rounded-xl bg-card p-3 border border-border/50 shadow-sm active:scale-[0.98] transition-all text-left"
-                     >
-                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
-                         <FileText className="h-4 w-4" />
-                       </div>
-                       <div className="flex-1 min-w-0">
-                         <p className="text-[12px] font-bold text-foreground truncate">{t.title}</p>
-                         {t.description && <p className="text-[10px] text-muted-foreground truncate mt-0.5">{t.description}</p>}
-                       </div>
-                     </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Standard Library */}
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground mb-3">Admin Templates</h4>
-              <div className="grid gap-2">
-                {adminTemplates.map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => onSelectTemplate(t)}
-                      className="w-full flex items-start gap-3 rounded-xl bg-card p-3 border border-border/50 shadow-sm active:scale-[0.98] transition-all text-left"
-                    >
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground mt-0.5">
-                        <FileText className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[12px] font-bold text-foreground">{t.title}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed line-clamp-2">{t.description}</p>
-                        <div className="flex items-center gap-1.5 mt-2 overflow-x-auto no-scrollbar">
-                           <span className="text-[9px] font-semibold text-primary/70 bg-primary/10 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0">
-                             {t.fields.length} Fields
-                           </span>
-                           {t.fields.slice(0, 3).map((f, i) => (
-                             <span key={i} className="text-[9px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded truncate shrink-0 max-w-[80px]">
-                               {f.label}
-                             </span>
-                           ))}
-                        </div>
-                      </div>
-                    </button>
-                ))}
-              </div>
+          <div className="bg-white px-5 py-4 border-b border-border/30 shrink-0">
+            <div className="relative mb-5">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search templates..."
+                className="w-full bg-[#f4f4f4] rounded-2xl py-3.5 pl-11 pr-4 text-[13px] outline-none placeholder:text-muted-foreground/40"
+              />
             </div>
 
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`px-6 py-2.5 rounded-full text-[12px] font-bold transition-all whitespace-nowrap ${
+                    activeCategory === cat
+                      ? "bg-black text-white"
+                      : "bg-[#f4f4f4] text-muted-foreground"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4">
+            {filteredTemplates.map((t) => (
+              <div
+                key={t.id}
+                className="bg-white rounded-[24px] border border-border/40 shadow-sm overflow-hidden"
+              >
+                <div className="h-20 bg-[#edf2ff] w-full relative">
+                   <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                      <Layout className="h-10 w-10 text-[#4c6ef5]" />
+                   </div>
+                </div>
+                <div className="p-5 flex items-center justify-between">
+                  <div className="flex-1 min-w-0 pr-4">
+                    <h4 className="text-[15px] font-bold text-foreground mb-1 truncate">{t.title}</h4>
+                    <p className="text-[11px] text-muted-foreground font-medium">
+                      {t.fields.length} fields · {t.stepsCount} steps
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => onSelectTemplate(t)}
+                    className="px-6 py-2.5 bg-[#1a1a1a] text-white rounded-xl text-[12px] font-bold active:scale-95 transition-all shadow-sm"
+                  >
+                    Use
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {filteredTemplates.length === 0 && (
+              <div className="text-center py-20">
+                <p className="text-[13px] text-muted-foreground">No templates found matches your search.</p>
+              </div>
+            )}
           </div>
         </Drawer.Content>
       </Drawer.Portal>

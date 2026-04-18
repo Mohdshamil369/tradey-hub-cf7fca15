@@ -1,7 +1,7 @@
 import { Drawer } from "vaul";
-import { X, Save, Plus, Trash2, GripVertical, Type, List, Star, Camera, AlignLeft } from "lucide-react";
+import { X, ArrowLeft, MoreHorizontal, Plus, GripVertical, Type, List, Star, Camera, AlignLeft, Eye, Send, Mail } from "lucide-react";
 import { FormTemplate, FormField, FieldType } from "./schema";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
@@ -9,195 +9,232 @@ const generateId = () => Math.random().toString(36).substring(2, 9);
 interface FormBuilderSheetProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  initialTemplate: FormTemplate | null;
   onSave: (template: FormTemplate) => void;
 }
 
 export const FormBuilderSheet = ({
   isOpen,
   onOpenChange,
+  initialTemplate,
   onSave,
 }: FormBuilderSheetProps) => {
-  const [title, setTitle] = useState("Untitled Form");
-  const [description, setDescription] = useState("");
-  const [fields, setFields] = useState<FormField[]>([]);
+  const [template, setTemplate] = useState<FormTemplate | null>(null);
+  const [isFieldTypePickerOpen, setIsFieldTypePickerOpen] = useState(false);
+
+  useEffect(() => {
+    if (initialTemplate) {
+      setTemplate({ ...initialTemplate });
+    } else {
+      setTemplate({
+        id: generateId(),
+        title: "Untitled Form",
+        description: "",
+        status: "draft",
+        tags: [],
+        responsesCount: 0,
+        stepsCount: 1,
+        category: "General",
+        isCustom: true,
+        fields: []
+      });
+    }
+  }, [initialTemplate, isOpen]);
 
   const addField = (type: FieldType) => {
+    if (!template) return;
     const newField: FormField = {
       id: generateId(),
       type,
-      label: `New ${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
-      required: false,
-      options: type === "select" ? ["Option 1", "Option 2"] : undefined,
+      label: type === "email" ? "Email Address" : `New ${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
+      required: true,
+      description: getFieldTypeDescription(type),
     };
-    setFields([...fields, newField]);
+    setTemplate({
+      ...template,
+      fields: [...template.fields, newField]
+    });
+    setIsFieldTypePickerOpen(false);
+  };
+
+  const getFieldTypeDescription = (type: FieldType) => {
+    switch (type) {
+      case "text": return "Short text · Required";
+      case "textarea": return "Long text · Optional";
+      case "select": return "Dropdown · Required";
+      case "rating": return "Rating (1-5) · Required";
+      case "file": return "File/Photo · Required";
+      case "email": return "Email · Required";
+      default: return "";
+    }
   };
 
   const removeField = (id: string) => {
-    setFields(fields.filter((f) => f.id !== id));
+    if (!template) return;
+    setTemplate({
+      ...template,
+      fields: template.fields.filter(f => f.id !== id)
+    });
   };
 
-  const updateField = (id: string, updates: Partial<FormField>) => {
-    setFields(fields.map((f) => (f.id === id ? { ...f, ...updates } : f)));
-  };
-
-  const handleSave = () => {
-    if (!title.trim()) {
+  const handleAction = (status: "published" | "draft") => {
+    if (!template) return;
+    if (!template.title.trim()) {
       toast.error("Please enter a form title");
       return;
     }
-    if (fields.length === 0) {
+    if (template.fields.length === 0) {
       toast.error("Please add at least one field");
       return;
     }
 
-    const newTemplate: FormTemplate = {
-      id: generateId(),
-      title,
-      description,
-      isCustom: true,
-      fields,
-    };
-
-    onSave(newTemplate);
-    reset();
+    onSave({ ...template, status });
   };
 
-  const reset = () => {
-    setTitle("Untitled Form");
-    setDescription("");
-    setFields([]);
-  };
+  if (!template) return null;
 
   return (
     <Drawer.Root
       open={isOpen}
-      onOpenChange={(open) => {
-        if (!open) reset();
-        onOpenChange(open);
-      }}
+      onOpenChange={onOpenChange}
       container={typeof document !== "undefined" ? document.getElementById("mobile-device-content") : null}
     >
       <Drawer.Portal>
         <Drawer.Overlay className="!absolute inset-0 z-50 bg-black/40 backdrop-blur-sm" />
-        <Drawer.Content className="!absolute bottom-0 left-0 right-0 z-50 mx-auto flex h-[90%] max-h-[96%] w-full flex-col rounded-t-[32px] bg-background outline-none overflow-hidden">
+        <Drawer.Content className="!absolute bottom-0 left-0 right-0 z-50 mx-auto flex h-[95%] max-h-[96%] w-full flex-col rounded-t-[32px] bg-[#f9f9f9] outline-none overflow-hidden">
           <div className="mx-auto mt-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
           
-          <div className="flex items-center justify-between px-5 pt-4 pb-2 border-b border-border/40 shrink-0">
-            <h3 className="text-lg font-bold text-foreground">Build Custom Form</h3>
-            <button onClick={() => onOpenChange(false)} className="rounded-full p-2 text-muted-foreground hover:bg-muted transition-colors active:scale-95">
-              <X className="h-4 w-4" />
+          {/* Header */}
+          <div className="bg-white shrink-0">
+            <div className="flex items-center justify-between px-5 pt-4 pb-2">
+              <div className="flex items-center gap-4">
+                <button onClick={() => onOpenChange(false)} className="rounded-full p-2 text-foreground active:scale-95 transition-transform">
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <h3 className="text-lg font-extrabold text-foreground truncate max-w-[200px]">{template.title}</h3>
+              </div>
+              <button className="rounded-full p-2 text-muted-foreground/40 active:scale-95">
+                <MoreHorizontal className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="px-5 pb-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[11px] font-bold text-muted-foreground/50">{template.fields.length} of {Math.max(template.fields.length, 12)} fields</p>
+              </div>
+              <div className="w-full h-1.5 bg-[#f0f0f0] rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-[#37b24d] transition-all duration-500" 
+                  style={{ width: `${(template.fields.length / Math.max(template.fields.length, 12)) * 100}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Builder Canvas */}
+          <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4 pb-32">
+            {template.fields.map((field, i) => (
+              <div
+                key={field.id}
+                className="bg-white rounded-[24px] p-5 shadow-sm border border-border/40 flex items-center gap-4 group active:scale-[0.99] transition-all"
+              >
+                <div className="cursor-grab active:cursor-grabbing p-1">
+                  <div className="grid grid-cols-2 gap-1 opacity-20 group-hover:opacity-40 transition-opacity">
+                    {[...Array(6)].map((_, j) => (
+                      <div key={j} className="h-1 w-1 rounded-full bg-black" />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-[14px] font-bold text-foreground mb-0.5">{field.label}</h4>
+                  <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-tight opacity-60">
+                    {field.description}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                   <div className="px-3 py-1.5 rounded-full bg-[#edf2ff] text-[#4c6ef5] text-[10px] font-bold">
+                      {field.type.charAt(0).toUpperCase() + field.type.slice(1)} input
+                   </div>
+                   <button 
+                     onClick={() => removeField(field.id)}
+                     className="p-1 text-muted-foreground/20 hover:text-destructive transition-colors shrink-0"
+                   >
+                     <X className="h-4 w-4" />
+                   </button>
+                </div>
+              </div>
+            ))}
+
+            {/* Drop Zones / Add Field Action */}
+            <button
+               onClick={() => setIsFieldTypePickerOpen(true)}
+               className="w-full py-8 border-2 border-dashed border-muted-foreground/10 rounded-[24px] flex items-center justify-center gap-2 group hover:border-black/10 transition-colors active:bg-black/5"
+            >
+               <Plus className="h-4 w-4 text-muted-foreground/40 group-hover:text-black/40" />
+               <span className="text-[13px] font-bold text-muted-foreground/40 group-hover:text-black/40">Tap to add a field</span>
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6 pb-24">
-            {/* Header info */}
-            <div className="space-y-3">
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Form Title"
-                className="w-full text-xl font-bold bg-transparent border-none outline-none placeholder:text-muted-foreground/30 px-0"
-              />
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Form description (optional)"
-                className="w-full text-sm text-muted-foreground bg-transparent border-none outline-none placeholder:text-muted-foreground/30 px-0 resize-none h-12"
-              />
-            </div>
-
-            {/* Field List */}
-            <div className="space-y-4">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Fields</h4>
-              {fields.length === 0 ? (
-                <div className="py-12 border-2 border-dashed border-border/40 rounded-2xl flex flex-col items-center justify-center text-muted-foreground">
-                  <Plus className="h-8 w-8 mb-2 opacity-20" />
-                  <p className="text-xs">Add your first field below</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {fields.map((field, index) => (
-                    <div key={field.id} className="bg-card border border-border/60 rounded-xl p-3 shadow-sm group">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <GripVertical className="h-4 w-4 text-muted-foreground/30" />
-                          <span className="text-[10px] font-bold text-primary px-1.5 py-0.5 bg-primary/10 rounded uppercase">Field {index + 1}</span>
-                        </div>
-                        <button onClick={() => removeField(field.id)} className="text-muted-foreground/40 hover:text-destructive active:scale-90 transition-all p-1">
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-
-                      <div className="space-y-3">
-                        <input
-                          type="text"
-                          value={field.label}
-                          onChange={(e) => updateField(field.id, { label: e.target.value })}
-                          placeholder="Field Label"
-                          className="w-full text-sm font-semibold bg-transparent border-b border-border/30 focus:border-primary outline-none py-1 transition-colors"
-                        />
-                        
-                        {field.type === "select" && (
-                          <div className="pt-2 space-y-2">
-                            <p className="text-[9px] font-bold text-muted-foreground/60 uppercase">Options (comma separated)</p>
-                            <input
-                              type="text"
-                              value={field.options?.join(", ")}
-                              onChange={(e) => updateField(field.id, { options: e.target.value.split(",").map(o => o.trim()) })}
-                              placeholder="Red, Green, Blue"
-                              className="w-full text-[11px] bg-muted/40 rounded-lg px-3 py-2 outline-none"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+          {/* Bottom Action Bar */}
+          <div className="shrink-0 p-5 bg-white border-t border-border/40 flex items-center gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+            <button
+              onClick={() => setIsFieldTypePickerOpen(true)}
+              className="flex-1 py-4 bg-black text-white rounded-2xl text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-all"
+            >
+              <Plus className="h-4 w-4" />
+              Add Field
+            </button>
+            <button
+              onClick={() => handleAction("draft")}
+              className="px-6 py-4 bg-[#f4f4f4] text-foreground rounded-2xl text-[13px] font-bold active:bg-muted transition-all"
+            >
+              Preview
+            </button>
+            <button
+              onClick={() => handleAction("published")}
+              className="px-8 py-4 bg-[#37b24d] text-white rounded-2xl text-[13px] font-bold active:scale-95 transition-all shadow-md shadow-green-200"
+            >
+              Publish
+            </button>
           </div>
 
-          {/* Action Bar */}
-          <div className="absolute bottom-0 inset-x-0 p-4 bg-background/80 backdrop-blur-md border-t border-border/40 space-y-3">
-             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-                <button onClick={() => addField('text')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-foreground text-[10px] font-bold whitespace-nowrap active:scale-95 transition-all">
-                  <Type className="h-3 w-3" /> Text
-                </button>
-                <button onClick={() => addField('textarea')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-foreground text-[10px] font-bold whitespace-nowrap active:scale-95 transition-all">
-                  <AlignLeft className="h-3 w-3" /> Area
-                </button>
-                <button onClick={() => addField('select')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-foreground text-[10px] font-bold whitespace-nowrap active:scale-95 transition-all">
-                  <List className="h-3 w-3" /> List
-                </button>
-                <button onClick={() => addField('rating')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-foreground text-[10px] font-bold whitespace-nowrap active:scale-95 transition-all">
-                  <Star className="h-3 w-3" /> Stars
-                </button>
-                <button onClick={() => addField('file')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-foreground text-[10px] font-bold whitespace-nowrap active:scale-95 transition-all">
-                  <Camera className="h-3 w-3" /> Photo
-                </button>
-             </div>
-             
-             <div className="flex gap-3">
-                <button
-                  onClick={() => onOpenChange(false)}
-                  className="flex-1 py-3 bg-muted text-muted-foreground rounded-xl text-[13px] font-bold active:bg-muted/70 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="flex-[2] py-3 bg-primary text-primary-foreground rounded-xl text-[13px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-lg"
-                >
-                  <Save className="h-4 w-4" />
-                  Save Template
-                </button>
-             </div>
-          </div>
+          {/* Field Type Picker Drawer */}
+          <Drawer.Root open={isFieldTypePickerOpen} onOpenChange={setIsFieldTypePickerOpen}>
+            <Drawer.Portal>
+              <Drawer.Overlay className="!absolute inset-0 z-[60] bg-black/40 backdrop-blur-sm" />
+              <Drawer.Content className="!absolute bottom-0 left-0 right-0 z-[60] mx-auto flex max-h-[80%] w-full flex-col rounded-t-[32px] bg-white outline-none overflow-hidden">
+                <div className="mx-auto mt-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
+                <div className="p-6">
+                   <h4 className="text-lg font-bold mb-6">Choose Field Type</h4>
+                   <div className="grid grid-cols-2 gap-3">
+                      <FieldOption icon={<Type className="h-5 w-5" />} label="Short Text" onClick={() => addField('text')} />
+                      <FieldOption icon={<AlignLeft className="h-5 w-5" />} label="Long Text" onClick={() => addField('textarea')} />
+                      <FieldOption icon={<Mail className="h-5 w-5" />} label="Email" onClick={() => addField('email')} />
+                      <FieldOption icon={<List className="h-5 w-5" />} label="Select" onClick={() => addField('select')} />
+                      <FieldOption icon={<Star className="h-5 w-5" />} label="Rating" onClick={() => addField('rating')} />
+                      <FieldOption icon={<Camera className="h-5 w-5" />} label="Photo" onClick={() => addField('file')} />
+                   </div>
+                </div>
+              </Drawer.Content>
+            </Drawer.Portal>
+          </Drawer.Root>
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>
   );
 };
+
+const FieldOption = ({ icon, label, onClick }: { icon: any, label: string, onClick: () => void }) => (
+  <button
+    onClick={onClick}
+    className="flex flex-col items-center justify-center gap-3 p-6 rounded-3xl bg-[#f9f9f9] border border-border/40 active:scale-95 active:bg-[#f0f0f0] transition-all"
+  >
+    <div className="text-foreground/40">{icon}</div>
+    <span className="text-[13px] font-bold">{label}</span>
+  </button>
+);
 
 export default FormBuilderSheet;

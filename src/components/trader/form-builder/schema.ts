@@ -1,19 +1,25 @@
-export type FieldType = "text" | "textarea" | "select" | "rating" | "file";
+export type FieldType = "text" | "textarea" | "select" | "rating" | "file" | "email";
 
 export interface FormField {
   id: string;
   type: FieldType;
   label: string;
   required: boolean;
-  options?: string[]; // For dropdowns
+  options?: string[]; // For select type
+  description?: string; // High-fidelity description text
 }
 
 export interface FormTemplate {
   id: string;
   title: string;
   description?: string;
-  isCustom: boolean; // false for admin templates, true for personal library
   fields: FormField[];
+  isCustom?: boolean;
+  status?: "published" | "draft";
+  tags?: string[];
+  responsesCount?: number;
+  stepsCount?: number;
+  category?: string;
 }
 
 export interface JobNote {
@@ -22,59 +28,68 @@ export interface JobNote {
   templateId: string;
   templateTitle: string;
   createdAt: string;
-  data: Record<string, any>; // FieldID -> Value
+  data: Record<string, any>;
 }
 
 export const adminTemplates: FormTemplate[] = [
   {
-    id: "admin-1",
-    title: "Initial Inspection",
-    description: "Standard checklist for accessing initial property condition.",
-    isCustom: false,
+    id: "site-audit",
+    title: "Site Safety Audit",
+    description: "Standard safety check before commencing work on site.",
+    status: "published",
+    responsesCount: 1205,
+    stepsCount: 4,
+    category: "Business",
+    tags: ["Safety", "Audit"],
     fields: [
-      { id: "f1", type: "text", label: "Property Type", required: true },
-      { id: "f2", type: "select", label: "Access Status", required: true, options: ["Clear", "Restricted", "Blocked"] },
-      { id: "f3", type: "textarea", label: "Initial Observations", required: false },
-      { id: "f4", type: "file", label: "Site Photos", required: true },
-    ]
+      { id: "sa-1", type: "text", label: "Inspector Name", required: true },
+      { id: "sa-2", type: "select", label: "Weather Conditions", required: true, options: ["Clear", "Rainy", "Windy", "Snowing"] },
+      { id: "sa-3", type: "rating", label: "Overall Site Condition", required: true },
+      { id: "sa-4", type: "file", label: "Risk Assessment Doc", required: false },
+    ],
   },
   {
-    id: "admin-2",
+    id: "material-req",
     title: "Material Request",
-    description: "List of materials required for the upcoming work.",
-    isCustom: false,
+    description: "Request additional materials for the current job.",
+    status: "published",
+    responsesCount: 843,
+    stepsCount: 2,
+    category: "HR",
+    tags: ["Materials", "Internal"],
     fields: [
-      { id: "f1", type: "text", label: "Material Name", required: true },
-      { id: "f2", type: "text", label: "Quantity", required: true },
-      { id: "f3", type: "select", label: "Urgency", required: true, options: ["Low", "Medium", "High", "Critical"] },
-    ]
+      { id: "mr-1", type: "textarea", label: "List of Materials", required: true },
+      { id: "mr-2", type: "text", label: "Supplier Name", required: false },
+    ],
   },
   {
-    id: "admin-3",
-    title: "Job Completion Sign-off",
-    description: "Final checklist before leaving the site.",
-    isCustom: false,
+    id: "customer-feedback",
+    title: "Project Handover",
+    description: "Final checklist and customer feedback form.",
+    status: "published",
+    responsesCount: 231,
+    stepsCount: 5,
+    category: "Business",
+    tags: ["Feedback", "Handover"],
     fields: [
-      { id: "f1", type: "select", label: "Work Completed?", required: true, options: ["Yes", "No", "Partially"] },
-      { id: "f2", type: "rating", label: "Customer Satisfaction", required: false },
-      { id: "f3", type: "textarea", label: "Pending Follow-ups", required: false },
-      { id: "f4", type: "file", label: "Completed Work Photos", required: true },
-    ]
-  }
+      { id: "cf-1", type: "rating", label: "Workmanship Quality", required: true },
+      { id: "cf-2", type: "textarea", label: "Customer Comments", required: false },
+      { id: "cf-3", type: "file", label: "After Photo", required: true },
+    ],
+  },
 ];
 
 export const initialNotes: JobNote[] = [
   {
-    id: "note-1",
-    jobId: "j3", // e.g. Full Bathroom Renovation
-    templateId: "admin-1",
-    templateTitle: "Initial Inspection",
-    createdAt: new Date().toISOString(),
+    id: "n-1",
+    jobId: "job-1",
+    templateId: "site-audit",
+    templateTitle: "Site Safety Audit",
+    createdAt: "2024-03-24T10:00:00Z",
     data: {
-      "f1": "Terraced House",
-      "f2": "Clear",
-      "f3": "Significant water damage near the sink area. Will need extra sealant.",
-      "f4": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=300&h=300"
-    }
-  }
+      "sa-1": "John Doe",
+      "sa-2": "Clear",
+      "sa-3": 5,
+    },
+  },
 ];

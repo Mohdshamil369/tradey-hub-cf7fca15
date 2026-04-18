@@ -105,15 +105,12 @@ const JobDetail = () => {
   const photos = job.media?.photos?.filter(p => p && p !== "/placeholder.svg") ?? [];
   const hasPhotos = photos.length > 0;
   const hasVoice = !!job.media?.voiceNote;
-  const hasAttachments = hasPhotos || hasVoice;
+  const hasAttachments = hasPhotos || hasVoice || isCommitted;
 
-  const isCommitted = job.status === "active" || job.status === "completed" || !!job.committedStatus;
-  
-  const tabs: { key: "details" | "quotes" | "attachments" | "notes"; label: string; icon: any }[] = [
+  const tabs: { key: "details" | "quotes" | "attachments"; label: string; icon: any }[] = [
     { key: "details", label: "Details", icon: ClipboardList },
     ...(showQuotesTab ? [{ key: "quotes" as const, label: "Quote", icon: FileText }] : []),
     ...(hasAttachments ? [{ key: "attachments" as const, label: "Attachments", icon: Image }] : []),
-    ...(isCommitted ? [{ key: "notes" as const, label: "Notes", icon: StickyNote }] : []),
   ];
 
   const handleAction = (action: string) => {
@@ -482,14 +479,14 @@ const JobDetail = () => {
   };
 
   const renderAttachmentsTab = () => {
-    if (!hasPhotos && !hasVoice) {
+    if (!hasPhotos && !hasVoice && !isCommitted) {
       return (
         <div className="flex flex-col items-center justify-center py-12 gap-3">
           <div className="h-14 w-14 rounded-2xl bg-accent flex items-center justify-center">
             <Image className="h-7 w-7 text-muted-foreground/50" />
           </div>
           <p className="text-sm font-semibold text-foreground">No attachments</p>
-          <p className="text-[11px] text-muted-foreground">The customer hasn't added any photos or voice notes</p>
+          <p className="text-[11px] text-muted-foreground">No photos, voice notes, or internal notes available.</p>
         </div>
       );
     }
@@ -519,6 +516,17 @@ const JobDetail = () => {
                 <span className="text-[10px] font-bold text-primary font-mono">{job.media!.voiceNote!.duration}</span>
               </div>
             </div>
+          </div>
+          </div>
+        )}
+
+        {/* Photos grid would go here if implemented in this component */}
+
+        {/* Internal Notes */}
+        {isCommitted && (
+          <div className="mt-2 border-t border-border/30 pt-4">
+             <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground mb-4 px-1">Notes [internal]</h3>
+             <JobNotesTab jobId={job.id} isInline={true} />
           </div>
         )}
 
@@ -704,7 +712,6 @@ const JobDetail = () => {
           {activeTab === "details" && renderDetailsTab()}
           {activeTab === "quotes" && renderQuotesTab()}
           {activeTab === "attachments" && renderAttachmentsTab()}
-          {activeTab === "notes" && <JobNotesTab jobId={job.id} />}
         </ScrollArea>
 
         {/* Footer CTA */}
