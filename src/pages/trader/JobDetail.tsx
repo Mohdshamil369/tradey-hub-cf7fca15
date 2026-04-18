@@ -873,21 +873,23 @@ const JobDetail = () => {
           )}
         </div>
 
-        {/* Tab bar */}
+        {/* Tab bar — horizontally scrollable so 6 admin tabs fit */}
         {tabs.length > 1 && (
-          <div className="flex gap-1 px-4 py-2 border-b border-border/30 bg-background">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-[11px] font-semibold transition-all ${
-                  activeTab === tab.key ? "bg-primary/10 text-primary" : "text-muted-foreground"
-                }`}
-              >
-                <tab.icon className="h-3.5 w-3.5" />
-                {tab.label}
-              </button>
-            ))}
+          <div className="border-b border-border/30 bg-background">
+            <div className="flex gap-1 overflow-x-auto px-4 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`shrink-0 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[11px] font-semibold transition-all ${
+                    activeTab === tab.key ? "bg-primary/10 text-primary" : "text-muted-foreground active:bg-muted"
+                  }`}
+                >
+                  <tab.icon className="h-3.5 w-3.5" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
@@ -897,11 +899,51 @@ const JobDetail = () => {
           {activeTab === "quotes" && renderQuotesTab()}
           {activeTab === "subtasks" && <JobSubtasksTab jobId={job.id} jobTitle={job.title} />}
           {activeTab === "attachments" && renderAttachmentsTab()}
+          {activeTab === "finances" && <JobFinancesTab jobId={job.id} budget={job.price ?? job.quote?.total ?? 0} />}
+          {activeTab === "progress" && <JobProgressTab jobId={job.id} />}
+          {activeTab === "docs" && <JobDocsTab jobId={job.id} />}
+          {activeTab === "chat" && <JobCustomerChatTab jobId={job.id} customerName={job.customer.name} />}
         </ScrollArea>
 
-        {/* Footer CTA */}
-        {activeTab === "details" && renderFooter()}
+        {/* Footer CTA — show on details for incoming, on details/progress/subtasks for committed */}
+        {(activeTab === "details" ||
+          (isCommitted && (activeTab === "progress" || activeTab === "subtasks" || activeTab === "finances"))) &&
+          renderFooter()}
       </div>
+
+      {/* More actions sheet (committed jobs) */}
+      <Sheet open={showMoreActions} onOpenChange={setShowMoreActions}>
+        <SheetContent side="bottom" className="rounded-t-[32px] px-4 pb-8 pt-2 sm:max-w-[420px] sm:mx-auto">
+          <div className="mx-auto mb-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
+          <h3 className="text-base font-bold text-foreground mb-1">More actions</h3>
+          <p className="text-[11px] text-muted-foreground mb-4">Manage this committed job</p>
+          <div className="flex flex-col gap-2">
+            {[
+              { icon: FileText,  label: "Extend / revise estimate", desc: "Send an updated quote to the customer", action: () => { setShowMoreActions(false); setShowQuoteSheet(true); } },
+              { icon: Calendar,  label: "Reschedule",               desc: "Pick a new time window with the customer", action: () => { setShowMoreActions(false); toast.info("Reschedule — coming soon"); } },
+              { icon: ClipboardList, label: "Request more info",     desc: "Ask the customer for photos or details",   action: () => { setShowMoreActions(false); toast.success("Request sent to customer"); } },
+              { icon: Ban,       label: "Cancel job",                desc: "End this engagement (may incur penalty)",  action: () => { setShowMoreActions(false); toast("Cancellation flow — confirm in settings"); }, danger: true },
+            ].map((a) => (
+              <button
+                key={a.label}
+                onClick={a.action}
+                className={`flex items-center gap-3 rounded-xl border p-3 text-left active:scale-[0.98] transition-all ${
+                  a.danger ? "border-destructive/30 bg-destructive/5" : "border-border/50 bg-card"
+                }`}
+              >
+                <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${a.danger ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}>
+                  <a.icon className="h-4 w-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-[12px] font-bold ${a.danger ? "text-destructive" : "text-foreground"}`}>{a.label}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{a.desc}</p>
+                </div>
+                <ChevronRight className={`h-4 w-4 ${a.danger ? "text-destructive/50" : "text-muted-foreground/50"}`} />
+              </button>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Quote Options Bottom Sheet */}
       <Sheet open={showQuoteOptions} onOpenChange={setShowQuoteOptions}>
