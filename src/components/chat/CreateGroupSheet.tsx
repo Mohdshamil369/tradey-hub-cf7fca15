@@ -274,24 +274,86 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
 
             {step === "members" && (
               <div className="flex flex-col gap-3 pt-1">
+                {/* Invite by email */}
+                <div className="rounded-xl border border-border bg-card p-3">
+                  <p className="mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                    <Mail className="h-3 w-3" /> Invite by email
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      inputMode="email"
+                      value={inviteEmail}
+                      onChange={(e) => {
+                        setInviteEmail(e.target.value);
+                        if (emailError) setEmailError(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === ",") {
+                          e.preventDefault();
+                          addInviteEmail();
+                        }
+                      }}
+                      placeholder="name@example.com"
+                      className="flex-1 rounded-lg bg-muted px-3 py-2 text-[12px] text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30"
+                    />
+                    <button
+                      onClick={addInviteEmail}
+                      disabled={!inviteEmail.trim()}
+                      className="flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-[11px] font-bold text-primary-foreground disabled:opacity-40"
+                    >
+                      <Send className="h-3 w-3" /> Add
+                    </button>
+                  </div>
+                  {emailError && (
+                    <p className="mt-1.5 text-[10px] font-semibold text-destructive">{emailError}</p>
+                  )}
+                  {invitedEmails.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {invitedEmails.map((e) => (
+                        <span
+                          key={e}
+                          className="inline-flex items-center gap-1 rounded-full bg-primary/10 py-0.5 pl-2 pr-1 text-[10px] font-semibold text-primary"
+                        >
+                          {e}
+                          <button
+                            onClick={() => removeInviteEmail(e)}
+                            className="flex h-4 w-4 items-center justify-center rounded-full bg-primary/20 text-primary"
+                            aria-label={`Remove ${e}`}
+                          >
+                            <X className="h-2.5 w-2.5" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <p className="mt-2 text-[10px] text-muted-foreground">
+                    Invitees appear as <span className="font-semibold text-foreground">Pending</span> until they accept.
+                  </p>
+                </div>
+
+                {/* Search teammates */}
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search by name or email"
+                    placeholder="Search teammates"
                     className="w-full rounded-xl bg-muted pl-9 pr-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none"
                   />
                 </div>
 
-                {selected.size > 0 && (
+                {(selected.size > 0 || invitedEmails.length > 0) && (
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="font-semibold text-foreground">
-                      {selected.size} selected
+                      {selected.size} selected · {invitedEmails.length} invited
                     </span>
                     <button
-                      onClick={() => setSelected(new Set())}
+                      onClick={() => {
+                        setSelected(new Set());
+                        setInvitedEmails([]);
+                      }}
                       className="font-semibold text-muted-foreground active:text-foreground"
                     >
                       Clear
