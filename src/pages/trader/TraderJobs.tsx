@@ -124,7 +124,8 @@ const initialJobs: Job[] = [
     voiceDuration: "1:12", 
     proposalsCount: 12,
     customerRequest: { expectedDuration: "2–3 days", expectedBudget: 1200, photos: [jobBathroomImg, jobBathroomImg, jobBathroomImg] },
-    customerData: { rating: 4.9, reviews: 34, isVerified: true, memberSince: "Mar 2023" }
+    customerData: { rating: 4.9, reviews: 34, isVerified: true, memberSince: "Mar 2023" },
+    source: "org", orgName: "Swift Logistics"
   },
   { 
     id: "j9", 
@@ -183,6 +184,7 @@ const initialJobs: Job[] = [
     completedDate: "8 Mar 2025", duration: "2h 10m",
     jobRating: 4.5,
     jobReview: "Great service, very professional. Explained everything clearly.",
+    source: "org", orgName: "BuildRight Ltd.",
     assignment: {
       type: "individual",
       members: [{ id: "m4", name: "Sophie Baker", role: "Electrician", hours: 2.15, earnings: 32.25 }],
