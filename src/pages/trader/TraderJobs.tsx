@@ -815,16 +815,7 @@ const TraderJobs = () => {
                     {group.jobs.length}
                   </span>
                 </div>
-                {group.jobs.map((job) => (
-                  <IncomingJobCard
-                    key={job.id}
-                    job={job}
-                    onViewDetail={() => openJobDetail(job)}
-                    viewMode={isIndividual ? "individual" : "agency"}
-                    showCategoryBadge={false}
-                    onRequestPhotos={() => toast.success("Photo request sent!")}
-                  />
-                ))}
+                {group.jobs.map((job) => renderCommittedJobCard(job))}
               </div>
             ));
           })()}
@@ -891,17 +882,7 @@ const TraderJobs = () => {
               );
             }
 
-            return (
-              <IncomingJobCard
-                key={job.id}
-                job={job}
-                onViewDetail={() => openJobDetail(job)}
-                viewMode={isIndividual ? "individual" : "agency"}
-                showCategoryBadge={false}
-                onRequestPhotos={() => toast.success("Photo request sent!")}
-                onShowSchedule={() => setScheduleJob(job)}
-              />
-            );
+            return renderCommittedJobCard(job);
           })}
 
         </div>
