@@ -27,11 +27,13 @@ const Chat = () => {
 
   // Conversation state — kept locally since this is mock data.
   const [individuals, setIndividuals] = useState<IndividualConversation[]>(individualConversations);
-  const [groups] = useState<GroupConversation[]>(groupConversations);
+  const [groups, setGroups] = useState<GroupConversation[]>(groupConversations);
 
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterChip>("all");
   const [showCreateMenu, setShowCreateMenu] = useState(false);
+  const [adminMode, setAdminMode] = useState<boolean>(false);
+  const [showCreateGroupSheet, setShowCreateGroupSheet] = useState(false);
   const [favourites, setFavourites] = useState<Set<string>>(
     new Set([...individuals, ...groups].filter((c) => c.favourite).map((c) => c.id)),
   );
