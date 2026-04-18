@@ -80,6 +80,9 @@ interface Job {
   };
   jobRating?: number;
   jobReview?: string;
+  /** Where this job came to me from. "direct" = customer found me; "org" = forwarded by an organisation I work with. */
+  source?: "direct" | "org";
+  orgName?: string;
 }
 
 const initialJobs: Job[] = [
