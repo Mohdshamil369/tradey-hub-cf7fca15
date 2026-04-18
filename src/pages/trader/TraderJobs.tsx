@@ -148,11 +148,20 @@ const initialJobs: Job[] = [
     { id: "m1", name: "Jan V.", avatar: "JV", status: "arrived", updatedAt: "2 min ago" },
     { id: "m2", name: "Pieter D.", avatar: "PD", status: "en_route", updatedAt: "8 min ago" },
   ] },
-  { id: "j5", type: "catA", category: "fixed", title: "Wall Painting (1 room)", icon: "🎨", customer: "Hannah P.", location: "Amstelveen", distance: "8.5 km", price: 120, timeWindow: "14 Mar, 09:00 – 14:00", description: "Living room walls need repainting. White to light grey.", postedAgo: "", status: "active", committedStatus: "upcoming", crew: [
-    { id: "m3", name: "Lena K.", avatar: "LK", status: "working", updatedAt: "15 min ago" },
-    { id: "m4", name: "Tom B.", avatar: "TB", status: "arrived", updatedAt: "5 min ago" },
-    { id: "m5", name: "Sara M.", avatar: "SM", status: "en_route", updatedAt: "12 min ago" },
-  ] },
+  {
+    id: "j5", type: "catA", category: "estimate",
+    title: "Full House Repaint & Trim", icon: "🎨",
+    customer: "Hannah P.", location: "Amstelveen, Buitenveldert",
+    distance: "8.5 km", price: 4800,
+    timeWindow: "14 Mar – 4 Apr (3 weeks)",
+    description: "Full interior repaint of a 4-bedroom house including ceilings, walls, skirting and doors. Premium matt finish, customer-supplied colours.",
+    postedAgo: "", status: "active", committedStatus: "upcoming",
+    crew: [
+      { id: "m3", name: "Lena K.", avatar: "LK", status: "working", updatedAt: "15 min ago" },
+      { id: "m4", name: "Tom B.", avatar: "TB", status: "arrived", updatedAt: "5 min ago" },
+      { id: "m5", name: "Sara M.", avatar: "SM", status: "en_route", updatedAt: "12 min ago" },
+    ],
+  },
   {
     id: "j6", type: "catA", category: "fixed", title: "Toilet Repair", icon: "🔧", customer: "Lisa M.", location: "Oost", distance: "5.2 km", price: 55, timeWindow: "10 Mar, 11:00", description: "Flush mechanism not working properly.", postedAgo: "", status: "completed", committedStatus: "completed",
     completedDate: "10 Mar 2025", duration: "1h 45m",
@@ -594,6 +603,8 @@ const TraderJobs = () => {
   };
 
   const openJobDetail = (job: Job) => {
+    // Heuristic: any committed job whose schedule spans days/weeks counts as long-term
+    const isLongTerm = job.id === "j5" || /week|–\s*\d+\s*(Apr|Mar|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i.test(job.timeWindow);
     // Store job data in sessionStorage for the detail page
     const detailData = {
       id: job.id,
@@ -609,6 +620,8 @@ const TraderJobs = () => {
       price: job.price ?? undefined,
       inspectionFee: job.inspectionFee,
       postedAgo: job.postedAgo,
+      isLongTerm,
+      crew: job.crew,
       customer: {
         name: job.customer,
         rating: job.customerData?.rating ?? 5.0,

@@ -8,7 +8,8 @@ import {
   ShieldCheck, Timer, MessageCircle, XCircle, FileText, StickyNote,
   Image, Mic, ClipboardList, Package, Wrench, Ban, RotateCcw, Plus, Sparkles,
   Camera, Calendar, User, Briefcase, Heart, Share2, CheckCircle2,
-  Image as ImageIcon,
+  Image as ImageIcon, MoreHorizontal, PoundSterling, FolderOpen,
+  PlayCircle, Truck, UserCog,
 } from "lucide-react";
 import Avatar from "boring-avatars";
 import { toast } from "sonner";
@@ -16,6 +17,10 @@ import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 import QuoteSheet, { type QuoteSheetData } from "@/components/trader/QuoteSheet";
 import JobNotesTab from "@/components/trader/form-builder/JobNotesTab";
 import JobSubtasksTab from "@/components/trader/JobSubtasksTab";
+import JobFinancesTab from "@/components/trader/job-admin/JobFinancesTab";
+import JobProgressTab from "@/components/trader/job-admin/JobProgressTab";
+import JobDocsTab from "@/components/trader/job-admin/JobDocsTab";
+import JobCustomerChatTab from "@/components/trader/job-admin/JobCustomerChatTab";
 import { ListChecks } from "lucide-react";
 
 export type JobCategory = "fixed" | "estimate" | "inspection";
@@ -31,6 +36,7 @@ export interface JobDetailPageData {
   timeWindow: string;
   status?: string;
   committedStatus?: string;
+  isLongTerm?: boolean;
   price?: number;
   inspectionFee?: number;
   postedAgo?: string;
@@ -79,16 +85,22 @@ const categoryConfig: Record<JobCategory, { label: string; emoji: string; classN
   inspection: { label: "Site Inspection", emoji: "🔍", className: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]" },
 };
 
+type TabKey =
+  | "details" | "quotes" | "subtasks" | "attachments"
+  | "finances" | "progress" | "docs" | "chat";
+
 const JobDetail = () => {
   const navigate = useNavigate();
   const { jobId } = useParams();
   const [searchParams] = useSearchParams();
-  const initialTab = searchParams.get("tab") === "quotes" ? "quotes" : "details";
-  const [activeTab, setActiveTab] = useState<"details" | "quotes" | "attachments" | "notes" | "subtasks">(initialTab as any);
+  const initialTab: TabKey = searchParams.get("tab") === "quotes" ? "quotes" : "details";
+  const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
   const [showQuoteSheet, setShowQuoteSheet] = useState(false);
   const [showQuoteOptions, setShowQuoteOptions] = useState(false);
   const [selectedQuoteCategory, setSelectedQuoteCategory] = useState<"fixed" | "estimate" | "inspection">("estimate");
   const [heroIndex, setHeroIndex] = useState(0);
+  const [adminMode, setAdminMode] = useState(true);
+  const [showMoreActions, setShowMoreActions] = useState(false);
 
   const stored = sessionStorage.getItem(`job_detail_${jobId}`);
   const job: JobDetailPageData | null = stored ? JSON.parse(stored) : null;
@@ -106,20 +118,34 @@ const JobDetail = () => {
 
   const cat = categoryConfig[job.category];
   const showQuotesTab = job.category !== "fixed";
-  // Subtasks tab is for "big" jobs that need breakdown — estimate / inspection
   const showSubtasksTab = job.category === "estimate" || job.category === "inspection";
   const photos = job.media?.photos?.filter(p => p && p !== "/placeholder.svg") ?? [];
   const hasPhotos = photos.length > 0;
   const hasVoice = !!job.media?.voiceNote;
   const isCommitted = !!job.committedStatus;
+  const isCompleted = job.status === "completed" || job.committedStatus === "completed";
+  const isCancelled = job.committedStatus === "cancelled";
+  const isLongTerm = !!job.isLongTerm;
   const hasAttachments = hasPhotos || hasVoice || isCommitted;
 
-  const tabs: { key: "details" | "quotes" | "subtasks" | "attachments"; label: string; icon: any }[] = [
-    { key: "details", label: "Details", icon: ClipboardList },
-    ...(showQuotesTab ? [{ key: "quotes" as const, label: "Quote", icon: FileText }] : []),
-    ...(showSubtasksTab ? [{ key: "subtasks" as const, label: "Subtasks", icon: ListChecks }] : []),
-    ...(hasAttachments ? [{ key: "attachments" as const, label: "Attachments", icon: Image }] : []),
-  ];
+  // Long-term committed jobs in admin mode get the full workspace
+  const showAdminTabs = isCommitted && isLongTerm && adminMode && !isCompleted && !isCancelled;
+
+  const tabs: { key: TabKey; label: string; icon: any }[] = showAdminTabs
+    ? [
+        { key: "details",  label: "Details",   icon: ClipboardList },
+        { key: "progress", label: "Progress",  icon: PlayCircle },
+        { key: "subtasks", label: "Subtasks",  icon: ListChecks },
+        { key: "finances", label: "Finances",  icon: PoundSterling },
+        { key: "chat",     label: "Customer",  icon: MessageCircle },
+        { key: "docs",     label: "Docs",      icon: FolderOpen },
+      ]
+    : [
+        { key: "details", label: "Details", icon: ClipboardList },
+        ...(showQuotesTab ? [{ key: "quotes" as const, label: "Quote", icon: FileText }] : []),
+        ...(showSubtasksTab ? [{ key: "subtasks" as const, label: "Subtasks", icon: ListChecks }] : []),
+        ...(hasAttachments ? [{ key: "attachments" as const, label: "Attachments", icon: Image }] : []),
+      ];
 
   const handleAction = (action: string) => {
     switch (action) {
@@ -645,15 +671,24 @@ const JobDetail = () => {
     }
   };
 
+  // ── Committed-job CTAs ────────────────────────────────────
+  // Smart, context-aware actions based on committedStatus.
+  // Always: primary status CTA + Message + Reschedule + More menu.
+  const committedPrimary = (() => {
+    switch (job.committedStatus) {
+      case "upcoming":     return { label: "On the way",    icon: Truck,       action: () => toast.success("Customer notified — you're on the way") };
+      case "in_progress":  return { label: "Mark Complete", icon: CheckCircle2, action: () => { toast.success("Job marked complete 🎉"); navigate("/trader/jobs"); } };
+      default:             return { label: "Start Job",     icon: PlayCircle,  action: () => toast.success("Job started") };
+    }
+  })();
+
   const renderFooter = () => {
-    const isCompleted = job.status === "completed" || job.committedStatus === "completed";
-    
     if (isCompleted) {
       return (
         <div className="p-4 bg-background border-t border-border/40">
            <button
              onClick={() => toast.info("Viewing invoice feature coming soon")}
-             className="w-full py-4 bg-black text-white rounded-2xl text-[14px] font-bold active:scale-95 transition-all shadow-md"
+             className="w-full py-4 bg-foreground text-background rounded-2xl text-[14px] font-bold active:scale-95 transition-all shadow-md"
            >
              View Invoice & Receipt
            </button>
@@ -661,6 +696,43 @@ const JobDetail = () => {
       );
     }
 
+    // Committed job → smart CTAs (no "Generate Quote")
+    if (isCommitted) {
+      const PrimaryIcon = committedPrimary.icon;
+      return (
+        <div className="flex items-center gap-2 p-4 bg-background border-t border-border/40">
+          <button
+            onClick={() => toast.info("Opening chat with customer…")}
+            aria-label="Message customer"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-card active:bg-muted"
+          >
+            <MessageCircle className="h-4 w-4 text-foreground" />
+          </button>
+          <button
+            onClick={() => toast.info("Reschedule — coming soon")}
+            aria-label="Reschedule"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-card active:bg-muted"
+          >
+            <Calendar className="h-4 w-4 text-foreground" />
+          </button>
+          <button
+            onClick={committedPrimary.action}
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
+          >
+            <PrimaryIcon className="h-4 w-4" /> {committedPrimary.label}
+          </button>
+          <button
+            onClick={() => setShowMoreActions(true)}
+            aria-label="More actions"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-card active:bg-muted"
+          >
+            <MoreHorizontal className="h-4 w-4 text-foreground" />
+          </button>
+        </div>
+      );
+    }
+
+    // Incoming (non-committed) — original generate quote flow
     return (
       <div className="flex gap-3 p-4 bg-background border-t border-border/40">
         <button
@@ -692,7 +764,28 @@ const JobDetail = () => {
             >
               <ArrowLeft className="h-4 w-4 text-foreground" />
             </button>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              {/* Admin/User pill toggle — only on long-term committed jobs */}
+              {isCommitted && isLongTerm && !isCompleted && !isCancelled && (
+                <div className="flex items-center gap-0.5 rounded-full bg-background/80 backdrop-blur-sm p-0.5 shadow-sm">
+                  <button
+                    onClick={() => setAdminMode(true)}
+                    className={`flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold transition-all ${
+                      adminMode ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                    }`}
+                  >
+                    <UserCog className="h-3 w-3" /> Admin
+                  </button>
+                  <button
+                    onClick={() => setAdminMode(false)}
+                    className={`flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold transition-all ${
+                      !adminMode ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                    }`}
+                  >
+                    <User className="h-3 w-3" /> User
+                  </button>
+                </div>
+              )}
               <button
                 onClick={async () => {
                   const shareData = {
@@ -780,21 +873,23 @@ const JobDetail = () => {
           )}
         </div>
 
-        {/* Tab bar */}
+        {/* Tab bar — horizontally scrollable so 6 admin tabs fit */}
         {tabs.length > 1 && (
-          <div className="flex gap-1 px-4 py-2 border-b border-border/30 bg-background">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-[11px] font-semibold transition-all ${
-                  activeTab === tab.key ? "bg-primary/10 text-primary" : "text-muted-foreground"
-                }`}
-              >
-                <tab.icon className="h-3.5 w-3.5" />
-                {tab.label}
-              </button>
-            ))}
+          <div className="border-b border-border/30 bg-background">
+            <div className="flex gap-1 overflow-x-auto px-4 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`shrink-0 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[11px] font-semibold transition-all ${
+                    activeTab === tab.key ? "bg-primary/10 text-primary" : "text-muted-foreground active:bg-muted"
+                  }`}
+                >
+                  <tab.icon className="h-3.5 w-3.5" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
@@ -804,11 +899,51 @@ const JobDetail = () => {
           {activeTab === "quotes" && renderQuotesTab()}
           {activeTab === "subtasks" && <JobSubtasksTab jobId={job.id} jobTitle={job.title} />}
           {activeTab === "attachments" && renderAttachmentsTab()}
+          {activeTab === "finances" && <JobFinancesTab jobId={job.id} budget={job.price ?? job.quote?.total ?? 0} />}
+          {activeTab === "progress" && <JobProgressTab jobId={job.id} />}
+          {activeTab === "docs" && <JobDocsTab jobId={job.id} />}
+          {activeTab === "chat" && <JobCustomerChatTab jobId={job.id} customerName={job.customer.name} />}
         </ScrollArea>
 
-        {/* Footer CTA */}
-        {activeTab === "details" && renderFooter()}
+        {/* Footer CTA — show on details for incoming, on details/progress/subtasks for committed */}
+        {(activeTab === "details" ||
+          (isCommitted && (activeTab === "progress" || activeTab === "subtasks" || activeTab === "finances"))) &&
+          renderFooter()}
       </div>
+
+      {/* More actions sheet (committed jobs) */}
+      <Sheet open={showMoreActions} onOpenChange={setShowMoreActions}>
+        <SheetContent side="bottom" className="rounded-t-[32px] px-4 pb-8 pt-2 sm:max-w-[420px] sm:mx-auto">
+          <div className="mx-auto mb-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
+          <h3 className="text-base font-bold text-foreground mb-1">More actions</h3>
+          <p className="text-[11px] text-muted-foreground mb-4">Manage this committed job</p>
+          <div className="flex flex-col gap-2">
+            {[
+              { icon: FileText,  label: "Extend / revise estimate", desc: "Send an updated quote to the customer", action: () => { setShowMoreActions(false); setShowQuoteSheet(true); } },
+              { icon: Calendar,  label: "Reschedule",               desc: "Pick a new time window with the customer", action: () => { setShowMoreActions(false); toast.info("Reschedule — coming soon"); } },
+              { icon: ClipboardList, label: "Request more info",     desc: "Ask the customer for photos or details",   action: () => { setShowMoreActions(false); toast.success("Request sent to customer"); } },
+              { icon: Ban,       label: "Cancel job",                desc: "End this engagement (may incur penalty)",  action: () => { setShowMoreActions(false); toast("Cancellation flow — confirm in settings"); }, danger: true },
+            ].map((a) => (
+              <button
+                key={a.label}
+                onClick={a.action}
+                className={`flex items-center gap-3 rounded-xl border p-3 text-left active:scale-[0.98] transition-all ${
+                  a.danger ? "border-destructive/30 bg-destructive/5" : "border-border/50 bg-card"
+                }`}
+              >
+                <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${a.danger ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}>
+                  <a.icon className="h-4 w-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-[12px] font-bold ${a.danger ? "text-destructive" : "text-foreground"}`}>{a.label}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{a.desc}</p>
+                </div>
+                <ChevronRight className={`h-4 w-4 ${a.danger ? "text-destructive/50" : "text-muted-foreground/50"}`} />
+              </button>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Quote Options Bottom Sheet */}
       <Sheet open={showQuoteOptions} onOpenChange={setShowQuoteOptions}>
