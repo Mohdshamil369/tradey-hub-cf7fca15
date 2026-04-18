@@ -54,11 +54,14 @@ export const MinimalJobCard = ({ job, onClick }: MinimalJobCardProps) => {
           )}
         </div>
         {/* Customer · Location */}
-        <div className="flex items-center gap-1 mt-0.5 text-[11.5px] text-muted-foreground">
-          <span className="flex-1 min-w-0 truncate">{job.customer}</span>
-          <span className="flex-1 min-w-0 truncate flex items-center gap-1">
-            <MapPin className="h-2.5 w-2.5 shrink-0 text-muted-foreground/60" />
-            {job.location}
+        {/* Customer & Location Tags */}
+        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-secondary/60 text-[10px] font-medium text-muted-foreground max-w-[100px] truncate">
+            {job.customer}
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/40 text-[10px] font-medium text-muted-foreground/80">
+            <MapPin className="h-2.5 w-2.5 shrink-0" />
+            <span className="truncate max-w-[100px]">{job.location.split(",")[0]}</span>
           </span>
         </div>
         {/* Time */}
