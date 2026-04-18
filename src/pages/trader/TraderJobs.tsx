@@ -593,6 +593,8 @@ const TraderJobs = () => {
       category: job.category,
       title: job.title,
       icon: job.icon,
+      status: job.status,
+      committedStatus: job.committedStatus,
       description: job.description,
       location: job.location,
       distance: job.distance,

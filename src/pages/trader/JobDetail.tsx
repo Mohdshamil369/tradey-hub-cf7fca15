@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
   ArrowLeft, MapPin, Clock, Star, Play, Info, ChevronRight, ChevronLeft,
-  ShieldCheck, Timer, MessageCircle, XCircle, FileText,
+  ShieldCheck, Timer, MessageCircle, XCircle, FileText, StickyNote,
   Image, Mic, ClipboardList, Package, Wrench, Ban, RotateCcw, Plus, Sparkles,
   Camera, Calendar, User, Briefcase, Heart, Share2,
   Image as ImageIcon,
@@ -14,6 +14,7 @@ import Avatar from "boring-avatars";
 import { toast } from "sonner";
 import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 import QuoteSheet, { type QuoteSheetData } from "@/components/trader/QuoteSheet";
+import JobNotesTab from "@/components/trader/form-builder/JobNotesTab";
 
 export type JobCategory = "fixed" | "estimate" | "inspection";
 
@@ -26,6 +27,8 @@ export interface JobDetailPageData {
   location: string;
   distance: string;
   timeWindow: string;
+  status?: string;
+  committedStatus?: string;
   price?: number;
   inspectionFee?: number;
   postedAgo?: string;
@@ -77,7 +80,7 @@ const JobDetail = () => {
   const { jobId } = useParams();
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") === "quotes" ? "quotes" : "details";
-  const [activeTab, setActiveTab] = useState<"details" | "quotes" | "attachments">(initialTab as any);
+  const [activeTab, setActiveTab] = useState<"details" | "quotes" | "attachments" | "notes">(initialTab as any);
   const [showQuoteSheet, setShowQuoteSheet] = useState(false);
   const [showQuoteOptions, setShowQuoteOptions] = useState(false);
   const [selectedQuoteCategory, setSelectedQuoteCategory] = useState<"fixed" | "estimate" | "inspection">("estimate");
@@ -103,11 +106,13 @@ const JobDetail = () => {
   const hasPhotos = photos.length > 0;
   const hasVoice = !!job.media?.voiceNote;
 
-  const hasAttachments = hasPhotos || hasVoice;
-  const tabs: { key: "details" | "quotes" | "attachments"; label: string; icon: any }[] = [
+  const isCommitted = job.status === "active" || job.status === "completed" || !!job.committedStatus;
+  
+  const tabs: { key: "details" | "quotes" | "attachments" | "notes"; label: string; icon: any }[] = [
     { key: "details", label: "Details", icon: ClipboardList },
     ...(showQuotesTab ? [{ key: "quotes" as const, label: "Quote", icon: FileText }] : []),
     ...(hasAttachments ? [{ key: "attachments" as const, label: "Attachments", icon: Image }] : []),
+    ...(isCommitted ? [{ key: "notes" as const, label: "Notes", icon: StickyNote }] : []),
   ];
 
   const handleAction = (action: string) => {
@@ -698,6 +703,7 @@ const JobDetail = () => {
           {activeTab === "details" && renderDetailsTab()}
           {activeTab === "quotes" && renderQuotesTab()}
           {activeTab === "attachments" && renderAttachmentsTab()}
+          {activeTab === "notes" && <JobNotesTab jobId={job.id} />}
         </ScrollArea>
 
         {/* Footer CTA */}
