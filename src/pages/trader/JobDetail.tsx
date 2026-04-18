@@ -67,6 +67,8 @@ export interface JobDetailPageData {
     materials?: { description: string; quantity: number; unitPrice: number }[];
     message?: string;
   };
+  jobRating?: number;
+  jobReview?: string;
 }
 
 const categoryConfig: Record<JobCategory, { label: string; emoji: string; className: string }> = {
@@ -133,8 +135,40 @@ const JobDetail = () => {
     navigate("/trader/jobs");
   };
 
-  const renderDetailsTab = () => (
+  const renderDetailsTab = () => {
+    const isCompleted = job.status === "completed" || job.committedStatus === "completed";
+
+    return (
     <div className="flex flex-col gap-4 pb-4">
+      {/* Completed Status / Rating Header */}
+      {isCompleted && (
+        <div className="rounded-2xl bg-[hsl(142,70%,45%)]/5 border border-[hsl(142,70%,45%)]/20 p-5 mb-2">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+               <div className="h-8 w-8 rounded-full bg-[hsl(142,70%,45%)]/10 flex items-center justify-center text-[hsl(142,70%,45%)]">
+                 <CheckCircle2 className="h-4 w-4" />
+               </div>
+               <span className="text-[14px] font-bold text-[hsl(142,70%,45%)]">Job Completed</span>
+            </div>
+            {job.jobRating && (
+              <div className="flex items-center gap-1 bg-white px-3 py-1 rounded-full shadow-sm border border-border/40 text-sm font-bold">
+                <Star className="h-3.5 w-3.5 fill-[#fab005] text-[#fab005]" />
+                {job.jobRating.toFixed(1)}
+              </div>
+            )}
+          </div>
+          
+          {job.jobReview ? (
+            <div className="bg-white rounded-xl p-4 border border-border/30 relative">
+               <div className="absolute -top-2 left-4 px-2 bg-white text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Customer Feedback</div>
+               <p className="text-[12px] text-foreground italic leading-relaxed">"{job.jobReview}"</p>
+            </div>
+          ) : (
+            <p className="text-[11px] text-muted-foreground text-center">No feedback provided yet by the customer.</p>
+          )}
+        </div>
+      )}
+
       {/* Title + Category + Price */}
       <div className="px-1">
         <div className="flex items-center gap-2 mb-1">
@@ -449,6 +483,40 @@ const JobDetail = () => {
       );
     }
 
+    // Read only view for completed jobs
+    if (job.status === "completed" || job.committedStatus === "completed") {
+      return (
+        <div className="flex flex-col gap-6 py-4">
+           <div className="rounded-xl bg-muted/20 border border-border/30 p-5 text-center">
+              <h4 className="text-[13px] font-extrabold text-foreground mb-1">Price History</h4>
+              <p className="text-[11px] text-muted-foreground">Original agreed price for this job</p>
+              <div className="mt-4 text-3xl font-black text-foreground">£{job.price ? job.price.toFixed(0) : "0"}</div>
+           </div>
+           
+           <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground px-1">Timeline</h3>
+              <div className="bg-card border border-border/30 rounded-xl overflow-hidden">
+                 <div className="px-4 py-3 flex items-center justify-between border-b border-border/20">
+                    <span className="text-[11px] text-muted-foreground">Posted</span>
+                    <span className="text-[11px] font-bold text-foreground">{job.postedAgo || "5 days ago"}</span>
+                 </div>
+                 <div className="px-4 py-3 flex items-center justify-between">
+                    <span className="text-[11px] text-muted-foreground">Completed</span>
+                    <span className="text-[11px] font-bold text-foreground">{(job as any).completedDate || "Just now"}</span>
+                 </div>
+              </div>
+           </div>
+
+           <button 
+             onClick={() => toast.info("Dispute center coming soon")}
+             className="text-[11px] font-bold text-primary text-center underline underline-offset-4 active:opacity-60"
+           >
+              Having issues? Contact Resolution Center
+           </button>
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-4">
         <div className="h-14 w-14 rounded-2xl bg-accent flex items-center justify-center">
@@ -571,22 +639,39 @@ const JobDetail = () => {
     }
   };
 
-  const renderFooter = () => (
-    <div className="flex gap-3 p-4 bg-background border-t border-border/40">
-      <button
-        onClick={() => handleAction("decline")}
-        className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted"
-      >
-        <XCircle className="h-4 w-4" /> Decline
-      </button>
-      <button
-        onClick={() => setShowQuoteOptions(true)}
-        className="flex-[2] rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-      >
-        <FileText className="h-4 w-4" /> Generate Quote
-      </button>
-    </div>
-  );
+  const renderFooter = () => {
+    const isCompleted = job.status === "completed" || job.committedStatus === "completed";
+    
+    if (isCompleted) {
+      return (
+        <div className="p-4 bg-background border-t border-border/40">
+           <button
+             onClick={() => toast.info("Viewing invoice feature coming soon")}
+             className="w-full py-4 bg-black text-white rounded-2xl text-[14px] font-bold active:scale-95 transition-all shadow-md"
+           >
+             View Invoice & Receipt
+           </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex gap-3 p-4 bg-background border-t border-border/40">
+        <button
+          onClick={() => handleAction("decline")}
+          className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted"
+        >
+          <XCircle className="h-4 w-4" /> Decline
+        </button>
+        <button
+          onClick={() => setShowQuoteOptions(true)}
+          className="flex-[2] rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+        >
+          <FileText className="h-4 w-4" /> Generate Quote
+        </button>
+      </div>
+    );
+  };
 
   return (
     <MobileLayout role="trader" hideNav>

@@ -13,6 +13,7 @@ type MinimalJobCardProps = {
     assignLabel?: string;
     price?: number | null;
     rating?: number;
+    review?: string;
   };
   onClick?: () => void;
 };
@@ -21,7 +22,9 @@ export const MinimalJobCard = ({ job, onClick }: MinimalJobCardProps) => {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left rounded-2xl bg-card p-3.5 border border-border card-shadow active:scale-[0.99] transition-all"
+      className={`w-full text-left rounded-2xl bg-card p-3.5 border border-border card-shadow active:scale-[0.99] transition-all ${
+        job.review ? "pb-4" : ""
+      }`}
     >
       <div className="flex items-center gap-3">
         {/* Thumbnail */}
@@ -50,7 +53,11 @@ export const MinimalJobCard = ({ job, onClick }: MinimalJobCardProps) => {
           <div className="flex items-center gap-2">
             <h4 className="text-[13px] font-bold text-foreground truncate leading-snug">{job.title}</h4>
             {job.statusLabel && (
-              <span className="shrink-0 rounded-md bg-secondary px-1.5 py-px text-[9px] font-semibold text-muted-foreground whitespace-nowrap">
+              <span className={`shrink-0 rounded-md px-1.5 py-px text-[9px] font-semibold whitespace-nowrap ${
+                job.statusLabel === "Completed" 
+                  ? "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]" 
+                  : "bg-secondary text-muted-foreground"
+              }`}>
                 {job.statusLabel}
               </span>
             )}
@@ -90,13 +97,22 @@ export const MinimalJobCard = ({ job, onClick }: MinimalJobCardProps) => {
         </div>
       </div>
 
-      {/* Footer: Rating bottom-right */}
-      {job.rating && (
-        <div className="flex justify-end mt-2 pt-2 border-t border-border/40">
-          <div className="flex items-center gap-0.5">
-            <Star className="h-3 w-3 fill-star text-star" />
-            <span className="text-[11px] font-extrabold text-foreground">{job.rating.toFixed(1)}</span>
-          </div>
+      {/* Footer: Rating & Review for Completed Jobs */}
+      {(job.rating || job.review) && (
+        <div className="mt-3 pt-3 border-t border-border/40 space-y-2">
+          {job.review && (
+            <p className="text-[10.5px] text-muted-foreground italic leading-relaxed line-clamp-2 px-1">
+              "{job.review}"
+            </p>
+          )}
+          {job.rating && (
+            <div className="flex justify-end">
+              <div className="flex items-center gap-0.5 bg-accent/50 px-2 py-0.5 rounded-md">
+                <Star className="h-2.5 w-2.5 fill-star text-star" />
+                <span className="text-[10px] font-extrabold text-foreground">{job.rating.toFixed(1)}</span>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </button>

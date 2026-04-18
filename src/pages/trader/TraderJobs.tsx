@@ -78,6 +78,8 @@ interface Job {
     isVerified: boolean;
     memberSince: string;
   };
+  jobRating?: number;
+  jobReview?: string;
 }
 
 const initialJobs: Job[] = [
@@ -154,6 +156,8 @@ const initialJobs: Job[] = [
   {
     id: "j6", type: "catA", category: "fixed", title: "Toilet Repair", icon: "🔧", customer: "Lisa M.", location: "Oost", distance: "5.2 km", price: 55, timeWindow: "10 Mar, 11:00", description: "Flush mechanism not working properly.", postedAgo: "", status: "completed", committedStatus: "completed",
     completedDate: "10 Mar 2025", duration: "1h 45m",
+    jobRating: 5.0,
+    jobReview: "Alex and James were fantastic! They fixed the toilet quickly and left the place spotless.",
     assignment: {
       type: "group", groupName: "Plumbing Squad",
       members: [
@@ -165,6 +169,8 @@ const initialJobs: Job[] = [
   {
     id: "j7", type: "catA", category: "fixed", title: "Boiler Service", icon: "🔥", customer: "Peter W.", location: "Centrum", distance: "1.5 km", price: 95, timeWindow: "8 Mar, 10:00", description: "Annual boiler service and safety check.", postedAgo: "", status: "completed", committedStatus: "completed",
     completedDate: "8 Mar 2025", duration: "2h 10m",
+    jobRating: 4.5,
+    jobReview: "Great service, very professional. Explained everything clearly.",
     assignment: {
       type: "individual",
       members: [{ id: "m4", name: "Sophie Baker", role: "Electrician", hours: 2.15, earnings: 32.25 }],
@@ -538,7 +544,8 @@ const TraderJobs = () => {
           statusLabel: statusTag?.label,
           assignLabel: assignLabel || undefined,
           price: job.price,
-          rating: job.committedStatus === "completed" ? (job.customerData?.rating || 5.0) : undefined,
+          rating: job.committedStatus === "completed" ? (job.jobRating || job.customerData?.rating || 5.0) : undefined,
+          review: job.committedStatus === "completed" ? job.jobReview : undefined,
         }}
         onClick={() => openJobDetail(job)}
       />
@@ -615,7 +622,9 @@ const TraderJobs = () => {
           url: "#",
           duration: job.voiceDuration || "0:15",
         } : undefined,
-      }
+      },
+      jobRating: job.jobRating,
+      jobReview: job.jobReview,
     };
     sessionStorage.setItem(`job_detail_${job.id}`, JSON.stringify(detailData));
     navigate(`/trader/jobs/${job.id}`);
