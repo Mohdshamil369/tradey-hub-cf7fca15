@@ -139,8 +139,9 @@ const ManageAccount = () => {
         <p className="mt-4 text-center text-[10px] text-muted-foreground">
           Need help? Contact support before taking irreversible actions.
         </p>
+        </div>
       </div>
-    </div>
+    </MobileLayout>
   );
 };
 
