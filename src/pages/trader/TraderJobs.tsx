@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Avatar from "boring-avatars";
 import IncomingJobCard from "@/components/trader/IncomingJobCard";
+import MinimalJobCard from "@/components/trader/MinimalJobCard";
 import ActiveJobCard from "@/components/trader/ActiveJobCard";
 import CompanyJobCard, { type CompanyJobData } from "@/components/trader/CompanyJobCard";
 import CollaborativeQuote from "@/components/trader/CollaborativeQuote";
@@ -516,93 +517,30 @@ const TraderJobs = () => {
 
   const renderCommittedJobCard = (job: Job) => {
     const statusTag = job.committedStatus ? committedStatusConfig[job.committedStatus] : null;
-
-    if (job.status === "active" && job.committedStatus !== "cancelled") {
-      return (
-        <div key={job.id} className="rounded-2xl bg-card overflow-hidden border border-border card-shadow">
-          {/* Status banner */}
-          {statusTag && (
-            <div className={`flex items-center justify-between px-4 py-1.5 ${statusTag.className.replace(/text-\S+/, '')} border-b border-border/40`}>
-              <span className={`text-[10px] font-bold uppercase tracking-wider ${statusTag.className.split(' ').filter(c => c.startsWith('text-')).join(' ')}`}>
-                {statusTag.label}
-              </span>
-              {job.price && (
-                <span className="text-sm font-extrabold text-foreground">£{job.price}</span>
-              )}
-            </div>
-          )}
-          <ActiveJobCard
-            job={{
-              id: job.id,
-              title: job.title,
-              icon: job.icon,
-              customer: job.customer,
-              timeWindow: job.timeWindow,
-              location: job.location,
-              distance: job.distance,
-              status: job.status,
-              price: statusTag ? null : job.price,
-              crew: job.crew,
-            }}
-            expanded={false}
-            onToggleExpand={() => openJobDetail(job)}
-            description={job.description}
-            viewMode={isIndividual ? "individual" : "agency"}
-          />
-        </div>
-      );
-    }
-
-    // Completed / cancelled cards
     const a = job.assignment;
     let assignLabel = "";
-    let AssignIcon = User;
     if (a) {
-      if (a.type === "group") { assignLabel = a.groupName || "Group"; AssignIcon = UsersRound; }
-      else if (a.type === "individual") { assignLabel = a.members[0]?.name || "Individual"; AssignIcon = User; }
-      else { const shown = a.members.slice(0, 2).map((m) => m.name.split(" ")[0]); const extra = a.members.length - 2; assignLabel = extra > 0 ? `${shown.join(", ")} +${extra}` : shown.join(", "); AssignIcon = Users; }
+      if (a.type === "group") { assignLabel = a.groupName || "Group"; }
+      else if (a.type === "individual") { assignLabel = a.members[0]?.name || "Individual"; }
+      else { const shown = a.members.slice(0, 2).map((m) => m.name.split(" ")[0]); const extra = a.members.length - 2; assignLabel = extra > 0 ? `${shown.join(", ")} +${extra}` : shown.join(", "); }
     }
 
     return (
-      <div key={job.id} className="rounded-2xl bg-card overflow-hidden border border-border">
-        {/* Status banner */}
-        {statusTag && (
-          <div className={`flex items-center justify-between px-4 py-1.5 ${statusTag.className.replace(/text-\S+/, '')} border-b border-border/40`}>
-            <span className={`text-[10px] font-bold uppercase tracking-wider ${statusTag.className.split(' ').filter(c => c.startsWith('text-')).join(' ')}`}>
-              {statusTag.label}
-            </span>
-            <span className="text-sm font-extrabold text-foreground">{job.price ? `£${job.price}` : "—"}</span>
-          </div>
-        )}
-        <button onClick={() => openJobDetail(job)} className="w-full px-4 py-3.5 text-left">
-          <div className="flex gap-3">
-            <div className="flex-1 min-w-0">
-              <h4 className="text-[14px] font-bold text-foreground truncate leading-snug">{job.title}</h4>
-              <div className="mt-1 flex items-center gap-2 text-[11.5px] text-muted-foreground">
-                <span className="inline-flex items-center gap-1 truncate"><MapPin className="h-3 w-3 shrink-0 text-muted-foreground/70" />{job.location}</span>
-                <span className="text-border shrink-0">·</span>
-                <span className="inline-flex items-center gap-1 truncate"><Clock className="h-3 w-3 shrink-0 text-muted-foreground/70" />{job.timeWindow}</span>
-              </div>
-              {!isIndividual && a && (
-                <div className="mt-1.5 flex items-center gap-1.5">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
-                    <AssignIcon className="h-3 w-3" />{assignLabel}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        </button>
-        <div className="flex items-center justify-between border-t border-border px-4 py-2.5">
-          <div className="flex items-center gap-1.5">
-            {job.committedStatus === "completed" && <><Star className="h-3.5 w-3.5 fill-star text-star" /><span className="text-xs font-bold text-foreground">5.0</span></>}
-            <span className="text-[11px] text-muted-foreground">{job.customer}</span>
-          </div>
-          {job.completedDate && (
-            <span className="text-[11px] text-muted-foreground">{job.completedDate}</span>
-          )}
-        </div>
-      </div>
+      <MinimalJobCard
+        key={job.id}
+        job={{
+          id: job.id,
+          title: job.title,
+          customer: job.customer,
+          timeWindow: job.timeWindow,
+          location: `${job.location}${job.distance ? `, ${job.distance}` : ''}`,
+          image: job.customerRequest?.photos?.[0],
+          statusLabel: statusTag?.label,
+          assignLabel: assignLabel || undefined,
+          price: job.price,
+        }}
+        onClick={() => openJobDetail(job)}
+      />
     );
   };
 

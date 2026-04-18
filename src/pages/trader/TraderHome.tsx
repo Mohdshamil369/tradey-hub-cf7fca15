@@ -13,6 +13,7 @@ import {
   Search, ChevronRight,
 } from "lucide-react";
 import IncomingJobCard from "@/components/trader/IncomingJobCard";
+import MinimalJobCard from "@/components/trader/MinimalJobCard";
 import SwipeableJobStack from "@/components/trader/SwipeableJobStack";
 import ActiveJobCard from "@/components/trader/ActiveJobCard";
 import WorkerQuoteRequest from "@/components/trader/WorkerQuoteRequest";
@@ -490,25 +491,18 @@ const TraderHome = () => {
                 {[...displayScheduleJobs]
                   .sort((a, b) => a.priority - b.priority)
                   .map((job) => (
-                    <IncomingJobCard
+                    <MinimalJobCard
                       key={job.id}
                       job={{
                         id: job.id,
-                        type: "catA",
-                        category: "fixed",
                         title: job.title,
-                        icon: job.icon,
                         customer: job.customer,
-                        location: job.location.split(",")[0],
-                        distance: job.location.match(/[\d.]+\s*km/)?.[0] || "Nearby",
-                        price: null,
                         timeWindow: job.date,
-                        postedAgo: job.status,
-                        description: "",
-                        customerRequest: job.image ? { photos: [job.image] } : undefined,
+                        location: job.location,
+                        image: job.image,
+                        statusLabel: job.status,
                       }}
-                      onViewDetail={() => navigate(`/trader/jobs/${job.id}`)}
-                      viewMode={isIndividual ? "individual" : "agency"}
+                      onClick={() => navigate(`/trader/jobs/${job.id}`)}
                     />
                   ))}
               </div>
