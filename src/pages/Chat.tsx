@@ -310,27 +310,6 @@ const Chat = () => {
           </div>
         </div>
 
-        {/* Admin banner — only visible in admin mode */}
-        {adminMode && (
-          <button
-            onClick={() => setShowCreateGroupSheet(true)}
-            className="mb-3 flex w-full items-center gap-3 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5 p-3 text-left transition-all active:scale-[0.99]"
-          >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <Users className="h-5 w-5" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-extrabold text-foreground">
-                Create a new group
-              </p>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">
-                Add members, give it a name and start collaborating.
-              </p>
-            </div>
-            <Plus className="h-4 w-4 shrink-0 text-primary" />
-          </button>
-        )}
-
         {/* Search */}
         <div className="relative mb-3">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
