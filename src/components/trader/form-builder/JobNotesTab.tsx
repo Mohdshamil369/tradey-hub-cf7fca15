@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Plus, Search, FileText, ChevronRight, LayoutGrid, CheckCircle2, MoreVertical } from "lucide-react";
-import { adminTemplates, FormTemplate, JobNote } from "./schema";
+import { Plus, Search, FileText, Eye, Edit3, Send, MoreVertical } from "lucide-react";
+import { adminTemplates, FormTemplate } from "./schema";
 import { FormLibrarySheet } from "./FormLibrarySheet";
 import { FormBuilderSheet } from "./FormBuilderSheet";
 import { FormFillerSheet } from "./FormFillerSheet";
@@ -14,69 +14,80 @@ interface JobNotesTabProps {
   isInline?: boolean;
 }
 
+const SEED_TEMPLATES: FormTemplate[] = [
+  {
+    id: "demo-1",
+    title: "Customer Feedback",
+    description: "Measure satisfaction and gather insights.",
+    status: "published",
+    tags: ["Feedback", "Survey"],
+    responsesCount: 234,
+    stepsCount: 3,
+    category: "Business",
+    isCustom: true,
+    fields: [{ id: "f1", type: "text", label: "Name", required: true }],
+  },
+  {
+    id: "demo-2",
+    title: "Event Registration",
+    description: "Collect attendee details and preferences.",
+    status: "published",
+    tags: ["Events", "Registration"],
+    responsesCount: 56,
+    stepsCount: 4,
+    category: "Events",
+    isCustom: true,
+    fields: [{ id: "f1", type: "text", label: "Email", required: true }],
+  },
+  {
+    id: "demo-3",
+    title: "Employee Survey",
+    description: "Internal pulse check for team morale.",
+    status: "draft",
+    tags: ["HR", "Internal"],
+    responsesCount: 0,
+    stepsCount: 2,
+    category: "HR",
+    isCustom: true,
+    fields: [{ id: "f1", type: "text", label: "Department", required: true }],
+  },
+];
+
 export const JobNotesTab = ({ jobId, isInline = false }: JobNotesTabProps) => {
-  const [templates, setTemplates] = useState<FormTemplate[]>([
-    {
-      id: "demo-1",
-      title: "Customer Feedback",
-      description: "Measure satisfaction and gather insights.",
-      status: "published",
-      tags: ["Feedback", "Survey"],
-      responsesCount: 234,
-      stepsCount: 3,
-      category: "Business",
-      isCustom: true,
-      fields: [{ id: "f1", type: "text", label: "Name", required: true }]
-    },
-    {
-      id: "demo-2",
-      title: "Event Registration",
-      description: "Collect attendee details and preferences.",
-      status: "published",
-      tags: ["Events", "Registration"],
-      responsesCount: 56,
-      stepsCount: 4,
-      category: "Events",
-      isCustom: true,
-      fields: [{ id: "f1", type: "text", label: "Email", required: true }]
-    },
-    {
-      id: "demo-3",
-      title: "Employee Survey",
-      description: "Internal pulse check for team morale.",
-      status: "draft",
-      tags: ["HR", "Internal"],
-      responsesCount: 0,
-      stepsCount: 2,
-      category: "HR",
-      isCustom: true,
-      fields: [{ id: "f1", type: "text", label: "Department", required: true }]
-    }
-  ]);
-  const [activeFilter, setActiveFilter] = useState<"All" | "Published" | "Drafts">("All");
+  const [templates, setTemplates] = useState<FormTemplate[]>(SEED_TEMPLATES);
+  const [activeFilter, setActiveFilter] = useState<"all" | "published" | "draft">("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setNavTab] = useState<"Forms" | "Analytics" | "Settings">("Forms");
-  
+
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
   const [isFillerOpen, setIsFillerOpen] = useState(false);
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<FormTemplate | null>(null);
+  const [pendingDraft, setPendingDraft] = useState<Partial<FormTemplate> | null>(null);
 
-  const filteredTemplates = templates.filter(t => {
+  const filteredTemplates = templates.filter((t) => {
     const matchesSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase());
-    if (activeFilter === "Published") return matchesSearch && t.status === "published";
-    if (activeFilter === "Drafts") return matchesSearch && t.status === "draft";
+    if (activeFilter === "published") return matchesSearch && t.status === "published";
+    if (activeFilter === "draft") return matchesSearch && t.status === "draft";
     return matchesSearch;
   });
 
-  const handleCreateNew = () => setIsCreateSheetOpen(true);
+  // ── Flow handlers ────────────────────────────────────────
+  const handleCreateNew = () => {
+    setPendingDraft(null);
+    setIsCreateSheetOpen(true);
+  };
 
-  const handleContinueCreation = (draft: Partial<FormTemplate>, source: "blank" | "template") => {
+  const handleContinueCreation = (
+    draft: Partial<FormTemplate>,
+    source: "blank" | "template"
+  ) => {
     setIsCreateSheetOpen(false);
     if (source === "template") {
+      // Stash the draft so we can merge metadata when a template is picked
+      setPendingDraft(draft);
       setIsLibraryOpen(true);
-      setSelectedTemplate(draft as any);
     } else {
       setSelectedTemplate({
         id: generateId(),
@@ -88,180 +99,222 @@ export const JobNotesTab = ({ jobId, isInline = false }: JobNotesTabProps) => {
         stepsCount: 1,
         category: "General",
         isCustom: true,
-        fields: []
+        fields: [],
       });
       setIsBuilderOpen(true);
     }
   };
 
   const handleSelectTemplateFromLibrary = (template: FormTemplate) => {
-    const userDraft = selectedTemplate;
     setSelectedTemplate({
       ...template,
       id: generateId(),
-      title: userDraft?.title || template.title,
-      description: userDraft?.description || template.description,
-      tags: userDraft?.tags || template.tags,
+      title: pendingDraft?.title || template.title,
+      description: pendingDraft?.description || template.description,
+      tags: pendingDraft?.tags || template.tags,
       isCustom: true,
-      status: "draft"
+      status: "draft",
     });
+    setPendingDraft(null);
     setIsLibraryOpen(false);
     setIsBuilderOpen(true);
   };
 
   const handleSaveTemplate = (template: FormTemplate) => {
-    const exists = templates.find(t => t.id === template.id);
+    const exists = templates.find((t) => t.id === template.id);
     if (exists) {
-      setTemplates(templates.map(t => t.id === template.id ? template : t));
+      setTemplates(templates.map((t) => (t.id === template.id ? template : t)));
     } else {
       setTemplates([template, ...templates]);
     }
     setIsBuilderOpen(false);
+    setSelectedTemplate(null);
     toast.success(template.status === "published" ? "Form published!" : "Draft saved!");
   };
 
+  const handlePreview = (template: FormTemplate) => {
+    setSelectedTemplate(template);
+    setPreviewMode(true);
+    setIsFillerOpen(true);
+  };
+
+  const handleEditTemplate = (template: FormTemplate) => {
+    setSelectedTemplate(template);
+    setIsBuilderOpen(true);
+  };
+
+  const handleFillTemplate = (template: FormTemplate) => {
+    setSelectedTemplate(template);
+    setPreviewMode(false);
+    setIsFillerOpen(true);
+  };
+
+  // ── Render ────────────────────────────────────────────────
   return (
-    <div className={`flex flex-col h-full bg-[#fcfcfc] ${isInline ? "" : "-mx-4 -mt-4"}`}>
-      {/* Search & Tabs Header */}
-      {!isInline && (
-        <div className="bg-white px-5 pt-6 pb-2 border-b border-border/30">
-          <h2 className="text-[28px] font-extrabold text-foreground mb-5">Forms</h2>
-          
-          <div className="relative mb-6">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+    <div className="flex flex-col w-full">
+      {/* Compact header (inline mode) */}
+      <div className="flex flex-col gap-2.5 mb-2.5">
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search forms..."
-              className="w-full bg-[#f4f4f4] rounded-2xl py-3.5 pl-11 pr-4 text-[13px] outline-none placeholder:text-muted-foreground/40"
+              className="w-full bg-muted rounded-xl py-2 pl-8 pr-3 text-[12px] outline-none placeholder:text-muted-foreground/50"
             />
           </div>
-
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
-            {["All Forms", "Published", "Drafts"].map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setActiveFilter(filter.split(" ")[0] as any)}
-                className={`px-6 py-2.5 rounded-full text-[12px] font-bold transition-all whitespace-nowrap ${
-                  (activeFilter === filter.split(" ")[0] || (activeFilter === "All" && filter === "All Forms"))
-                    ? "bg-black text-white shadow-md"
-                    : "bg-[#f4f4f4] text-muted-foreground hover:bg-[#ececec]"
-                }`}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
+          <button
+            onClick={() => setIsLibraryOpen(true)}
+            className="shrink-0 rounded-xl bg-muted px-3 py-2 text-[11px] font-bold text-foreground active:opacity-80"
+          >
+            Library
+          </button>
+          <button
+            onClick={handleCreateNew}
+            className="shrink-0 rounded-xl bg-primary px-3 py-2 text-[11px] font-bold text-primary-foreground flex items-center gap-1 active:opacity-90"
+          >
+            <Plus className="h-3 w-3" /> New
+          </button>
         </div>
-      )}
 
-      {/* Main Content Area */}
-      <div className={`flex-1 overflow-y-auto ${isInline ? "py-2" : "px-5 py-6"}`}>
-        {templates.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="h-32 w-32 rounded-full bg-[#f4f4f4] flex items-center justify-center mb-8">
-              <div className="relative">
-                <FileText className="h-14 w-14 text-muted-foreground/30" />
-                <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-white shadow-sm flex items-center justify-center">
-                  <Plus className="h-3 w-3 text-black" />
+        <div className="flex items-center gap-1.5">
+          {(["all", "published", "draft"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setActiveFilter(f)}
+              className={`px-3 py-1 rounded-full text-[10px] font-bold capitalize transition-colors ${
+                activeFilter === f
+                  ? "bg-foreground text-background"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {f === "all" ? "All" : f === "published" ? "Published" : "Drafts"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* List */}
+      {filteredTemplates.length === 0 ? (
+        <div className="rounded-2xl border-2 border-dashed border-border bg-muted/20 px-4 py-8 text-center">
+          <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-card">
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <p className="text-[12px] font-bold text-foreground">No forms yet</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
+            Create a form or pick from the template library.
+          </p>
+          <button
+            onClick={handleCreateNew}
+            className="mt-3 inline-flex items-center gap-1 rounded-xl bg-primary px-4 py-2 text-[11px] font-bold text-primary-foreground active:opacity-90"
+          >
+            <Plus className="h-3.5 w-3.5" /> Create form
+          </button>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {filteredTemplates.map((t) => (
+            <div
+              key={t.id}
+              className="rounded-2xl bg-card border border-border p-3"
+            >
+              <div className="flex items-start gap-2.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <FileText className="h-3.5 w-3.5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-[13px] font-bold text-foreground truncate">
+                      {t.title}
+                    </p>
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${
+                        t.status === "published"
+                          ? "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]"
+                          : "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]"
+                      }`}
+                    >
+                      {t.status}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    {t.fields.length} field{t.fields.length === 1 ? "" : "s"} ·{" "}
+                    {t.responsesCount ?? 0} response
+                    {(t.responsesCount ?? 0) === 1 ? "" : "s"}
+                  </p>
+
+                  {/* Action row */}
+                  <div className="mt-2 flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleFillTemplate(t)}
+                      className="flex-1 flex items-center justify-center gap-1 rounded-lg bg-primary py-1.5 text-[10px] font-bold text-primary-foreground active:opacity-90"
+                    >
+                      <Send className="h-3 w-3" /> Fill
+                    </button>
+                    <button
+                      onClick={() => handlePreview(t)}
+                      className="flex items-center justify-center gap-1 rounded-lg bg-muted px-2.5 py-1.5 text-[10px] font-bold text-foreground active:opacity-80"
+                      aria-label="Preview"
+                    >
+                      <Eye className="h-3 w-3" />
+                    </button>
+                    <button
+                      onClick={() => handleEditTemplate(t)}
+                      className="flex items-center justify-center gap-1 rounded-lg bg-muted px-2.5 py-1.5 text-[10px] font-bold text-foreground active:opacity-80"
+                      aria-label="Edit"
+                    >
+                      <Edit3 className="h-3 w-3" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-            
-            <h3 className="text-[20px] font-bold text-foreground mb-2">No forms yet</h3>
-            <p className="text-[13px] text-muted-foreground mb-8 text-center max-w-[240px] leading-relaxed">
-              Create your first form to start collecting responses.
-            </p>
-
-            <button
-              onClick={handleCreateNew}
-              className="px-8 py-3.5 bg-black text-white rounded-2xl text-[14px] font-bold shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
-            >
-              + Create Your First Form
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredTemplates.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => {
-                  setSelectedTemplate(t);
-                  setIsBuilderOpen(true);
-                }}
-                className={`w-full bg-white p-5 rounded-[24px] border border-border/40 shadow-sm text-left active:scale-[0.99] transition-all flex flex-col gap-4`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0 pr-4">
-                    <h4 className="text-[15px] font-bold text-foreground mb-1 truncate">{t.title}</h4>
-                    <p className="text-[11px] text-muted-foreground font-medium">
-                      {t.fields.length} fields · {t.responsesCount} responses
-                    </p>
-                  </div>
-                  <MoreVertical className="h-4 w-4 text-muted-foreground/30 shrink-0" />
-                </div>
-
-                <div className="flex items-center justify-between">
-                   <div className={`px-3 py-1.5 rounded-full text-[10px] font-bold ${
-                     t.status === "published" 
-                       ? "bg-[#e3f9f0] text-[#0ca678]" 
-                       : "bg-[#fff4e6] text-[#f08c3a]"
-                   }`}>
-                     {t.status === "published" ? "Published" : "Draft"}
-                   </div>
-                   <div className="flex -space-x-1.5 overflow-hidden">
-                      {t.tags?.slice(0, 2).map((tag, i) => (
-                        <div key={i} className="h-5 w-5 rounded-full border border-white bg-secondary/40 flex items-center justify-center">
-                          <span className="text-[7px] font-bold text-muted-foreground">{tag.charAt(0)}</span>
-                        </div>
-                      ))}
-                   </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Floating Action Button - Only show if not inline OR if specifically needed */}
-      {templates.length > 0 && (
-        <button
-          onClick={handleCreateNew}
-          className={`${isInline ? "mt-4 relative left-0 bottom-0 mb-6 w-full py-4 rounded-2xl" : "absolute bottom-6 right-6 h-14 w-14 rounded-full"} bg-black shadow-xl flex items-center justify-center text-white active:scale-95 transition-all z-10`}
-        >
-          <Plus className={`${isInline ? "h-4 w-4 mr-2" : "h-6 w-6"}`} />
-          {isInline && <span className="text-[13px] font-bold">Add Note</span>}
-        </button>
-      )}
-
-      {/* Mock Bottom Navigation - matches Screen 1 - Only show if not inline */}
-      {!isInline && (
-        <div className="shrink-0 bg-white border-t border-border/30 px-6 py-4 flex items-center justify-between shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
-          {[
-            { id: "Forms", icon: LayoutGrid },
-            { id: "Analytics", icon: CheckCircle2 },
-            { id: "Settings", icon: MoreVertical }
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setNavTab(item.id as any)}
-              className={`flex flex-col items-center gap-1.5 transition-all ${
-                activeTab === item.id ? "text-black" : "text-muted-foreground/30"
-              }`}
-            >
-              <item.icon className="h-5 w-5" />
-              <span className={`text-[10px] font-bold ${activeTab === item.id ? "opacity-100" : "opacity-60"}`}>{item.id}</span>
-            </button>
           ))}
         </div>
       )}
 
       {/* Sheet Components */}
-      <CreateFormSheet isOpen={isCreateSheetOpen} onOpenChange={setIsCreateSheetOpen} onContinue={handleContinueCreation} />
-      <FormLibrarySheet isOpen={isLibraryOpen} onOpenChange={setIsLibraryOpen} templates={adminTemplates} onSelectTemplate={handleSelectTemplateFromLibrary} onCreateNew={handleCreateNew} />
-      <FormBuilderSheet isOpen={isBuilderOpen} onOpenChange={setIsBuilderOpen} initialTemplate={selectedTemplate} onSave={handleSaveTemplate} />
-      <FormFillerSheet isOpen={isFillerOpen} onOpenChange={setIsFillerOpen} template={selectedTemplate} onSubmit={() => { toast.success("Response recorded!"); setIsFillerOpen(false); }} />
+      <CreateFormSheet
+        isOpen={isCreateSheetOpen}
+        onOpenChange={setIsCreateSheetOpen}
+        onContinue={handleContinueCreation}
+      />
+      <FormLibrarySheet
+        isOpen={isLibraryOpen}
+        onOpenChange={(o) => {
+          setIsLibraryOpen(o);
+          if (!o) setPendingDraft(null);
+        }}
+        templates={adminTemplates}
+        onSelectTemplate={handleSelectTemplateFromLibrary}
+        onCreateNew={handleCreateNew}
+      />
+      <FormBuilderSheet
+        isOpen={isBuilderOpen}
+        onOpenChange={(o) => {
+          setIsBuilderOpen(o);
+          if (!o) setSelectedTemplate(null);
+        }}
+        initialTemplate={selectedTemplate}
+        onSave={handleSaveTemplate}
+        onPreview={handlePreview}
+      />
+      <FormFillerSheet
+        isOpen={isFillerOpen}
+        onOpenChange={(o) => {
+          setIsFillerOpen(o);
+          if (!o) setPreviewMode(false);
+        }}
+        template={selectedTemplate}
+        previewMode={previewMode}
+        onSubmit={() => {
+          toast.success("Response recorded!");
+          setIsFillerOpen(false);
+          setPreviewMode(false);
+        }}
+      />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import { Drawer } from "vaul";
-import { X, ArrowLeft, Camera, Star, ChevronDown, CheckCircle2, Mail, Type, AlignLeft } from "lucide-react";
+import { ArrowLeft, Camera, Star, ChevronDown, CheckCircle2, Mail } from "lucide-react";
 import { FormTemplate } from "./schema";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 interface FormFillerSheetProps {
@@ -9,6 +9,7 @@ interface FormFillerSheetProps {
   onOpenChange: (open: boolean) => void;
   template: FormTemplate | null;
   onSubmit: (data: Record<string, any>) => void;
+  previewMode?: boolean;
 }
 
 export const FormFillerSheet = ({
@@ -16,8 +17,13 @@ export const FormFillerSheet = ({
   onOpenChange,
   template,
   onSubmit,
+  previewMode = false,
 }: FormFillerSheetProps) => {
   const [formData, setFormData] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    if (isOpen) setFormData({});
+  }, [isOpen, template?.id]);
 
   const handleFieldChange = (fieldId: string, value: any) => {
     setFormData((prev) => ({ ...prev, [fieldId]: value }));
@@ -25,20 +31,21 @@ export const FormFillerSheet = ({
 
   const handleSave = () => {
     if (!template) return;
-    
-    // Basic validation
     for (const field of template.fields) {
       if (field.required && !formData[field.id]) {
         toast.error(`Please fill out: ${field.label}`);
         return;
       }
     }
-
     onSubmit(formData);
     setFormData({});
   };
 
   if (!template) return null;
+
+  const fields = template.fields ?? [];
+  const filled = fields.filter((f) => formData[f.id]).length;
+  const progress = fields.length === 0 ? 0 : Math.round((filled / fields.length) * 100);
 
   return (
     <Drawer.Root
@@ -51,51 +58,76 @@ export const FormFillerSheet = ({
     >
       <Drawer.Portal>
         <Drawer.Overlay className="!absolute inset-0 z-50 bg-black/40 backdrop-blur-sm" />
-        <Drawer.Content className="!absolute bottom-0 left-0 right-0 z-50 mx-auto flex h-[95%] max-h-[96%] w-full flex-col rounded-t-[32px] bg-[#f9f9f9] outline-none overflow-hidden">
-          <div className="mx-auto mt-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
-          
+        <Drawer.Content className="!absolute bottom-0 left-0 right-0 z-50 flex h-[94%] w-full flex-col rounded-t-[28px] bg-background outline-none overflow-hidden">
+          <div className="mx-auto mt-2.5 mb-1 h-1.5 w-10 shrink-0 rounded-full bg-muted-foreground/20" />
+
           {/* Header */}
-          <div className="bg-white shrink-0">
-            <div className="flex items-center gap-4 px-5 pt-4 pb-4 border-b border-border/40">
-              <button onClick={() => onOpenChange(false)} className="rounded-full p-2 text-foreground active:scale-95 transition-transform">
-                <ArrowLeft className="h-5 w-5" />
+          <div className="bg-card border-b border-border shrink-0">
+            <div className="flex items-center gap-2 px-4 pt-2 pb-2.5">
+              <button
+                onClick={() => onOpenChange(false)}
+                className="rounded-full p-1.5 text-foreground active:bg-muted"
+                aria-label="Close"
+              >
+                <ArrowLeft className="h-4 w-4" />
               </button>
               <div className="min-w-0 flex-1">
-                <h3 className="text-lg font-extrabold text-foreground truncate">{template.title}</h3>
-                <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-tight opacity-60">
-                   Fill out the form below
+                <h3 className="text-[14px] font-bold text-foreground truncate">{template.title}</h3>
+                <p className="text-[10px] text-muted-foreground">
+                  {previewMode ? "Preview mode" : `${filled} of ${fields.length} filled`}
                 </p>
+              </div>
+              {previewMode && (
+                <span className="rounded-full bg-[hsl(25,90%,55%)]/10 px-2 py-0.5 text-[9px] font-bold uppercase text-[hsl(25,90%,55%)]">
+                  Preview
+                </span>
+              )}
+            </div>
+            {/* Progress */}
+            <div className="px-4 pb-2.5">
+              <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
               </div>
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-6 py-8 space-y-8 pb-32">
-            {(template.fields ?? []).map((field) => (
-              <div key={field.id} className="space-y-3">
-                <label className="text-sm font-bold text-foreground flex items-center gap-1.5">
+          {/* Body */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+            {template.description && (
+              <p className="text-[12px] text-muted-foreground leading-relaxed">
+                {template.description}
+              </p>
+            )}
+
+            {fields.map((field) => (
+              <div key={field.id} className="space-y-1.5">
+                <label className="text-[11px] font-bold text-foreground flex items-center gap-1">
                   {field.label}
-                  {field.required && <span className="text-[#fa5252] text-xs">*</span>}
+                  {field.required && <span className="text-destructive">*</span>}
                 </label>
-                
+
                 {field.type === "text" && (
                   <input
                     type="text"
                     value={formData[field.id] || ""}
                     onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                    placeholder="Enter response..."
-                    className="w-full rounded-2xl border border-border/60 bg-white px-5 py-4 text-[14px] text-foreground outline-none focus:border-black transition-all placeholder:text-muted-foreground/30 shadow-sm"
+                    placeholder="Type your answer..."
+                    className="w-full rounded-xl border border-border bg-card px-3 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/50"
                   />
                 )}
 
                 {field.type === "email" && (
                   <div className="relative">
-                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
                     <input
                       type="email"
                       value={formData[field.id] || ""}
                       onChange={(e) => handleFieldChange(field.id, e.target.value)}
                       placeholder="email@example.com"
-                      className="w-full rounded-2xl border border-border/60 bg-white pl-12 pr-5 py-4 text-[14px] text-foreground outline-none focus:border-black transition-all placeholder:text-muted-foreground/30 shadow-sm"
+                      className="w-full rounded-xl border border-border bg-card pl-9 pr-3 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/50"
                     />
                   </div>
                 )}
@@ -104,9 +136,9 @@ export const FormFillerSheet = ({
                   <textarea
                     value={formData[field.id] || ""}
                     onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                    placeholder="Enter details..."
+                    placeholder="Add details..."
                     rows={4}
-                    className="w-full rounded-2xl border border-border/60 bg-white px-5 py-4 text-[14px] text-foreground outline-none focus:border-black transition-all placeholder:text-muted-foreground/30 shadow-sm resize-none"
+                    className="w-full rounded-xl border border-border bg-card px-3 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/50 resize-none"
                   />
                 )}
 
@@ -115,30 +147,37 @@ export const FormFillerSheet = ({
                     <select
                       value={formData[field.id] || ""}
                       onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                      className="w-full appearance-none rounded-2xl border border-border/60 bg-white px-5 py-4 text-[14px] text-foreground outline-none focus:border-black transition-all shadow-sm"
+                      className="w-full appearance-none rounded-xl border border-border bg-card pl-3 pr-9 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-colors"
                     >
-                      <option value="" disabled>Select an option</option>
+                      <option value="" disabled>
+                        Select an option
+                      </option>
                       {field.options?.map((opt) => (
-                        <option key={opt} value={opt}>{opt}</option>
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 pointer-events-none" />
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50 pointer-events-none" />
                   </div>
                 )}
 
                 {field.type === "rating" && (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
                         key={star}
                         onClick={() => handleFieldChange(field.id, star)}
-                        className="active:scale-90 transition-transform p-1"
+                        className="active:scale-90 transition-transform p-0.5"
+                        aria-label={`Rate ${star}`}
                       >
-                        <Star className={`h-10 w-10 ${
-                          (formData[field.id] || 0) >= star 
-                            ? "fill-[#fab005] text-[#fab005]" 
-                            : "text-muted-foreground/20 fill-transparent"
-                        }`} />
+                        <Star
+                          className={`h-7 w-7 ${
+                            (formData[field.id] || 0) >= star
+                              ? "fill-[hsl(45,90%,50%)] text-[hsl(45,90%,50%)]"
+                              : "text-muted-foreground/25 fill-transparent"
+                          }`}
+                        />
                       </button>
                     ))}
                   </div>
@@ -147,25 +186,28 @@ export const FormFillerSheet = ({
                 {field.type === "file" && (
                   <button
                     onClick={() => {
-                      toast.success("Opening camera...");
-                      handleFieldChange(field.id, "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=300&h=300");
+                      toast.success("Camera opened");
+                      handleFieldChange(
+                        field.id,
+                        "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=300&h=300"
+                      );
                     }}
-                    className="w-full rounded-[24px] border border-border/60 border-dashed bg-white p-8 flex flex-col items-center justify-center gap-3 active:bg-black/5 transition-all shadow-sm"
+                    className="w-full rounded-xl border border-border border-dashed bg-card p-4 flex flex-col items-center justify-center gap-1.5 active:bg-muted/50 transition-colors"
                   >
                     {formData[field.id] ? (
-                      <div className="relative h-28 w-28 rounded-2xl overflow-hidden shadow-md">
+                      <div className="relative h-20 w-20 rounded-lg overflow-hidden">
                         <img src={formData[field.id]} alt="Captured" className="h-full w-full object-cover" />
-                        <div className="absolute inset-x-0 bottom-0 bg-black/50 py-1.5 text-center text-[9px] text-white font-bold backdrop-blur-sm">
-                           RETAKE PHOTO
+                        <div className="absolute inset-x-0 bottom-0 bg-black/60 py-0.5 text-center text-[8px] font-bold text-white">
+                          RETAKE
                         </div>
                       </div>
                     ) : (
                       <>
-                        <div className="h-14 w-14 rounded-2xl bg-[#f4f4f4] flex items-center justify-center text-muted-foreground/40">
-                          <Camera className="h-7 w-7" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                          <Camera className="h-4 w-4" />
                         </div>
-                        <p className="text-[13px] font-bold text-foreground">Add site photos</p>
-                        <p className="text-[11px] text-muted-foreground">Tap to capture or upload</p>
+                        <p className="text-[11px] font-bold text-foreground">Take photo</p>
+                        <p className="text-[10px] text-muted-foreground">Tap to capture or upload</p>
                       </>
                     )}
                   </button>
@@ -174,19 +216,21 @@ export const FormFillerSheet = ({
             ))}
           </div>
 
-          <div className="shrink-0 p-5 bg-white border-t border-border/40 pb-8 flex items-center gap-3">
-             <button
+          {/* Footer */}
+          <div className="shrink-0 px-3 py-2.5 bg-card border-t border-border flex items-center gap-2">
+            <button
               onClick={() => onOpenChange(false)}
-              className="px-6 py-4 bg-[#f4f4f4] text-foreground rounded-2xl text-[14px] font-bold active:bg-muted transition-all"
+              className="px-3 py-2.5 bg-muted text-foreground rounded-xl text-[12px] font-bold active:opacity-80 transition-opacity"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="flex-1 py-4 bg-black text-white rounded-2xl text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg"
+              disabled={previewMode}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-primary text-primary-foreground rounded-xl text-[12px] font-bold active:opacity-90 transition-opacity disabled:opacity-40"
             >
-              <CheckCircle2 className="h-4 w-4" />
-              Complete Form
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              {previewMode ? "Preview only" : "Submit"}
             </button>
           </div>
         </Drawer.Content>
