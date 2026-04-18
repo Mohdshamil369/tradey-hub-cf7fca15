@@ -1067,6 +1067,82 @@ const TraderJobs = () => {
               </button>
             </div>
 
+            {/* Quick Filters Row */}
+            <div className="px-5 pb-3">
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar scroll-smooth">
+                {[
+                  { 
+                    id: "nearby", 
+                    label: "Nearby", 
+                    icon: "📍", 
+                    isActive: filterDistanceKm <= 5,
+                    onClick: () => {
+                      if (filterDistanceKm <= 5) setFilterDistanceKm(50);
+                      else setFilterDistanceKm(5);
+                    }
+                  },
+                  { 
+                    id: "today", 
+                    label: "Today", 
+                    icon: "📅", 
+                    isActive: filterTimeWindows.has("Today"),
+                    onClick: () => toggleFilterTimeWindow("Today")
+                  },
+                  { 
+                    id: "high_pay", 
+                    label: "High Pay", 
+                    icon: "💰", 
+                    isActive: filterPriceMin >= 200,
+                    onClick: () => {
+                      if (filterPriceMin >= 200) {
+                        setFilterPriceMin(0);
+                        setFilterPriceMinInput("");
+                      } else {
+                        setFilterPriceMin(200);
+                        setFilterPriceMinInput("200");
+                      }
+                    }
+                  },
+                  { 
+                    id: "fixed_price", 
+                    label: "Fixed Price", 
+                    icon: "⚡", 
+                    isActive: filterJobType.has("fixed price"),
+                    onClick: () => toggleJobTypeFilter("fixed price")
+                  },
+                  { 
+                    id: "urgent", 
+                    label: "Urgent", 
+                    icon: "🔥", 
+                    isActive: filterTimeWindows.has("Today") && filterPriceMin >= 150,
+                    onClick: () => {
+                      if (filterTimeWindows.has("Today") && filterPriceMin >= 150) {
+                        // toggle off - might be complex, just reset or toggle Today
+                        toggleFilterTimeWindow("Today");
+                      } else {
+                        if (!filterTimeWindows.has("Today")) toggleFilterTimeWindow("Today");
+                        setFilterPriceMin(150);
+                        setFilterPriceMinInput("150");
+                      }
+                    }
+                  }
+                ].map((qf) => (
+                  <button
+                    key={qf.id}
+                    onClick={qf.onClick}
+                    className={`flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${
+                      qf.isActive 
+                        ? "bg-primary border-primary text-primary-foreground shadow-sm scale-[0.98]" 
+                        : "bg-card border-border text-muted-foreground active:bg-muted"
+                    }`}
+                  >
+                    <span>{qf.icon}</span>
+                    <span>{qf.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="flex-1 overflow-y-auto pb-20">
               {(() => {
                 const filterSections = [
