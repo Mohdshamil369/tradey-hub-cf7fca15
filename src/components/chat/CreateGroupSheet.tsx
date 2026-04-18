@@ -5,7 +5,7 @@
 import { useMemo, useState } from "react";
 import { Drawer } from "vaul";
 import {
-  ArrowLeft, Check, Search, Users, X, Plus, ShieldCheck,
+  ArrowLeft, Check, Search, Users, X, Plus, ShieldCheck, Mail, Send,
 } from "lucide-react";
 import BoringAvatar from "boring-avatars";
 import { GroupConversation, GroupMember } from "@/data/messaging";
