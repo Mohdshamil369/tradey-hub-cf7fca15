@@ -105,6 +105,7 @@ const JobDetail = () => {
   const photos = job.media?.photos?.filter(p => p && p !== "/placeholder.svg") ?? [];
   const hasPhotos = photos.length > 0;
   const hasVoice = !!job.media?.voiceNote;
+  const isCommitted = !!job.committedStatus;
   const hasAttachments = hasPhotos || hasVoice || isCommitted;
 
   const tabs: { key: "details" | "quotes" | "attachments"; label: string; icon: any }[] = [
