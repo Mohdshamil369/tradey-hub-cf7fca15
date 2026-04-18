@@ -97,8 +97,9 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
     setInvitedEmails((prev) => prev.filter((x) => x !== e));
 
   const handleCreate = () => {
+    const now = Date.now();
     const members: GroupMember[] = [
-      // Current user is the admin
+      // Current user is the admin (auto-accepted)
       {
         id: "me",
         name: "You",
@@ -106,26 +107,40 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
         email: "you@tradey.app",
         role: "admin",
         online: true,
+        inviteStatus: "accepted",
       },
+      // Pool members — assumed inside the org so auto-accepted
       ...memberPool
         .filter((m) => selected.has(m.id))
-        .map<GroupMember>((m) => ({ ...m, role: "user" })),
+        .map<GroupMember>((m) => ({ ...m, role: "user", inviteStatus: "accepted" })),
+      // Email invites — pending until the recipient accepts
+      ...invitedEmails.map<GroupMember>((e) => ({
+        id: `inv-${e}`,
+        name: e.split("@")[0],
+        initial: e[0].toUpperCase(),
+        email: e,
+        role: "user",
+        inviteStatus: "pending",
+        invitedAt: now,
+      })),
     ];
 
     const group: GroupConversation = {
-      id: `g-${Date.now()}`,
+      id: `g-${now}`,
       type: "group",
       name: name.trim(),
       lastMessage: "Group created",
       time: "Just now",
-      timestamp: Date.now(),
+      timestamp: now,
       unread: 0,
       members,
       description: description.trim() || undefined,
       messages: [
         {
-          id: `m-${Date.now()}`,
-          text: `${name.trim()} created. ${members.length} member${members.length === 1 ? "" : "s"}.`,
+          id: `m-${now}`,
+          text: `${name.trim()} created. ${members.length} member${members.length === 1 ? "" : "s"}${
+            invitedEmails.length ? ` · ${invitedEmails.length} invite${invitedEmails.length === 1 ? "" : "s"} pending` : ""
+          }.`,
           sender: "other",
           senderName: "System",
           time: "Just now",
@@ -136,6 +151,8 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
     onCreated(group);
     close();
   };
+
+  const totalAdded = selected.size + invitedEmails.length;
 
   const canAdvanceFromDetails = name.trim().length >= 2;
   const canCreate = canAdvanceFromDetails;
