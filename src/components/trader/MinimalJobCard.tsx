@@ -87,7 +87,6 @@ export const MinimalJobCard = ({ job, onClick }: MinimalJobCardProps) => {
           {job.price && (
             <span className="text-[13px] font-extrabold text-foreground">£{job.price}</span>
           )}
-          <ChevronRight className="h-4 w-4 text-muted-foreground/30" />
         </div>
       </div>
 
