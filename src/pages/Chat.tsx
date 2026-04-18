@@ -251,39 +251,85 @@ const Chat = () => {
   return (
     <MobileLayout role="trader">
       <div className="px-4 pt-6 pb-4">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between">
           <h1 className="text-2xl font-extrabold text-foreground font-heading">Messages</h1>
-          <div className="relative">
-            <button
-              onClick={() => setShowCreateMenu((v) => !v)}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform active:scale-95"
-              aria-label="New conversation"
-            >
-              <Plus className="h-5 w-5" />
-            </button>
-            {showCreateMenu && (
-              <>
-                <div className="absolute inset-0 z-40" onClick={() => setShowCreateMenu(false)} />
-                <div className="absolute right-0 top-full mt-2 z-50 w-56 rounded-xl bg-card border border-border card-shadow overflow-hidden">
-                  <button
-                    onClick={() => { setShowCreateMenu(false); }}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-foreground active:bg-muted/60 border-b border-border"
-                  >
-                    <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                    Start new chat
-                  </button>
-                  <button
-                    onClick={() => { setShowCreateMenu(false); navigate("/chat/group/g-1"); }}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-foreground active:bg-muted/60"
-                  >
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    Create new group
-                  </button>
-                </div>
-              </>
-            )}
+          <div className="flex items-center gap-2">
+            {/* Admin / User pill toggle */}
+            <div className="flex items-center gap-0.5 rounded-full bg-muted p-0.5">
+              <button
+                onClick={() => setAdminMode(true)}
+                className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold transition-all ${
+                  adminMode
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground"
+                }`}
+                aria-pressed={adminMode}
+              >
+                <UserCog className="h-3 w-3" /> Admin
+              </button>
+              <button
+                onClick={() => setAdminMode(false)}
+                className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold transition-all ${
+                  !adminMode
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground"
+                }`}
+                aria-pressed={!adminMode}
+              >
+                <UserIcon className="h-3 w-3" /> User
+              </button>
+            </div>
+
+            {/* Plus / new conversation */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  if (adminMode) setShowCreateGroupSheet(true);
+                  else setShowCreateMenu((v) => !v);
+                }}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform active:scale-95"
+                aria-label={adminMode ? "Create new group" : "New conversation"}
+              >
+                <Plus className="h-5 w-5" />
+              </button>
+              {showCreateMenu && !adminMode && (
+                <>
+                  <div className="absolute inset-0 z-40" onClick={() => setShowCreateMenu(false)} />
+                  <div className="absolute right-0 top-full mt-2 z-50 w-56 rounded-xl bg-card border border-border card-shadow overflow-hidden">
+                    <button
+                      onClick={() => { setShowCreateMenu(false); }}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-foreground active:bg-muted/60"
+                    >
+                      <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                      Start new chat
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Admin banner — only visible in admin mode */}
+        {adminMode && (
+          <button
+            onClick={() => setShowCreateGroupSheet(true)}
+            className="mb-3 flex w-full items-center gap-3 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5 p-3 text-left transition-all active:scale-[0.99]"
+          >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+              <Users className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-extrabold text-foreground">
+                Create a new group
+              </p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                Add members, give it a name and start collaborating.
+              </p>
+            </div>
+            <Plus className="h-4 w-4 shrink-0 text-primary" />
+          </button>
+        )}
 
         {/* Search */}
         <div className="relative mb-3">
