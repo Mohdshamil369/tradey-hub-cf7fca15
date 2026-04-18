@@ -764,7 +764,28 @@ const JobDetail = () => {
             >
               <ArrowLeft className="h-4 w-4 text-foreground" />
             </button>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              {/* Admin/User pill toggle — only on long-term committed jobs */}
+              {isCommitted && isLongTerm && !isCompleted && !isCancelled && (
+                <div className="flex items-center gap-0.5 rounded-full bg-background/80 backdrop-blur-sm p-0.5 shadow-sm">
+                  <button
+                    onClick={() => setAdminMode(true)}
+                    className={`flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold transition-all ${
+                      adminMode ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                    }`}
+                  >
+                    <UserCog className="h-3 w-3" /> Admin
+                  </button>
+                  <button
+                    onClick={() => setAdminMode(false)}
+                    className={`flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold transition-all ${
+                      !adminMode ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                    }`}
+                  >
+                    <User className="h-3 w-3" /> User
+                  </button>
+                </div>
+              )}
               <button
                 onClick={async () => {
                   const shareData = {
