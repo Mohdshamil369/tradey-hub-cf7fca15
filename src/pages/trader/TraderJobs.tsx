@@ -80,6 +80,9 @@ interface Job {
   };
   jobRating?: number;
   jobReview?: string;
+  /** Where this job came to me from. "direct" = customer found me; "org" = forwarded by an organisation I work with. */
+  source?: "direct" | "org";
+  orgName?: string;
 }
 
 const initialJobs: Job[] = [
@@ -121,7 +124,8 @@ const initialJobs: Job[] = [
     voiceDuration: "1:12", 
     proposalsCount: 12,
     customerRequest: { expectedDuration: "2–3 days", expectedBudget: 1200, photos: [jobBathroomImg, jobBathroomImg, jobBathroomImg] },
-    customerData: { rating: 4.9, reviews: 34, isVerified: true, memberSince: "Mar 2023" }
+    customerData: { rating: 4.9, reviews: 34, isVerified: true, memberSince: "Mar 2023" },
+    source: "org", orgName: "Swift Logistics"
   },
   { 
     id: "j9", 
@@ -143,7 +147,7 @@ const initialJobs: Job[] = [
     customerRequest: { expectedDuration: "1 hour" },
     customerData: { rating: 4.5, reviews: 8, isVerified: false, memberSince: "Feb 2025" }
   },
-  { id: "j2", type: "catA", category: "fixed", title: "Light Switch Replacement", icon: "💡", customer: "Mark T.", location: "De Pijp", distance: "4.1 km", price: 55, timeWindow: "Tomorrow, 09:00 – 11:00", description: "2 light switches need replacing in the hallway. Standard switches.", postedAgo: "12 min ago", status: "incoming", hasVoiceNote: false, proposalsCount: 8, customerRequest: { expectedDuration: "30 min – 1 hour" }, customerData: { rating: 4.2, reviews: 5, isVerified: true, memberSince: "Nov 2024" } },
+  { id: "j2", type: "catA", category: "fixed", title: "Light Switch Replacement", icon: "💡", customer: "Mark T.", location: "De Pijp", distance: "4.1 km", price: 55, timeWindow: "Tomorrow, 09:00 – 11:00", description: "2 light switches need replacing in the hallway. Standard switches.", postedAgo: "12 min ago", status: "incoming", hasVoiceNote: false, proposalsCount: 8, customerRequest: { expectedDuration: "30 min – 1 hour" }, customerData: { rating: 4.2, reviews: 5, isVerified: true, memberSince: "Nov 2024" }, source: "org", orgName: "BuildRight Ltd." },
   { id: "j4", type: "catA", category: "fixed", title: "Drain Unblocking", icon: "🚿", customer: "David K.", location: "Oud-West", distance: "3.0 km", price: 75, timeWindow: "Today, 10:00 – 12:00", description: "Kitchen sink is completely blocked. Tried plunger, no luck.", postedAgo: "", status: "active", committedStatus: "in_progress", crew: [
     { id: "m1", name: "Jan V.", avatar: "JV", status: "arrived", updatedAt: "2 min ago" },
     { id: "m2", name: "Pieter D.", avatar: "PD", status: "en_route", updatedAt: "8 min ago" },
@@ -180,6 +184,7 @@ const initialJobs: Job[] = [
     completedDate: "8 Mar 2025", duration: "2h 10m",
     jobRating: 4.5,
     jobReview: "Great service, very professional. Explained everything clearly.",
+    source: "org", orgName: "BuildRight Ltd.",
     assignment: {
       type: "individual",
       members: [{ id: "m4", name: "Sophie Baker", role: "Electrician", hours: 2.15, earnings: 32.25 }],
@@ -451,7 +456,11 @@ const TraderJobs = () => {
   const [selectedIndividuals, setSelectedIndividuals] = useState<{ id: string; name: string; role: string }[]>([]);
   const [individualSearch, setIndividualSearch] = useState("");
   const [showSavedJobs, setShowSavedJobs] = useState(false);
+  const [showOrgOnly, setShowOrgOnly] = useState(false);
   const [likedJobIds, setLikedJobIds] = useState<Set<string>>(new Set(["j1", "j3"]));
+  // Worker is "part of an org" — for the demo, individual traders see this toggle since they may also receive jobs forwarded by orgs they collaborate with.
+  const orgJobCount = jobs.filter(j => j.source === "org").length;
+  const showOrgToggle = isIndividual && orgJobCount > 0;
   const toggleLike = (id: string) => {
     setLikedJobIds(prev => {
       const next = new Set(prev);
@@ -518,6 +527,8 @@ const TraderJobs = () => {
 
     // Job Type filter
     if (!filterJobType.has("any") && !filterJobType.has(j.category)) return false;
+    // Org-only filter (worker toggle)
+    if (showOrgOnly && j.source !== "org") return false;
     // Search filter
     if (searchQuery && !j.title.toLowerCase().includes(searchLower) && !j.customer.toLowerCase().includes(searchLower) && !j.location.toLowerCase().includes(searchLower)) return false;
     return true;
@@ -555,6 +566,7 @@ const TraderJobs = () => {
           price: job.price,
           rating: job.committedStatus === "completed" ? (job.jobRating || job.customerData?.rating || 5.0) : undefined,
           review: job.committedStatus === "completed" ? job.jobReview : undefined,
+          viaOrg: job.source === "org" ? job.orgName : undefined,
         }}
         onClick={() => openJobDetail(job)}
       />
@@ -765,6 +777,27 @@ const TraderJobs = () => {
                 </button>
               </div>
 
+              {/* "From my organisation" toggle — only when worker has org-sourced jobs */}
+              {showOrgToggle && (
+                <button
+                  onClick={() => setShowOrgOnly((v) => !v)}
+                  className={`mb-2 flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-[11px] font-semibold transition-all ${
+                    showOrgOnly
+                      ? "border-primary/40 bg-primary/10 text-primary"
+                      : "border-border bg-card text-muted-foreground active:bg-muted"
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <Building2 className="h-3.5 w-3.5" />
+                    {showOrgOnly ? "Showing only org-forwarded jobs" : "Show only jobs from my organisation"}
+                  </span>
+                  <span className={`flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
+                    showOrgOnly ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
+                  }`}>
+                    {orgJobCount}
+                  </span>
+                </button>
+              )}
             </>
           )}
         </div>
@@ -894,7 +927,7 @@ const TraderJobs = () => {
                     </div>
                   ) : (
                     <IncomingJobCard
-                      job={job}
+                      job={{ ...job, viaOrg: job.source === "org" ? job.orgName : undefined }}
                       onViewDetail={() => openJobDetail(job)}
                       viewMode={isIndividual ? "individual" : "agency"}
                       onRequestPhotos={(id) => toast.success("Photo request sent to customer!")}

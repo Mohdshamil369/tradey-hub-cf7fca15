@@ -1,4 +1,4 @@
-import { MapPin, Clock, Camera, Calendar, ChevronLeft, ChevronRight, Heart, CalendarDays, Users } from "lucide-react";
+import { MapPin, Clock, Camera, Calendar, ChevronLeft, ChevronRight, Heart, CalendarDays, Users, Building2 } from "lucide-react";
 import { useState } from "react";
 import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 
@@ -29,6 +29,8 @@ export interface IncomingJobData {
   customerRequest?: CustomerRequestMeta;
   inspectionFee?: number;
   proposalsCount?: number;
+  /** Org/agency that forwarded this job to me. Adds a "via {org}" chip on the card. */
+  viaOrg?: string;
 }
 
 export type JobCardViewMode = "individual" | "agency" | "agency-worker";
@@ -180,6 +182,13 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
         </div>
 
         <p className="mt-0.5 text-[11px] text-muted-foreground truncate">{job.customer} · {job.location}</p>
+
+        {job.viaOrg && (
+          <div className="mt-1 inline-flex items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary max-w-full truncate">
+            <Building2 className="h-2.5 w-2.5 shrink-0" />
+            <span className="truncate">via {job.viaOrg}</span>
+          </div>
+        )}
 
         {/* Metrics row */}
         <div className="mt-1.5 flex items-center gap-2 flex-wrap">
