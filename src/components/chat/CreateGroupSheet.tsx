@@ -443,7 +443,7 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
 
                 <div>
                   <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Members ({selected.size + 1})
+                    Members ({totalAdded + 1})
                   </p>
                   <div className="flex flex-col gap-1.5">
                     {/* Self */}
@@ -474,16 +474,33 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
                               {m.email}
                             </p>
                           </div>
-                          <button
-                            onClick={() => toggleMember(m.id)}
-                            className="flex h-6 w-6 items-center justify-center rounded-md bg-muted text-muted-foreground active:bg-destructive/10 active:text-destructive"
-                            aria-label={`Remove ${m.name}`}
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </button>
+                          <span className="rounded-md bg-online/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-online">
+                            Joined
+                          </span>
                         </div>
                       ))}
-                    {selected.size === 0 && (
+
+                    {invitedEmails.map((e) => (
+                      <div
+                        key={e}
+                        className="flex items-center gap-3 rounded-xl border border-dashed border-primary/30 bg-primary/5 p-2.5"
+                      >
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                          <Mail className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[12px] font-bold text-foreground">
+                            {e.split("@")[0]}
+                          </p>
+                          <p className="truncate text-[10px] text-muted-foreground">{e}</p>
+                        </div>
+                        <span className="rounded-md bg-warning/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-warning">
+                          Pending
+                        </span>
+                      </div>
+                    ))}
+
+                    {totalAdded === 0 && (
                       <p className="rounded-xl border border-dashed border-border bg-muted/20 p-3 text-center text-[11px] text-muted-foreground">
                         No additional members. You can add them later from the
                         group settings.
