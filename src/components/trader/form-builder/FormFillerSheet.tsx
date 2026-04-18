@@ -78,7 +78,7 @@ export const FormFillerSheet = ({
                 </p>
               </div>
               {previewMode && (
-                <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-600">
+                <span className="rounded-full bg-[hsl(25,90%,55%)]/10 px-2 py-0.5 text-[9px] font-bold uppercase text-[hsl(25,90%,55%)]">
                   Preview
                 </span>
               )}
