@@ -39,6 +39,9 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
   const [description, setDescription] = useState("");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [invitedEmails, setInvitedEmails] = useState<string[]>([]);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const filteredPool = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -54,11 +57,13 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
     setDescription("");
     setSearch("");
     setSelected(new Set());
+    setInviteEmail("");
+    setInvitedEmails([]);
+    setEmailError(null);
   };
 
   const close = () => {
     onOpenChange(false);
-    // Delay reset so the closing animation looks clean
     setTimeout(reset, 250);
   };
 
@@ -70,6 +75,26 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
       return next;
     });
   };
+
+  const addInviteEmail = () => {
+    const trimmed = inviteEmail.trim().toLowerCase();
+    if (!trimmed) return;
+    // Basic RFC-ish email check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setEmailError("Enter a valid email address");
+      return;
+    }
+    if (invitedEmails.includes(trimmed) || memberPool.some((m) => m.email.toLowerCase() === trimmed)) {
+      setEmailError("Already added");
+      return;
+    }
+    setInvitedEmails((prev) => [...prev, trimmed]);
+    setInviteEmail("");
+    setEmailError(null);
+  };
+
+  const removeInviteEmail = (e: string) =>
+    setInvitedEmails((prev) => prev.filter((x) => x !== e));
 
   const handleCreate = () => {
     const members: GroupMember[] = [
