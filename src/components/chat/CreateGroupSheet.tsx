@@ -5,7 +5,7 @@
 import { useMemo, useState } from "react";
 import { Drawer } from "vaul";
 import {
-  ArrowLeft, Check, Search, Users, X, Plus, ShieldCheck,
+  ArrowLeft, Check, Search, Users, X, Plus, ShieldCheck, Mail, Send,
 } from "lucide-react";
 import BoringAvatar from "boring-avatars";
 import { GroupConversation, GroupMember } from "@/data/messaging";
@@ -39,6 +39,9 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
   const [description, setDescription] = useState("");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [invitedEmails, setInvitedEmails] = useState<string[]>([]);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const filteredPool = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -54,11 +57,13 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
     setDescription("");
     setSearch("");
     setSelected(new Set());
+    setInviteEmail("");
+    setInvitedEmails([]);
+    setEmailError(null);
   };
 
   const close = () => {
     onOpenChange(false);
-    // Delay reset so the closing animation looks clean
     setTimeout(reset, 250);
   };
 
@@ -71,9 +76,30 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
     });
   };
 
+  const addInviteEmail = () => {
+    const trimmed = inviteEmail.trim().toLowerCase();
+    if (!trimmed) return;
+    // Basic RFC-ish email check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setEmailError("Enter a valid email address");
+      return;
+    }
+    if (invitedEmails.includes(trimmed) || memberPool.some((m) => m.email.toLowerCase() === trimmed)) {
+      setEmailError("Already added");
+      return;
+    }
+    setInvitedEmails((prev) => [...prev, trimmed]);
+    setInviteEmail("");
+    setEmailError(null);
+  };
+
+  const removeInviteEmail = (e: string) =>
+    setInvitedEmails((prev) => prev.filter((x) => x !== e));
+
   const handleCreate = () => {
+    const now = Date.now();
     const members: GroupMember[] = [
-      // Current user is the admin
+      // Current user is the admin (auto-accepted)
       {
         id: "me",
         name: "You",
@@ -81,26 +107,40 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
         email: "you@tradey.app",
         role: "admin",
         online: true,
+        inviteStatus: "accepted",
       },
+      // Pool members — assumed inside the org so auto-accepted
       ...memberPool
         .filter((m) => selected.has(m.id))
-        .map<GroupMember>((m) => ({ ...m, role: "user" })),
+        .map<GroupMember>((m) => ({ ...m, role: "user", inviteStatus: "accepted" })),
+      // Email invites — pending until the recipient accepts
+      ...invitedEmails.map<GroupMember>((e) => ({
+        id: `inv-${e}`,
+        name: e.split("@")[0],
+        initial: e[0].toUpperCase(),
+        email: e,
+        role: "user",
+        inviteStatus: "pending",
+        invitedAt: now,
+      })),
     ];
 
     const group: GroupConversation = {
-      id: `g-${Date.now()}`,
+      id: `g-${now}`,
       type: "group",
       name: name.trim(),
       lastMessage: "Group created",
       time: "Just now",
-      timestamp: Date.now(),
+      timestamp: now,
       unread: 0,
       members,
       description: description.trim() || undefined,
       messages: [
         {
-          id: `m-${Date.now()}`,
-          text: `${name.trim()} created. ${members.length} member${members.length === 1 ? "" : "s"}.`,
+          id: `m-${now}`,
+          text: `${name.trim()} created. ${members.length} member${members.length === 1 ? "" : "s"}${
+            invitedEmails.length ? ` · ${invitedEmails.length} invite${invitedEmails.length === 1 ? "" : "s"} pending` : ""
+          }.`,
           sender: "other",
           senderName: "System",
           time: "Just now",
@@ -111,6 +151,8 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
     onCreated(group);
     close();
   };
+
+  const totalAdded = selected.size + invitedEmails.length;
 
   const canAdvanceFromDetails = name.trim().length >= 2;
   const canCreate = canAdvanceFromDetails;
@@ -232,24 +274,86 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
 
             {step === "members" && (
               <div className="flex flex-col gap-3 pt-1">
+                {/* Invite by email */}
+                <div className="rounded-xl border border-border bg-card p-3">
+                  <p className="mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                    <Mail className="h-3 w-3" /> Invite by email
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      inputMode="email"
+                      value={inviteEmail}
+                      onChange={(e) => {
+                        setInviteEmail(e.target.value);
+                        if (emailError) setEmailError(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === ",") {
+                          e.preventDefault();
+                          addInviteEmail();
+                        }
+                      }}
+                      placeholder="name@example.com"
+                      className="flex-1 rounded-lg bg-muted px-3 py-2 text-[12px] text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30"
+                    />
+                    <button
+                      onClick={addInviteEmail}
+                      disabled={!inviteEmail.trim()}
+                      className="flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-[11px] font-bold text-primary-foreground disabled:opacity-40"
+                    >
+                      <Send className="h-3 w-3" /> Add
+                    </button>
+                  </div>
+                  {emailError && (
+                    <p className="mt-1.5 text-[10px] font-semibold text-destructive">{emailError}</p>
+                  )}
+                  {invitedEmails.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {invitedEmails.map((e) => (
+                        <span
+                          key={e}
+                          className="inline-flex items-center gap-1 rounded-full bg-primary/10 py-0.5 pl-2 pr-1 text-[10px] font-semibold text-primary"
+                        >
+                          {e}
+                          <button
+                            onClick={() => removeInviteEmail(e)}
+                            className="flex h-4 w-4 items-center justify-center rounded-full bg-primary/20 text-primary"
+                            aria-label={`Remove ${e}`}
+                          >
+                            <X className="h-2.5 w-2.5" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <p className="mt-2 text-[10px] text-muted-foreground">
+                    Invitees appear as <span className="font-semibold text-foreground">Pending</span> until they accept.
+                  </p>
+                </div>
+
+                {/* Search teammates */}
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search by name or email"
+                    placeholder="Search teammates"
                     className="w-full rounded-xl bg-muted pl-9 pr-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none"
                   />
                 </div>
 
-                {selected.size > 0 && (
+                {(selected.size > 0 || invitedEmails.length > 0) && (
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="font-semibold text-foreground">
-                      {selected.size} selected
+                      {selected.size} selected · {invitedEmails.length} invited
                     </span>
                     <button
-                      onClick={() => setSelected(new Set())}
+                      onClick={() => {
+                        setSelected(new Set());
+                        setInvitedEmails([]);
+                      }}
                       className="font-semibold text-muted-foreground active:text-foreground"
                     >
                       Clear
@@ -339,7 +443,7 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
 
                 <div>
                   <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Members ({selected.size + 1})
+                    Members ({totalAdded + 1})
                   </p>
                   <div className="flex flex-col gap-1.5">
                     {/* Self */}
@@ -370,16 +474,33 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
                               {m.email}
                             </p>
                           </div>
-                          <button
-                            onClick={() => toggleMember(m.id)}
-                            className="flex h-6 w-6 items-center justify-center rounded-md bg-muted text-muted-foreground active:bg-destructive/10 active:text-destructive"
-                            aria-label={`Remove ${m.name}`}
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </button>
+                          <span className="rounded-md bg-online/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-online">
+                            Joined
+                          </span>
                         </div>
                       ))}
-                    {selected.size === 0 && (
+
+                    {invitedEmails.map((e) => (
+                      <div
+                        key={e}
+                        className="flex items-center gap-3 rounded-xl border border-dashed border-primary/30 bg-primary/5 p-2.5"
+                      >
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                          <Mail className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[12px] font-bold text-foreground">
+                            {e.split("@")[0]}
+                          </p>
+                          <p className="truncate text-[10px] text-muted-foreground">{e}</p>
+                        </div>
+                        <span className="rounded-md bg-warning/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-warning">
+                          Pending
+                        </span>
+                      </div>
+                    ))}
+
+                    {totalAdded === 0 && (
                       <p className="rounded-xl border border-dashed border-border bg-muted/20 p-3 text-center text-[11px] text-muted-foreground">
                         No additional members. You can add them later from the
                         group settings.
@@ -414,7 +535,7 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
                   onClick={() => setStep("review")}
                   className="flex-[2] rounded-xl bg-primary py-3 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98]"
                 >
-                  Review ({selected.size} added)
+                  Review ({totalAdded} added)
                 </button>
               </div>
             )}
