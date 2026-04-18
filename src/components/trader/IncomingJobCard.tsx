@@ -1,4 +1,4 @@
-import { MapPin, Clock, Camera, Calendar, ChevronLeft, ChevronRight, Heart, CalendarDays, Users } from "lucide-react";
+import { MapPin, Clock, Camera, Calendar, ChevronLeft, ChevronRight, Heart, CalendarDays, Users, Building2 } from "lucide-react";
 import { useState } from "react";
 import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 
@@ -29,6 +29,8 @@ export interface IncomingJobData {
   customerRequest?: CustomerRequestMeta;
   inspectionFee?: number;
   proposalsCount?: number;
+  /** Org/agency that forwarded this job to me. Adds a "via {org}" chip on the card. */
+  viaOrg?: string;
 }
 
 export type JobCardViewMode = "individual" | "agency" | "agency-worker";
