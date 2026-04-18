@@ -36,6 +36,7 @@ export interface JobDetailPageData {
   timeWindow: string;
   status?: string;
   committedStatus?: string;
+  isLongTerm?: boolean;
   price?: number;
   inspectionFee?: number;
   postedAgo?: string;
