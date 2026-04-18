@@ -517,7 +517,6 @@ const JobDetail = () => {
               </div>
             </div>
           </div>
-          </div>
         )}
 
         {/* Photos grid would go here if implemented in this component */}
