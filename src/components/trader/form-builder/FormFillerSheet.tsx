@@ -70,7 +70,7 @@ export const FormFillerSheet = ({
           </div>
 
           <div className="flex-1 overflow-y-auto px-6 py-8 space-y-8 pb-32">
-            {template.fields.map((field) => (
+            {(template.fields ?? []).map((field) => (
               <div key={field.id} className="space-y-3">
                 <label className="text-sm font-bold text-foreground flex items-center gap-1.5">
                   {field.label}
