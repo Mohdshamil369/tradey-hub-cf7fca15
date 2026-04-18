@@ -280,33 +280,16 @@ const Chat = () => {
               </button>
             </div>
 
-            {/* Plus / new conversation */}
-            <div className="relative">
+            {/* Plus / new group — admin only */}
+            {adminMode && (
               <button
-                onClick={() => {
-                  if (adminMode) setShowCreateGroupSheet(true);
-                  else setShowCreateMenu((v) => !v);
-                }}
+                onClick={() => setShowCreateGroupSheet(true)}
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform active:scale-95"
-                aria-label={adminMode ? "Create new group" : "New conversation"}
+                aria-label="Create new group"
               >
                 <Plus className="h-5 w-5" />
               </button>
-              {showCreateMenu && !adminMode && (
-                <>
-                  <div className="absolute inset-0 z-40" onClick={() => setShowCreateMenu(false)} />
-                  <div className="absolute right-0 top-full mt-2 z-50 w-56 rounded-xl bg-card border border-border card-shadow overflow-hidden">
-                    <button
-                      onClick={() => { setShowCreateMenu(false); }}
-                      className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-foreground active:bg-muted/60"
-                    >
-                      <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                      Start new chat
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+            )}
           </div>
         </div>
 
