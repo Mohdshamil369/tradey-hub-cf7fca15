@@ -671,15 +671,24 @@ const JobDetail = () => {
     }
   };
 
+  // ── Committed-job CTAs ────────────────────────────────────
+  // Smart, context-aware actions based on committedStatus.
+  // Always: primary status CTA + Message + Reschedule + More menu.
+  const committedPrimary = (() => {
+    switch (job.committedStatus) {
+      case "upcoming":     return { label: "On the way",    icon: Truck,       action: () => toast.success("Customer notified — you're on the way") };
+      case "in_progress":  return { label: "Mark Complete", icon: CheckCircle2, action: () => { toast.success("Job marked complete 🎉"); navigate("/trader/jobs"); } };
+      default:             return { label: "Start Job",     icon: PlayCircle,  action: () => toast.success("Job started") };
+    }
+  })();
+
   const renderFooter = () => {
-    const isCompleted = job.status === "completed" || job.committedStatus === "completed";
-    
     if (isCompleted) {
       return (
         <div className="p-4 bg-background border-t border-border/40">
            <button
              onClick={() => toast.info("Viewing invoice feature coming soon")}
-             className="w-full py-4 bg-black text-white rounded-2xl text-[14px] font-bold active:scale-95 transition-all shadow-md"
+             className="w-full py-4 bg-foreground text-background rounded-2xl text-[14px] font-bold active:scale-95 transition-all shadow-md"
            >
              View Invoice & Receipt
            </button>
@@ -687,6 +696,43 @@ const JobDetail = () => {
       );
     }
 
+    // Committed job → smart CTAs (no "Generate Quote")
+    if (isCommitted) {
+      const PrimaryIcon = committedPrimary.icon;
+      return (
+        <div className="flex items-center gap-2 p-4 bg-background border-t border-border/40">
+          <button
+            onClick={() => toast.info("Opening chat with customer…")}
+            aria-label="Message customer"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-card active:bg-muted"
+          >
+            <MessageCircle className="h-4 w-4 text-foreground" />
+          </button>
+          <button
+            onClick={() => toast.info("Reschedule — coming soon")}
+            aria-label="Reschedule"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-card active:bg-muted"
+          >
+            <Calendar className="h-4 w-4 text-foreground" />
+          </button>
+          <button
+            onClick={committedPrimary.action}
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
+          >
+            <PrimaryIcon className="h-4 w-4" /> {committedPrimary.label}
+          </button>
+          <button
+            onClick={() => setShowMoreActions(true)}
+            aria-label="More actions"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-card active:bg-muted"
+          >
+            <MoreHorizontal className="h-4 w-4 text-foreground" />
+          </button>
+        </div>
+      );
+    }
+
+    // Incoming (non-committed) — original generate quote flow
     return (
       <div className="flex gap-3 p-4 bg-background border-t border-border/40">
         <button
