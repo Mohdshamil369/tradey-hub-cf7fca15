@@ -15,7 +15,6 @@ import {
   Conversation, IndividualConversation, GroupConversation, Message,
   individualConversations, groupConversations,
 } from "@/data/messaging";
-import CreateGroupSheet from "@/components/chat/CreateGroupSheet";
 import { toast } from "sonner";
 
 const avatarPalette = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD", "#98D8C8"];
@@ -33,7 +32,7 @@ const Chat = () => {
   const [filter, setFilter] = useState<FilterChip>("all");
   const [showCreateMenu, setShowCreateMenu] = useState(false);
   const [adminMode, setAdminMode] = useState<boolean>(false);
-  const [showCreateGroupSheet, setShowCreateGroupSheet] = useState(false);
+  // Sheet was replaced by a dedicated /chat/new-group page.
   const [favourites, setFavourites] = useState<Set<string>>(
     new Set([...individuals, ...groups].filter((c) => c.favourite).map((c) => c.id)),
   );
@@ -283,7 +282,7 @@ const Chat = () => {
             {/* Plus / new group — admin only */}
             {adminMode && (
               <button
-                onClick={() => setShowCreateGroupSheet(true)}
+                onClick={() => navigate("/chat/new-group")}
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform active:scale-95"
                 aria-label="Create new group"
               >
@@ -359,18 +358,6 @@ const Chat = () => {
         )}
       </div>
 
-      <CreateGroupSheet
-        open={showCreateGroupSheet}
-        onOpenChange={setShowCreateGroupSheet}
-        onCreated={(g) => {
-          setGroups((prev) => [g, ...prev]);
-          toast.success(`Group "${g.name}" created`, {
-            description: `${g.members.length} member${g.members.length === 1 ? "" : "s"}`,
-          });
-          // Open the new group's workspace
-          navigate(`/chat/group/${g.id}`);
-        }}
-      />
     </MobileLayout>
   );
 };

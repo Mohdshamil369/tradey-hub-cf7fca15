@@ -18,6 +18,7 @@ import MyJobs from "./pages/MyJobs";
 import Bookings from "./pages/Bookings";
 import Chat from "./pages/Chat";
 import GroupConversationPage from "./pages/GroupConversation";
+import CreateGroup from "./pages/CreateGroup";
 import Profile from "./pages/Profile";
 import MyDetails from "./pages/profile/MyDetails";
 import Security from "./pages/profile/Security";
@@ -162,6 +163,7 @@ const App = () => (
 
             {/* Shared routes */}
             <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+            <Route path="/chat/new-group" element={<ProtectedRoute><CreateGroup /></ProtectedRoute>} />
             <Route path="/chat/group/:groupId" element={<ProtectedRoute><GroupConversationPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/profile/details" element={<ProtectedRoute><MyDetails /></ProtectedRoute>} />
