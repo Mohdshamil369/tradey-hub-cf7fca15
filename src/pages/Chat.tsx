@@ -5,6 +5,7 @@ import MobileLayout from "@/components/layout/MobileLayout";
 import {
   MessageCircle, Send, ArrowLeft, Phone, MoreVertical, Calendar, Check, CheckCheck,
   ShieldAlert, Flag, Ban, Trash2, VolumeX, MapPin, Clock, Search, Plus, Star, Users, X,
+  UserCog, User as UserIcon,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +15,8 @@ import {
   Conversation, IndividualConversation, GroupConversation, Message,
   individualConversations, groupConversations,
 } from "@/data/messaging";
+import CreateGroupSheet from "@/components/chat/CreateGroupSheet";
+import { toast } from "sonner";
 
 const avatarPalette = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD", "#98D8C8"];
 
