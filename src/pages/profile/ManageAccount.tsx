@@ -2,6 +2,7 @@ import { ArrowLeft, LogOut, Trash2, ShieldOff, Database, Pause } from "lucide-re
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import MobileLayout from "@/components/layout/MobileLayout";
 
 interface DangerAction {
   icon: any;
