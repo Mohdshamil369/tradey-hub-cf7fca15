@@ -54,6 +54,7 @@ export type Conversation = IndividualConversation | GroupConversation;
 // ── Groups ──────────────────────────────────────────────────
 
 export type GroupRole = "admin" | "user";
+export type InviteStatus = "accepted" | "pending" | "declined";
 
 export interface GroupMember {
   id: string;
@@ -63,6 +64,9 @@ export interface GroupMember {
   email: string;
   avatarColor?: string;
   online?: boolean;
+  /** Tracks invitation lifecycle. Existing members default to "accepted". */
+  inviteStatus?: InviteStatus;
+  invitedAt?: number;
 }
 
 // ── Jobs (group-scoped) ─────────────────────────────────────
