@@ -267,7 +267,7 @@ const SubtaskList = ({
                       <button onClick={() => onStatus(s.id, "in_progress")} className="rounded-full bg-primary px-2.5 py-1 text-[10px] font-bold text-primary-foreground">Start</button>
                     )}
                     {s.status === "in_progress" && (
-                      <button onClick={() => onStatus(s.id, "completed")} className="rounded-full bg-success px-2.5 py-1 text-[10px] font-bold text-success-foreground">Mark complete</button>
+                      <button onClick={() => onStatus(s.id, "completed")} className="rounded-full bg-success px-2.5 py-1 text-[10px] font-bold text-white">Mark complete</button>
                     )}
                   </div>
                 )}
