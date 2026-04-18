@@ -535,7 +535,7 @@ const CreateGroupSheet = ({ open, onOpenChange, onCreated }: CreateGroupSheetPro
                   onClick={() => setStep("review")}
                   className="flex-[2] rounded-xl bg-primary py-3 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98]"
                 >
-                  Review ({selected.size} added)
+                  Review ({totalAdded} added)
                 </button>
               </div>
             )}
