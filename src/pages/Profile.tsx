@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileMenuSection from "@/components/profile/ProfileMenuSection";
 import ProfileLogout from "@/components/profile/ProfileLogout";
+import ShareEarnCard from "@/components/profile/ShareEarnCard";
 
 const Profile = () => {
   const { profile, signOut } = useAuth();
@@ -32,6 +33,8 @@ const Profile = () => {
         {!isAgency && <div className="mb-8" />}
 
         <ProfileHeader profile={profile} onEditPress={() => navigate("/profile/details")} />
+
+        <ShareEarnCard />
 
         <ProfileMenuSection profile={profile} />
 
