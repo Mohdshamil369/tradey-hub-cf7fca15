@@ -183,6 +183,13 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
 
         <p className="mt-0.5 text-[11px] text-muted-foreground truncate">{job.customer} · {job.location}</p>
 
+        {job.viaOrg && (
+          <div className="mt-1 inline-flex items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary max-w-full truncate">
+            <Building2 className="h-2.5 w-2.5 shrink-0" />
+            <span className="truncate">via {job.viaOrg}</span>
+          </div>
+        )}
+
         {/* Metrics row */}
         <div className="mt-1.5 flex items-center gap-2 flex-wrap">
           {estDuration && (
