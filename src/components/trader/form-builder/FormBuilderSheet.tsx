@@ -138,29 +138,6 @@ export const FormBuilderSheet = ({
                           className="w-full text-sm font-semibold bg-transparent border-b border-border/30 focus:border-primary outline-none py-1 transition-colors"
                         />
                         
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
-                              {field.type === 'text' && <Type className="h-2.5 w-2.5" />}
-                              {field.type === 'textarea' && <AlignLeft className="h-2.5 w-2.5" />}
-                              {field.type === 'select' && <List className="h-2.5 w-2.5" />}
-                              {field.type === 'rating' && <Star className="h-2.5 w-2.5" />}
-                              {field.type === 'file' && <Camera className="h-2.5 w-2.5" />}
-                              {field.type}
-                            </span>
-                          </div>
-                          
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <span className="text-[10px] text-muted-foreground">Required</span>
-                            <div 
-                              onClick={() => updateField(field.id, { required: !field.required })}
-                              className={`w-7 h-4 rounded-full relative transition-colors ${field.required ? 'bg-primary' : 'bg-muted'}`}
-                            >
-                              <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${field.required ? 'left-3.5' : 'left-0.5'}`} />
-                            </div>
-                          </label>
-                        </div>
-
                         {field.type === "select" && (
                           <div className="pt-2 space-y-2">
                             <p className="text-[9px] font-bold text-muted-foreground/60 uppercase">Options (comma separated)</p>
