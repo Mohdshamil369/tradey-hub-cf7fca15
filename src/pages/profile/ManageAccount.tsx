@@ -2,6 +2,7 @@ import { ArrowLeft, LogOut, Trash2, ShieldOff, Database, Pause } from "lucide-re
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import MobileLayout from "@/components/layout/MobileLayout";
 
 interface DangerAction {
   icon: any;
@@ -65,9 +66,10 @@ const ManageAccount = () => {
   ];
 
   return (
-    <div className="min-h-full bg-background">
-      {/* Header */}
-      <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-border bg-background px-4 py-3">
+    <MobileLayout>
+      <div className="min-h-full bg-background">
+        {/* Header */}
+        <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-border bg-background px-4 py-3">
         <button
           onClick={() => navigate(-1)}
           className="flex h-9 w-9 items-center justify-center rounded-full transition-colors active:bg-muted"
@@ -137,8 +139,9 @@ const ManageAccount = () => {
         <p className="mt-4 text-center text-[10px] text-muted-foreground">
           Need help? Contact support before taking irreversible actions.
         </p>
+        </div>
       </div>
-    </div>
+    </MobileLayout>
   );
 };
 
