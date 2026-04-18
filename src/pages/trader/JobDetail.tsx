@@ -7,7 +7,7 @@ import {
   ArrowLeft, MapPin, Clock, Star, Play, Info, ChevronRight, ChevronLeft,
   ShieldCheck, Timer, MessageCircle, XCircle, FileText, StickyNote,
   Image, Mic, ClipboardList, Package, Wrench, Ban, RotateCcw, Plus, Sparkles,
-  Camera, Calendar, User, Briefcase, Heart, Share2,
+  Camera, Calendar, User, Briefcase, Heart, Share2, CheckCircle2,
   Image as ImageIcon,
 } from "lucide-react";
 import Avatar from "boring-avatars";
@@ -339,7 +339,8 @@ const JobDetail = () => {
         <ChevronRight className="h-4 w-4 text-muted-foreground/30" />
       </div>
     </div>
-  );
+    );
+  };
 
   const renderQuotesTab = () => {
     if (job.quote) {
