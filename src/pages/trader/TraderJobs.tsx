@@ -720,13 +720,21 @@ const TraderJobs = () => {
       { id: "m4", name: "Sophie Baker", role: "Electrician" },
       { id: "m5", name: "Liam Wright", role: "Electrician" },
     ]},
+    { id: "g3", name: "General Crew", members: [
+      { id: "m3", name: "Lena K.", role: "Tiler" },
+      { id: "m6", name: "Erik D.", role: "Helper" },
+      { id: "m7", name: "Jos V.", role: "Helper" },
+    ]},
   ];
 
   const mockIndividuals = [
     { id: "m1", name: "Alex Turner", role: "Plumber" },
     { id: "m2", name: "James Cooper", role: "Plumber" },
+    { id: "m3", name: "Lena K.", role: "Tiler" },
     { id: "m4", name: "Sophie Baker", role: "Electrician" },
     { id: "m5", name: "Liam Wright", role: "Electrician" },
+    { id: "m6", name: "Erik D.", role: "Helper" },
+    { id: "m7", name: "Jos V.", role: "Helper" },
   ];
 
   const resetAssignFlow = () => {
