@@ -31,20 +31,30 @@ interface StageJobCardProps {
     viaOrg?: string;
     /** Optional progress for purchase-list stages */
     purchaseProgress?: { purchased: number; total: number };
+    /** Who's currently doing the work — shown for assigned/in-progress stages. */
+    assignedTo?: { label: string; memberCount?: number };
+    /** Customer rating + review for completed/paid stages. */
+    rating?: number;
+    review?: string;
+    /** When true, render a muted cancelled banner regardless of stage. */
+    cancelled?: boolean;
   };
   stage: WorkflowStage;
   category: JobCategory;
   onClick?: () => void;
   onCta?: (jobId: string, stage: WorkflowStage) => void;
+  /** Optional: allow admin to reassign for live stages. */
+  onReassign?: (jobId: string) => void;
 }
 
-const StageJobCard = ({ job, stage, category, onClick, onCta }: StageJobCardProps) => {
+const StageJobCard = ({ job, stage, category, onClick, onCta, onReassign }: StageJobCardProps) => {
   const meta = getStageCta(stage, category);
   const Icon = meta.ctaIcon;
   const showProgress = !!job.purchaseProgress && job.purchaseProgress.total > 0;
   const pct = showProgress
     ? Math.round((job.purchaseProgress!.purchased / job.purchaseProgress!.total) * 100)
     : 0;
+  const canReassign = !!onReassign && REASSIGNABLE_STAGES.includes(stage) && !job.cancelled;
 
   return (
     <div className="rounded-2xl bg-card border border-border card-shadow overflow-hidden">
