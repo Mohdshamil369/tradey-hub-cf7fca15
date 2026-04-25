@@ -213,7 +213,56 @@ const initialJobs: Job[] = [
     id: "j10", type: "catA", category: "fixed", title: "Radiator Replacement", icon: "🔥", customer: "Mike S.", location: "Bos en Lommer", distance: "4.0 km", price: 180, timeWindow: "15 Mar, 09:00 – 12:00", description: "Replace old radiator in bedroom. Standard panel radiator.", postedAgo: "", status: "active", committedStatus: "cancelled",
     completedDate: "Cancelled on 14 Mar",
   },
+  // Scenario A — Inspection quote just approved → ready to send estimate
+  {
+    id: "j11", type: "catB", category: "inspection",
+    title: "Roof Leak Inspection", icon: "🏚️",
+    customer: "Olivia D.", location: "Westerpark", distance: "2.4 km",
+    price: null, inspectionFee: 60,
+    timeWindow: "Tomorrow, 09:00 – 10:00",
+    description: "Inspection complete. Found two cracked tiles and worn flashing — ready to share repair estimate.",
+    postedAgo: "", status: "active", committedStatus: "in_progress",
+    customerRequest: { photos: [jobBathroomImg] },
+    customerData: { rating: 4.7, reviews: 18, isVerified: true, memberSince: "Apr 2024" },
+  },
+  // Scenario B — Quote sent, customer working through purchase list
+  {
+    id: "j12", type: "catB", category: "estimate",
+    title: "Kitchen Backsplash Refit", icon: "🍳",
+    customer: "Daniel P.", location: "Jordaan", distance: "1.6 km",
+    price: 420,
+    timeWindow: "Thu, 14:00 – 18:00",
+    description: "Quote accepted. Customer is purchasing the listed materials before we begin tiling work.",
+    postedAgo: "", status: "active", committedStatus: "in_progress",
+    customerRequest: { photos: [jobBathroomImg] },
+    customerData: { rating: 4.9, reviews: 27, isVerified: true, memberSince: "Sep 2023" },
+  },
+  // Scenario C — Admin picked up job, not yet assigned to a worker
+  {
+    id: "j13", type: "catA", category: "fixed",
+    title: "Bedroom Light Fitting", icon: "💡",
+    customer: "Rachel K.", location: "Oost", distance: "3.5 km",
+    price: 70,
+    timeWindow: "Sat, 11:00 – 13:00",
+    description: "Replace ceiling light fixture in master bedroom. Customer has the new fitting ready.",
+    postedAgo: "", status: "active", committedStatus: "upcoming",
+    customerData: { rating: 4.6, reviews: 9, isVerified: true, memberSince: "Jun 2024" },
+    source: "org", orgName: "BuildRight Ltd.",
+  },
 ];
+
+/** Pre-seeded workflow stages for demo committed jobs — keyed by job id.
+ *  Real flows persist via sessionStorage; these act as defaults when no override exists. */
+const demoWorkflowStages: Record<string, WorkflowStage> = {
+  j11: "inspected",        // Inspection done → CTA: Send Estimate
+  j12: "quote_sent",       // Quote sent + purchase list active → CTA: View Purchase List
+  j13: "unassigned",       // Picked up, not assigned → CTA: Assign Worker
+};
+
+/** Optional purchase-list progress for cards that show it inline. */
+const demoPurchaseProgress: Record<string, { purchased: number; total: number }> = {
+  j12: { purchased: 2, total: 6 },
+};
 
 const companyJobs: CompanyJobData[] = [
   {
