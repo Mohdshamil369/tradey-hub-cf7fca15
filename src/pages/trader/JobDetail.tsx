@@ -1273,7 +1273,7 @@ const JobDetail = () => {
                 <p className={`text-[11px] font-bold ${stageColor[workflow.stage]?.text ?? "text-foreground"}`}>
                   {stageLabel[workflow.stage] ?? workflow.stage}
                 </p>
-                {workflow.estimateData && (["estimate_sent", "estimate_approved", "subtasks_created", "quote_sent", "quote_accepted", "purchasing", "work_in_progress", "invoice_sent"] as string[]).includes(workflow.stage) && (
+                {workflow.estimateData && (
                   <p className="text-[9px] text-muted-foreground mt-0.5">
                     {workflow.estimateData.title} · £{workflow.estimateData.minPrice}–£{workflow.estimateData.maxPrice}
                   </p>
