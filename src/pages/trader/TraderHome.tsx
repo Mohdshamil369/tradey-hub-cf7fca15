@@ -21,6 +21,7 @@ import QuoteBreakdown from "@/components/trader/QuoteBreakdown";
 import CalendarDayView from "@/components/home/CalendarDayView";
 import ResponseWorkflowSheet, { type ResponseJobData } from "@/components/trader/ResponseWorkflowSheet";
 import { type QuoteSheetData } from "@/components/trader/QuoteSheet";
+import { type JobWorkflowState } from "@/data/jobWorkflowState";
 
 const earningsData = {
   thisWeek: 845,
@@ -255,6 +256,20 @@ const TraderHome = () => {
       else next.add(memberId);
       return next;
     });
+  };
+
+  const acceptJob = (id: string, assignTo?: { type: "group" | "individual"; name: string; memberNames?: string[] }) => {
+    setJobs((prev) => prev.filter((j) => j.id !== id));
+    if (assignTo) {
+      if (assignTo.type === "group" && assignTo.memberNames) {
+        toast.success(`Assigned to ${assignTo.name} (${assignTo.memberNames.join(", ")})! ✅`);
+      } else {
+        toast.success(`Assigned to ${assignTo.name}! ✅`);
+      }
+    } else {
+      toast.success("Job accepted!");
+    }
+    resetAssignFlow();
   };
 
   const handleResponseSubmit = (jobId: string, data: QuoteSheetData) => {

@@ -27,6 +27,7 @@ import JobDetailSheet, { type JobDetailData, type JobCategory } from "@/componen
 import QuoteDetailSheet, { type SentQuoteData } from "@/components/trader/QuoteDetailSheet";
 import ResponseWorkflowSheet, { type ResponseJobData } from "@/components/trader/ResponseWorkflowSheet";
 import { type QuoteSheetData } from "@/components/trader/QuoteSheet";
+import { type JobWorkflowState } from "@/data/jobWorkflowState";
 
 type JobStatus = "incoming" | "quotes" | "active" | "completed";
 
@@ -594,7 +595,7 @@ const TraderJobs = () => {
           viaOrg: job.source === "org" ? job.orgName : undefined,
         }}
         onClick={() => openJobDetail(job)}
-        onReassign={isAgencyAdmin ? (id) => setDispatchJobId(id) : undefined}
+        onReassign={isAgencyProfile ? (id) => setDispatchJobId(id) : undefined}
       />
     );
   };
@@ -620,7 +621,7 @@ const TraderJobs = () => {
     const isInspection = !!data.inspectionMin;
     
     if (isPickup) {
-      if (isAgencyAdmin) {
+      if (isAgencyProfile) {
         const pickedUpAt = new Date().toISOString();
         const next: JobWorkflowState = { stage: "unassigned", pickedUpAt, purchaseItems: [] };
         sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
