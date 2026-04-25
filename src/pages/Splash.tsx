@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
+import { Sparkles } from "lucide-react";
 import logo from "@/assets/logo.svg";
 import splashBg from "@/assets/splash-bg.svg";
 
@@ -30,7 +31,20 @@ const Splash = () => {
         </div>
 
         <div className="relative z-10 flex flex-col items-center gap-4 px-8 animate-fade-in">
-          <img src={logo} alt="truFindo" className="h-28 w-auto drop-shadow-lg" />
+          <div className="relative">
+            <img src={logo} alt="truFindo" className="h-28 w-auto drop-shadow-lg" />
+            <Sparkles
+              className="absolute -top-2 -right-3 h-7 w-7 text-primary drop-shadow-md animate-pulse"
+              fill="currentColor"
+              strokeWidth={1.5}
+            />
+            <Sparkles
+              className="absolute top-6 -left-4 h-4 w-4 text-primary/70 animate-pulse"
+              style={{ animationDelay: "300ms" }}
+              fill="currentColor"
+              strokeWidth={1.5}
+            />
+          </div>
           <span className="text-sm font-bold uppercase tracking-[0.3em] text-muted-foreground">TRADER</span>
 
           <p className="text-center text-base text-muted-foreground leading-relaxed">

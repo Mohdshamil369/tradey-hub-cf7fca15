@@ -324,6 +324,13 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
           )}
 
           <ScrollArea className="flex-1 w-full px-6 pb-2">
+            <div className="mb-6">
+              <label className="text-[10px] font-black uppercase tracking-[1.5px] text-muted-foreground block px-1 mb-2">
+                Quote Title
+              </label>
+              <input
+                type="text"
+                placeholder="Quote title"
                 value={quoteTitle}
                 onChange={(e) => setQuoteTitle(e.target.value)}
                 className="w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-[14px] font-bold text-foreground outline-none placeholder:text-muted-foreground/40 focus:border-primary/40"
