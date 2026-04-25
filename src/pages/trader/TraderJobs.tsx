@@ -471,7 +471,10 @@ const TraderJobs = () => {
         }));
       }
       // j12 — quote sent, purchase list active (2 of 6 items purchased)
-      if (!sessionStorage.getItem("job_workflow_j12")) {
+      // Re-seed when the stored entry is missing purchase items so older sessions get the demo list.
+      const j12raw = sessionStorage.getItem("job_workflow_j12");
+      const j12needsSeed = !j12raw || !(JSON.parse(j12raw)?.purchaseItems?.length);
+      if (j12needsSeed) {
         sessionStorage.setItem("job_workflow_j12", JSON.stringify({
           stage: "quote_sent",
           purchaseItems: [
