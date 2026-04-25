@@ -686,9 +686,14 @@ const TraderJobs = () => {
       toast("Pick an inspector to send on-site.");
       return;
     }
-    // Inspection done OR estimate approved → build the quote (with PDF preview before sending)
-    if (stage === "inspected" || stage === "estimate_approved") {
+    // Inspection done → open the quote builder (with PDF preview before sending)
+    if (stage === "inspected") {
       setPostInspectionJob(job);
+      return;
+    }
+    // Estimate approved → detail page handles "Break into Subtasks" then "Create Quote"
+    if (stage === "estimate_approved" || stage === "subtasks_created") {
+      openJobDetail(job, "subtasks");
       return;
     }
     // Quote shared / accepted / purchasing → open detail page on the Purchase List tab
