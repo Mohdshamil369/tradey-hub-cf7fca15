@@ -18,6 +18,7 @@ type MinimalJobCardProps = {
     viaOrg?: string;
   };
   onReassign?: (jobId: string) => void;
+  onClick?: () => void;
 };
 
 export const MinimalJobCard = ({ job, onClick, onReassign }: MinimalJobCardProps) => {

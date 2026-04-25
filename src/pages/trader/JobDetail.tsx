@@ -223,7 +223,7 @@ const JobDetail = () => {
       : result.memberNames.join(", ");
 
     const assignment: JobAssignment = {
-      type: result.type,
+      type: result.type === "individuals" ? "individual" : result.type,
       groupName: result.groupName,
       memberNames: result.memberNames,
     };
