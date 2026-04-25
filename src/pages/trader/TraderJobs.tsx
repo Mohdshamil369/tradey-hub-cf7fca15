@@ -897,62 +897,52 @@ const TraderJobs = () => {
 
 
   const renderCommittedJobCard = (job: Job) => {
-    const statusTag = job.committedStatus ? committedStatusConfig[job.committedStatus] : null;
     const a = job.assignment;
     let assignLabel = "";
+    let memberCount = 0;
     if (a) {
+      memberCount = a.members.length;
       if (a.type === "group") { assignLabel = a.groupName || "Group"; }
       else if (a.type === "individual") { assignLabel = a.members[0]?.name || "Individual"; }
       else { const shown = a.members.slice(0, 2).map((m) => m.name.split(" ")[0]); const extra = a.members.length - 2; assignLabel = extra > 0 ? `${shown.join(", ")} +${extra}` : shown.join(", "); }
     }
 
-    // Stage-aware card for in-progress / upcoming committed jobs
-    const stage = getJobStage(job.id);
-    const isLiveCommitted = job.committedStatus === "in_progress" || job.committedStatus === "upcoming";
-    if (isLiveCommitted && stage) {
-      return (
-        <StageJobCard
-          key={job.id}
-          stage={stage}
-          category={job.category}
-          job={{
-            id: job.id,
-            title: job.title,
-            customer: job.customer,
-            timeWindow: job.timeWindow,
-            location: `${job.location}${job.distance ? `, ${job.distance}` : ''}`,
-            distance: job.distance,
-            image: job.customerRequest?.photos?.[0],
-            price: job.price,
-            viaOrg: job.source === "org" ? job.orgName : undefined,
-            purchaseProgress: demoPurchaseProgress[job.id],
-          }}
-          onClick={() => openJobDetail(job)}
-          onCta={handleStageCta}
-        />
-      );
+    // Resolve a stage for every committed card so the visual is consistent.
+    // Cancelled → render with last-known stage (or assigned) but mark cancelled.
+    // Completed without explicit stage → treat as "paid" (job fully closed historically).
+    const cancelled = job.committedStatus === "cancelled";
+    let stage = getJobStage(job.id);
+    if (!stage) {
+      if (cancelled) stage = "assigned";
+      else if (job.committedStatus === "completed") stage = "paid";
+      else stage = "assigned";
     }
 
-    const statusLabel = statusTag?.label;
+    const showRating = job.committedStatus === "completed" || stage === "paid";
 
     return (
-      <MinimalJobCard
+      <StageJobCard
         key={job.id}
+        stage={stage}
+        category={job.category}
         job={{
           id: job.id,
           title: job.title,
           customer: job.customer,
           timeWindow: job.timeWindow,
           location: `${job.location}${job.distance ? `, ${job.distance}` : ''}`,
+          distance: job.distance,
           image: job.customerRequest?.photos?.[0],
-          statusLabel,
-          assignLabel: assignLabel || undefined,
           price: job.price,
-          rating: job.committedStatus === "completed" ? (job.jobRating || job.customerData?.rating || 5.0) : undefined,
-          review: job.committedStatus === "completed" ? job.jobReview : undefined,
           viaOrg: job.source === "org" ? job.orgName : undefined,
+          purchaseProgress: demoPurchaseProgress[job.id],
+          assignedTo: assignLabel ? { label: assignLabel, memberCount } : undefined,
+          rating: showRating ? (job.jobRating || job.customerData?.rating) : undefined,
+          review: showRating ? job.jobReview : undefined,
+          cancelled,
         }}
         onClick={() => openJobDetail(job)}
+        onCta={handleStageCta}
         onReassign={isAgencyProfile ? (id) => setDispatchJobId(id) : undefined}
       />
     );
