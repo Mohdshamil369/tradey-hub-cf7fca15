@@ -1162,31 +1162,8 @@ const TraderJobs = () => {
           })()}
           {/* Render jobs that aren't handled by grouped view above */}
           {(! (jobSection === "committed" && committedFilter.has("all"))) && filteredJobs.map((job) => {
-            // Admin-assigned incoming jobs are pre-accepted on the trader's behalf —
-            // render them with the committed-style StageJobCard so the visual & CTA
-            // match the committed flow (just sitting in Incoming until trader acts).
-            if (job.status === "incoming" && job.assignedByAdmin) {
-              const stage = getJobStage(job.id) ?? "assigned";
-              return (
-                <StageJobCard
-                  key={job.id}
-                  stage={stage}
-                  job={{
-                    id: job.id,
-                    title: job.title,
-                    customer: job.customer,
-                    timeWindow: job.timeWindow,
-                    location: `${job.location}${job.distance ? `, ${job.distance}` : ''}`,
-                    distance: job.distance,
-                    image: job.customerRequest?.photos?.[0],
-                    price: job.price,
-                    viaOrg: job.source === "org" ? job.orgName : undefined,
-                  }}
-                  onClick={() => openJobDetail(job)}
-                  onCta={handleStageCta}
-                />
-              );
-            }
+            // PRD rule: Incoming jobs ALWAYS render as IncomingJobCard until the
+            // trader Responds. No "pre-accepted" / committed-style cards in Incoming.
 
             // Use shared IncomingJobCard for regular incoming jobs
             if (job.status === "incoming") {
