@@ -673,8 +673,13 @@ const TraderJobs = () => {
       setPostInspectionJob(job);
       return;
     }
+    // Quote shared / accepted / purchasing → open detail page on the Purchase List tab
+    if (stage === "quote_sent" || stage === "quote_accepted" || stage === "purchasing") {
+      openJobDetail(job, "purchase-list");
+      return;
+    }
     // Work finished → raise an invoice (with PDF preview before sending)
-    if (stage === "work_in_progress" || stage === "quote_accepted" || stage === "purchasing") {
+    if (stage === "work_in_progress") {
       setInvoiceJob(job);
       return;
     }
