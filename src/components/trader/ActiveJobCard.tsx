@@ -91,7 +91,7 @@ const ActiveJobCard = ({ job, isUpNext = false, expanded = false, onToggleExpand
             <img
               src={photos[photoIndex]}
               alt={job.title}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="h-full w-full object-cover"
               loading="lazy"
             />
             {photos.length > 1 && (
