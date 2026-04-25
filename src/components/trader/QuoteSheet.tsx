@@ -76,10 +76,12 @@ const unitOptions: Record<QuoteItemType, string[]> = {
 /* ─── Component ─── */
 const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: QuoteSheetProps) => {
   const [items, setItems] = useState<QuoteItem[]>([]);
+  const [quoteTitle, setQuoteTitle] = useState("");
   const [inspectionFee, setInspectionFee] = useState("");
   const [notes, setNotes] = useState("");
   const [advanceAmount, setAdvanceAmount] = useState("");
   const [isRecording, setIsRecording] = useState(false);
+  const [hasVoiceNote, setHasVoiceNote] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   // New item form
@@ -99,13 +101,16 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
   useEffect(() => {
     if (isOpen) {
       setTemplates(loadTemplates());
+      setQuoteTitle(`${jobTitle} Quote`); // Default title
     } else {
       // Reset on close
       setItems([]);
+      setQuoteTitle("");
       setInspectionFee("");
       setNotes("");
       setAdvanceAmount("");
       setIsRecording(false);
+      setHasVoiceNote(false);
       setEditingId(null);
       setNewName("");
       setNewCost("");
@@ -305,14 +310,28 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
             </div>
           )}
 
-          <ScrollArea className="flex-1 overflow-y-auto px-6 pb-2">
+          <ScrollArea className="flex-1 w-full px-6 pb-2">
+            {/* Quote Title */}
+            <div className="mb-6">
+              <label className="text-[10px] font-black uppercase tracking-[1.5px] text-muted-foreground mb-2.5 block px-1">
+                Quote Title <span className="text-destructive">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Standard Plumbing Repair"
+                value={quoteTitle}
+                onChange={(e) => setQuoteTitle(e.target.value)}
+                className="w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-[14px] font-bold text-foreground outline-none placeholder:text-muted-foreground/40 focus:border-primary/40"
+              />
+            </div>
+
             {/* Inspection Fee */}
             {category === "inspection" && (
               <div className="mb-6">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">
+                <label className="text-[10px] font-black uppercase tracking-[1.5px] text-muted-foreground mb-2.5 block px-1">
                   Your Inspection Fee
                 </label>
-                <div className="flex items-center gap-2 rounded-2xl border border-border bg-card p-3 focus-within:border-[hsl(25,90%,55%)]/50 transition-colors">
+                <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 focus-within:border-[hsl(25,90%,55%)]/50 transition-colors">
                   <PoundSterling className="h-5 w-5 text-[hsl(25,90%,55%)] shrink-0" />
                   <input
                     type="number"
@@ -326,15 +345,15 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
               </div>
             )}
 
-            {/* Quote Items */}
+            {/* Quote Items (Screenshot 2) */}
             <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <div className="flex items-center justify-between mb-4 px-1">
+                <label className="text-[10px] font-black uppercase tracking-[1.5px] text-muted-foreground">
                   Quote Items {items.length > 0 && `(${items.length})`}
                 </label>
                 {items.length > 0 && (
-                  <span className="text-[10px] font-bold text-primary">
-                    Subtotal: £{itemsTotal.toFixed(2)}
+                  <span className="text-[11px] font-black text-primary">
+                    Total: £{itemsTotal.toFixed(2)}
                   </span>
                 )}
               </div>
@@ -391,14 +410,14 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
                 </div>
               )}
 
-              {/* Add New Item Form */}
-              <div className="rounded-2xl border border-dashed border-border bg-accent/30 p-3.5">
-                <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-2.5">
+              {/* Add New Item Form (Screenshot 2 Design) */}
+              <div className="rounded-[24px] border border-border/50 bg-[#F8F9FB] p-5">
+                <p className="text-[10px] font-black uppercase tracking-[1.5px] text-muted-foreground/60 mb-4">
                   Add New Item
                 </p>
 
                 {/* Type selector chips */}
-                <div className="flex gap-1.5 mb-3">
+                <div className="flex gap-2 mb-6">
                   {(Object.keys(itemTypeConfig) as QuoteItemType[]).map((type) => {
                     const cfg = itemTypeConfig[type];
                     const Icon = cfg.icon;
@@ -407,20 +426,20 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
                       <button
                         key={type}
                         onClick={() => setNewType(type)}
-                        className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[10px] font-bold transition-all active:scale-95 ${
+                        className={`flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-[11px] font-black transition-all active:scale-[0.98] ${
                           isActive
-                            ? `${cfg.bg} ${cfg.color} ring-1 ring-current/20`
-                            : "bg-muted text-muted-foreground"
+                            ? "bg-[#E0E7FF] text-[#4F46E5] ring-1 ring-[#4F46E5]/10"
+                            : "bg-[#E9ECEF] text-[#6C757D]"
                         }`}
                       >
-                        <Icon className="h-3 w-3" />
+                        <Icon className="h-3.5 w-3.5" />
                         {cfg.label}
                       </button>
                     );
                   })}
                 </div>
 
-                {/* Name */}
+                {/* Name Input */}
                 <input
                   type="text"
                   placeholder={
@@ -432,53 +451,53 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
                   }
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full bg-transparent text-[12px] font-bold text-foreground outline-none placeholder:text-muted-foreground/50 mb-3"
+                  className="w-full bg-transparent text-[15px] font-bold text-[#1A1C1E] outline-none placeholder:text-muted-foreground/30 mb-6 border-b border-border/40 pb-2"
                 />
 
-                {/* Cost + Quantity + Unit row */}
-                <div className="flex items-center gap-2 border-t border-border/50 pt-3">
-                  <div className="flex items-center gap-1 flex-1">
-                    <PoundSterling className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                {/* Price + Quantity + Unit row */}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <PoundSterling className="h-4 w-4 text-muted-foreground shrink-0" />
                     <input
                       type="number"
                       inputMode="decimal"
                       placeholder="Price"
                       value={newCost}
                       onChange={(e) => setNewCost(e.target.value)}
-                      className="w-full bg-transparent text-[12px] font-bold text-foreground outline-none placeholder:text-muted-foreground/50"
+                      className="w-full bg-transparent text-[14px] font-black text-[#1A1C1E] outline-none placeholder:text-muted-foreground/30"
                     />
                   </div>
 
-                  <div className="flex items-center gap-1">
-                    <Hash className="h-3 w-3 text-muted-foreground shrink-0" />
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-[12px] font-black text-muted-foreground">#</span>
                     <input
                       type="number"
                       inputMode="numeric"
-                      placeholder="Qty"
+                      placeholder="1"
                       value={newQty}
                       onChange={(e) => setNewQty(e.target.value)}
-                      className="w-12 bg-transparent text-[12px] font-bold text-foreground outline-none placeholder:text-muted-foreground/50 text-center"
+                      className="w-8 bg-transparent text-[14px] font-black text-[#1A1C1E] outline-none placeholder:text-muted-foreground/30 text-center"
                     />
                   </div>
 
                   {/* Unit picker */}
-                  <div className="relative">
+                  <div className="relative shrink-0">
                     <button
                       onClick={() => setShowTypeMenu(!showTypeMenu)}
-                      className="flex items-center gap-0.5 rounded-lg bg-muted px-2 py-1 text-[10px] font-bold text-muted-foreground"
+                      className="flex items-center gap-1.5 rounded-xl bg-[#E9ECEF] px-3 py-2 text-[11px] font-black text-[#495057]"
                     >
                       {newUnit}
-                      <ChevronDown className="h-2.5 w-2.5" />
+                      <ChevronDown className={`h-3 w-3 transition-transform ${showTypeMenu ? "rotate-180" : ""}`} />
                     </button>
                     {showTypeMenu && (
                       <>
                         <div className="fixed inset-0 z-10" onClick={() => setShowTypeMenu(false)} />
-                        <div className="absolute right-0 bottom-full mb-1 z-20 rounded-xl bg-card border border-border shadow-lg overflow-hidden min-w-[80px]">
+                        <div className="absolute right-0 bottom-full mb-2 z-20 rounded-2xl bg-card border border-border shadow-2xl overflow-hidden min-w-[100px] animate-in fade-in zoom-in-95 duration-200">
                           {unitOptions[newType].map(u => (
                             <button
                               key={u}
                               onClick={() => { setNewUnit(u); setShowTypeMenu(false); }}
-                              className={`w-full px-3 py-1.5 text-[10px] font-bold text-left hover:bg-accent transition-colors ${
+                              className={`w-full px-4 py-2.5 text-[11px] font-black text-left hover:bg-accent transition-colors ${
                                 u === newUnit ? "text-primary bg-primary/5" : "text-foreground"
                               }`}
                             >
@@ -493,9 +512,9 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
                   <button
                     onClick={addItem}
                     disabled={!newName || !newCost}
-                    className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-[10px] font-bold text-primary-foreground active:scale-95 disabled:opacity-40 transition-all"
+                    className="flex items-center gap-1.5 rounded-xl bg-[#A2A9B1] px-5 py-2.5 text-[12px] font-black text-white active:scale-[0.98] disabled:opacity-30 transition-all shadow-sm"
                   >
-                    <Plus className="h-3 w-3" />
+                    <Plus className="h-4 w-4" />
                     Add
                   </button>
                 </div>
@@ -529,34 +548,45 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
             )}
 
             {/* Notes & Voice */}
-            <div className="space-y-3 mb-6">
+            <div className="space-y-4 mb-8">
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Notes</label>
+                <label className="text-[10px] font-black uppercase tracking-[1.5px] text-muted-foreground mb-2.5 block px-1">
+                  Notes / Scope of Work
+                </label>
                 <textarea
-                  placeholder="Explain the work, timeline or warranty..."
+                  placeholder="Describe the approach, timeline, warranty..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  rows={3}
-                  className="w-full rounded-xl border border-border bg-card p-3 text-[12px] font-medium text-foreground outline-none placeholder:text-muted-foreground/50 resize-none focus:border-primary/30"
+                  rows={4}
+                  className="w-full rounded-2xl border border-border bg-card p-4 text-[14px] font-medium text-foreground outline-none placeholder:text-muted-foreground/40 resize-none focus:border-primary/30"
                 />
               </div>
 
               <button
                 onClick={() => {
-                  setIsRecording(!isRecording);
-                  if (isRecording) toast.success("Voice note attached!");
-                  else toast.info("Listening... (Speak now)");
+                  if (isRecording) {
+                    setIsRecording(false);
+                    setHasVoiceNote(true);
+                    toast.success("Voice note attached!");
+                  } else {
+                    setIsRecording(true);
+                    toast.info("Listening... (Speak now)");
+                  }
                 }}
-                className={`flex w-full items-center gap-3 rounded-xl border p-3 transition-all active:scale-[0.98] ${
-                  isRecording ? "border-destructive/30 bg-destructive/5" : "border-border bg-card"
+                className={`flex w-full items-center gap-4 rounded-[24px] border p-4 transition-all active:scale-[0.98] ${
+                  isRecording ? "border-destructive/30 bg-destructive/5" : hasVoiceNote ? "border-primary/30 bg-primary/5" : "border-border bg-card shadow-sm"
                 }`}
               >
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${isRecording ? "bg-destructive animate-pulse" : "bg-primary"}`}>
-                  <Mic className="h-4 w-4 text-primary-foreground" />
+                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${isRecording ? "bg-destructive animate-pulse" : hasVoiceNote ? "bg-primary" : "bg-primary"}`}>
+                  <Mic className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <div className="text-left">
-                  <p className="text-[11px] font-bold text-foreground">{isRecording ? "Recording..." : "Add Voice Message"}</p>
-                  <p className="text-[9px] text-muted-foreground">{isRecording ? "Tap to stop" : "Explain quote to customer"}</p>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-[13px] font-black text-[#1A1C1E]">
+                    {isRecording ? "Recording..." : hasVoiceNote ? "Voice Message Attached ✓" : "Add Voice Message"}
+                  </p>
+                  <p className="text-[11px] font-medium text-muted-foreground mt-0.5">
+                    {isRecording ? "Tap to stop" : hasVoiceNote ? "Tap to re-record" : "Explain your quote to the customer"}
+                  </p>
                 </div>
               </button>
             </div>
@@ -587,7 +617,7 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
                 Cancel
               </button>
               <button
-                onClick={() => onSubmit({ items, total, notes, inspectionFee: category === "inspection" ? inspection : undefined, advanceAmount: category === "estimate" ? (parseFloat(advanceAmount) || 0) : undefined })}
+                onClick={() => onSubmit({ items, total, notes, quoteTitle, inspectionFee: category === "inspection" ? inspection : undefined, advanceAmount: category === "estimate" ? (parseFloat(advanceAmount) || 0) : undefined })}
                 disabled={!canSubmit}
                 className={`flex-[2.5] rounded-xl py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40 ${
                   category === "inspection" ? "bg-[hsl(25,90%,55%)] shadow-orange-500/20" : "bg-primary shadow-primary/20"

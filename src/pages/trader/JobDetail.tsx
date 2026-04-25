@@ -780,7 +780,9 @@ const JobDetail = () => {
         icon: ClipboardList,
       },
     ];
-    return options.map((o) => ({ ...o, isRecommended: o.key === recommended }));
+    // Sort so recommended is on top
+    return options.sort((a, b) => (b.key === recommended ? 1 : 0) - (a.key === recommended ? 1 : 0))
+                  .map((o) => ({ ...o, isRecommended: o.key === recommended }));
   })();
 
   const handleQuoteOptionSelect = (key: "fixed" | "estimate" | "inspection") => {
@@ -840,38 +842,30 @@ const JobDetail = () => {
       );
     }
 
-    // ── FIXED JOB FOOTER ──
+    // ── INCOMING JOB FOOTER (First Step) ──
+    if (workflow.stage === "incoming") {
+      return (
+        <div className="flex gap-3 p-4 bg-background border-t border-border/40">
+          <button onClick={() => handleAction("decline")} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted">
+            <XCircle className="h-4 w-4" /> Decline
+          </button>
+          <button onClick={() => setShowQuoteOptions(true)} className="flex-[2] rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+            <Sparkles className="h-4 w-4" /> Respond to Job
+          </button>
+        </div>
+      );
+    }
+
+    // ── FIXED JOB FOOTER (After pick up) ──
     if (job.category === "fixed") {
-      if (workflow.stage === "incoming") {
-        return (
-          <div className="flex gap-3 p-4 bg-background border-t border-border/40">
-            <button onClick={() => handleAction("decline")} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted">
-              <XCircle className="h-4 w-4" /> Decline
-            </button>
-            <button onClick={() => { setPendingQuote({ items: [], notes: "", total: job.price ?? 0 }); setShowAssignSheet(true); }} className="flex-[2] rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-              <Users className="h-4 w-4" /> Assign Workers
-            </button>
-          </div>
-        );
-      }
       return null;
     }
 
-    // ── ESTIMATE JOB FOOTER ──
+    // ── ESTIMATE JOB FOOTER (Post-Incoming) ──
     if (job.category === "estimate") {
       const stage = workflow.stage;
       return (
         <div className="flex flex-col gap-2 p-4 bg-background border-t border-border/40">
-          {stage === "incoming" && (
-            <div className="flex gap-3">
-              <button onClick={() => handleAction("decline")} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted">
-                <XCircle className="h-4 w-4" /> Decline
-              </button>
-              <button onClick={() => setShowEstimateSheet(true)} className="flex-[2] rounded-xl bg-blue-600 py-3.5 text-[12px] font-bold text-white shadow-lg shadow-blue-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                <FileText className="h-4 w-4" /> Create Estimate
-              </button>
-            </div>
-          )}
           {stage === "estimate_sent" && (
             <>
               <div className="rounded-xl bg-[hsl(25,90%,55%)]/10 py-3.5 text-center text-[12px] font-bold text-[hsl(25,90%,55%)]">
@@ -931,21 +925,11 @@ const JobDetail = () => {
       );
     }
 
-    // ── INSPECTION JOB FOOTER ──
+    // ── INSPECTION JOB FOOTER (Post-Incoming) ──
     if (job.category === "inspection") {
       const stage = workflow.stage;
       return (
         <div className="flex flex-col gap-2 p-4 bg-background border-t border-border/40">
-          {stage === "incoming" && (
-            <div className="flex gap-3">
-              <button onClick={() => handleAction("decline")} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted">
-                <XCircle className="h-4 w-4" /> Decline
-              </button>
-              <button onClick={() => { const fee = job.inspectionFee ?? 45; const next: JobWorkflowState = { ...workflow, stage: "fee_set", inspectionFee: fee }; setWorkflow(next); sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next)); toast.success(`Inspection fee set: £${fee}`); }} className="flex-[2] rounded-xl bg-[hsl(25,90%,55%)] py-3.5 text-[12px] font-bold text-white shadow-lg shadow-orange-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                <PoundSterling className="h-4 w-4" /> Set Inspection Fee (£{job.inspectionFee ?? 45})
-              </button>
-            </div>
-          )}
           {stage === "fee_set" && (
             <>
               <div className="rounded-xl bg-[hsl(25,90%,55%)]/10 py-3.5 text-center text-[12px] font-bold text-[hsl(25,90%,55%)]">
@@ -1235,49 +1219,49 @@ const JobDetail = () => {
         </SheetContent>
       </Sheet>
 
-      {/* Quote Options Bottom Sheet */}
+      {/* Quote Options Bottom Sheet (Screenshot 1) */}
       <Sheet open={showQuoteOptions} onOpenChange={setShowQuoteOptions}>
-        <SheetContent side="bottom" className="rounded-t-[32px] px-4 pb-8 pt-2 sm:max-w-[420px] sm:mx-auto">
-          <div className="mx-auto mb-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
-          <h3 className="text-base font-bold text-foreground mb-1">Choose Quote Type</h3>
-          <p className="text-[11px] text-muted-foreground mb-4">
+        <SheetContent side="bottom" className="rounded-t-[32px] px-6 pb-10 pt-2 sm:max-w-[420px] sm:mx-auto border-none">
+          <div className="mx-auto mb-6 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
+          <h3 className="text-[22px] font-black text-[#1A1C1E] mb-1 tracking-tight">Choose Quote Type</h3>
+          <p className="text-[14px] font-medium text-muted-foreground mb-8">
             Select how you'd like to respond to this job
           </p>
-          <div className="flex flex-col gap-2.5">
-            {quoteOptions
-              .sort((a, b) => (b.isRecommended ? 1 : 0) - (a.isRecommended ? 1 : 0))
-              .map((option) => (
+          <div className="flex flex-col gap-4">
+            {quoteOptions.map((option) => (
               <button
                 key={option.key}
                 onClick={() => handleQuoteOptionSelect(option.key)}
-                className={`relative flex items-start gap-3 rounded-2xl p-3.5 text-left transition-all active:scale-[0.98] ${
+                className={`group relative flex items-center gap-4 rounded-[24px] p-4 text-left transition-all active:scale-[0.98] border-2 ${
                   option.isRecommended
-                    ? "bg-primary/5 border-2 border-primary/30 shadow-sm"
-                    : "bg-muted/50 border border-border/50"
+                    ? "bg-primary/5 border-[#1A2B4C] shadow-[0_8px_24px_-12px_rgba(26,43,76,0.15)]"
+                    : "bg-[#F8F9FB] border-transparent hover:border-border/50"
                 }`}
               >
                 {option.isRecommended && (
-                  <span className="absolute -top-2.5 right-3 flex items-center gap-1 rounded-full bg-primary px-2.5 py-0.5 text-[9px] font-bold text-primary-foreground shadow-sm">
+                  <span className="absolute -top-3.5 right-6 flex items-center gap-1.5 rounded-full bg-[#0F172A] px-3.5 py-1 text-[10px] font-black uppercase tracking-wider text-white shadow-md">
                     <Sparkles className="h-3 w-3" /> Recommended
                   </span>
                 )}
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                  option.isRecommended ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+                <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[18px] ${
+                  option.isRecommended ? "bg-[#DDE2EE] text-[#1A2B4C]" : "bg-[#E9ECEF] text-[#495057]"
                 }`}>
-                  <option.icon className="h-5 w-5" />
+                  <option.icon className="h-6 w-6" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-[13px] font-bold text-foreground">{option.label}</span>
+                    <span className="text-[16px] font-black text-[#1A1C1E]">{option.label}</span>
                     {option.price && (
-                      <span className="text-[11px] font-bold text-primary">£{option.price}</span>
+                      <span className="text-[15px] font-black text-[#1A2B4C]">£{option.price}</span>
                     )}
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                  <p className="text-[12px] font-medium text-muted-foreground mt-0.5 leading-snug opacity-80">
                     {option.description}
                   </p>
                 </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/50 mt-1" />
+                <ChevronRight className={`h-5 w-5 shrink-0 transition-transform group-hover:translate-x-0.5 ${
+                  option.isRecommended ? "text-[#1A2B4C]" : "text-[#ADB5BD]"
+                }`} />
               </button>
             ))}
           </div>
