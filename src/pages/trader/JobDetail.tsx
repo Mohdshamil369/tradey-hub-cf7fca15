@@ -30,7 +30,9 @@ import { ListChecks, ShoppingCart } from "lucide-react";
 import {
   type WorkflowStage, type EstimateData, type PurchaseItem, type InvoiceData,
   type JobWorkflowState, type JobAssignment, stageLabel, stageColor, createDefaultWorkflowState,
+  purchaseListVisibleStages, quoteTabVisibleStages, subtasksTabVisibleStages,
 } from "@/data/jobWorkflowState";
+import { getStageCta } from "@/data/stageCta";
 
 export type JobCategory = "fixed" | "estimate" | "inspection";
 
