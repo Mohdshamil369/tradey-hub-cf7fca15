@@ -577,27 +577,19 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
             )}
 
             {/* Advance Payment (estimate category only) */}
-            {category === "estimate" && items.length > 0 && (() => {
-              const computedAdvance = advanceMode === "percent"
-                ? +(total * advancePercent / 100).toFixed(2)
-                : (parseFloat(advanceAmount) || 0);
-              const remaining = Math.max(0, total - computedAdvance);
-              const presets = [0, 20, 30, 50];
-
-              return (
-                <div className="mb-6">
-                  <AdvancePaymentField
-                    total={total}
-                    mode={advanceMode}
-                    percent={advancePercent}
-                    amount={advanceAmount}
-                    onModeChange={setAdvanceMode}
-                    onPercentChange={setAdvancePercent}
-                    onAmountChange={setAdvanceAmount}
-                  />
-                </div>
-              );
-            })()}
+            {category === "estimate" && items.length > 0 && (
+              <div className="mb-6">
+                <AdvancePaymentField
+                  total={total}
+                  mode={advanceMode}
+                  percent={advancePercent}
+                  amount={advanceAmount}
+                  onModeChange={setAdvanceMode}
+                  onPercentChange={setAdvancePercent}
+                  onAmountChange={setAdvanceAmount}
+                />
+              </div>
+            )}
 
             {/* Notes & Voice */}
             <div className="space-y-4 mb-8">
