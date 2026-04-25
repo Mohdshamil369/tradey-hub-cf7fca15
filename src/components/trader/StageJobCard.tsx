@@ -1,4 +1,4 @@
-import { ChevronRight, Clock, MapPin, Building2, ShoppingCart, Users, Star, RotateCcw } from "lucide-react";
+import { ChevronRight, Clock, MapPin, Building2, ShoppingCart, Users, Star, RotateCcw, Package } from "lucide-react";
 import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 import type { WorkflowStage, JobCategory } from "@/data/jobWorkflowState";
 import { getStageCta } from "@/data/stageCta";
@@ -38,6 +38,8 @@ interface StageJobCardProps {
     review?: string;
     /** When true, render a muted cancelled banner regardless of stage. */
     cancelled?: boolean;
+    /** True when admin picked this job up but hasn't routed it yet. Overrides CTA → "Assign Worker". */
+    pickedNotAssigned?: boolean;
   };
   stage: WorkflowStage;
   category: JobCategory;
@@ -45,9 +47,11 @@ interface StageJobCardProps {
   onCta?: (jobId: string, stage: WorkflowStage) => void;
   /** Optional: allow admin to reassign for live stages. */
   onReassign?: (jobId: string) => void;
+  /** Optional: opens assign sheet for picked-not-assigned cards. */
+  onAssign?: (jobId: string) => void;
 }
 
-const StageJobCard = ({ job, stage, category, onClick, onCta, onReassign }: StageJobCardProps) => {
+const StageJobCard = ({ job, stage, category, onClick, onCta, onReassign, onAssign }: StageJobCardProps) => {
   const meta = getStageCta(stage, category);
   const Icon = meta.ctaIcon;
   const showProgress = !!job.purchaseProgress && job.purchaseProgress.total > 0;
