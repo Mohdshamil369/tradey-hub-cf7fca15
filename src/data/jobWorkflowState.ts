@@ -1,6 +1,6 @@
 /* ─── Job Workflow State ─── */
 
-export type FixedStage = "incoming" | "assigned" | "active" | "completed";
+export type FixedStage = "incoming" | "unassigned" | "assigned" | "active" | "completed" | "cancelled";
 
 export type EstimateStage =
   | "incoming"
@@ -77,12 +77,14 @@ export interface JobWorkflowState {
   purchaseItems: PurchaseItem[];
   invoiceData?: InvoiceData;
   assignment?: JobAssignment;
+  pickedUpAt?: string;
 }
 
 /* ─── Stage Labels ─── */
 
 export const stageLabel: Record<string, string> = {
   incoming: "New Job",
+  unassigned: "Assignment Pending",
   assigned: "Assigned",
   active: "Active",
   completed: "Completed",

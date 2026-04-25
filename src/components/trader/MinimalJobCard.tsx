@@ -58,6 +58,8 @@ export const MinimalJobCard = ({ job, onClick, onReassign }: MinimalJobCardProps
               <span className={`shrink-0 rounded-md px-1.5 py-px text-[9px] font-semibold whitespace-nowrap ${
                 job.statusLabel === "Completed" 
                   ? "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]" 
+                  : job.statusLabel === "Assignment Pending"
+                  ? "bg-amber-500/10 text-amber-600"
                   : "bg-secondary text-muted-foreground"
               }`}>
                 {job.statusLabel}

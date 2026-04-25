@@ -230,7 +230,11 @@ const JobDetail = () => {
 
     let nextStage = workflow.stage;
     // Only advance stage if we're coming from a pre-assigned state
-    if (job.category === "fixed" && workflow.stage === "incoming") nextStage = "assigned";
+    if (job.category === "fixed") {
+      if (workflow.stage === "incoming" || workflow.stage === "unassigned") {
+        nextStage = "assigned";
+      }
+    }
     if (job.category === "inspection" && workflow.stage === "fee_paid") nextStage = "worker_assigned";
 
     const next: JobWorkflowState = { 
@@ -922,6 +926,54 @@ const JobDetail = () => {
     // ── FIXED JOB FOOTER (After pick up) ──
     if (job.category === "fixed") {
       const stage = workflow.stage;
+      
+      if (stage === "unassigned") {
+        const pickedUpAt = new Date(workflow.pickedUpAt || Date.now());
+        const deadline = new Date(pickedUpAt.getTime() + 4 * 60 * 60 * 1000);
+        const now = new Date();
+        const diff = deadline.getTime() - now.getTime();
+        const hours = Math.max(0, Math.floor(diff / (1000 * 60 * 60)));
+        const mins = Math.max(0, Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
+        const isOverdue = diff <= 0;
+
+        return (
+          <div className="flex flex-col gap-3 p-5 bg-background border-t border-border/40 shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
+            <div className={`flex items-center gap-3 rounded-2xl p-4 border transition-colors ${
+              isOverdue ? "bg-destructive/10 border-destructive/20" : "bg-primary/5 border-primary/20"
+            }`}>
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                isOverdue ? "bg-destructive/20 text-destructive" : "bg-primary/20 text-primary"
+              }`}>
+                <Clock className="h-5 w-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-black uppercase tracking-wider text-muted-foreground mb-0.5">Assignment Deadline</p>
+                <p className={`text-[15px] font-black tracking-tight ${isOverdue ? "text-destructive" : "text-foreground"}`}>
+                  {isOverdue ? "Assignment Overdue!" : `${hours}h ${mins}m remaining`}
+                </p>
+              </div>
+              {isOverdue && (
+                <span className="flex h-2 w-2 rounded-full bg-destructive animate-pulse" />
+              )}
+            </div>
+            
+            <button 
+              onClick={() => {
+                setPendingQuote({ items: [], notes: "", total: job.price ?? 0 });
+                setShowAssignSheet(true);
+              }} 
+              className="w-full rounded-2xl bg-primary py-4 text-[13px] font-black text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            >
+              <Users className="h-4.5 w-4.5" /> 
+              Assign to Worker Now
+            </button>
+            <p className="text-[10px] text-center text-muted-foreground font-medium px-4 leading-relaxed">
+              As admin, you have a 4-hour window to assign this job to a worker. Customers are notified of pickup.
+            </p>
+          </div>
+        );
+      }
+
       if (stage === "assigned") {
         return (
           <div className="flex flex-col gap-2 p-4 bg-background border-t border-border/40">

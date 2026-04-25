@@ -572,6 +572,10 @@ const TraderJobs = () => {
       else { const shown = a.members.slice(0, 2).map((m) => m.name.split(" ")[0]); const extra = a.members.length - 2; assignLabel = extra > 0 ? `${shown.join(", ")} +${extra}` : shown.join(", "); }
     }
 
+    const workflow = JSON.parse(sessionStorage.getItem(`job_workflow_${job.id}`) || "{}");
+    const isUnassigned = workflow.stage === "unassigned";
+    const statusLabel = isUnassigned ? "Assignment Pending" : statusTag?.label;
+
     return (
       <MinimalJobCard
         key={job.id}
@@ -582,7 +586,7 @@ const TraderJobs = () => {
           timeWindow: job.timeWindow,
           location: `${job.location}${job.distance ? `, ${job.distance}` : ''}`,
           image: job.customerRequest?.photos?.[0],
-          statusLabel: statusTag?.label,
+          statusLabel,
           assignLabel: assignLabel || undefined,
           price: job.price,
           rating: job.committedStatus === "completed" ? (job.jobRating || job.customerData?.rating || 5.0) : undefined,
@@ -616,7 +620,16 @@ const TraderJobs = () => {
     const isInspection = !!data.inspectionMin;
     
     if (isPickup) {
-      acceptJob(jobId);
+      if (isAgencyAdmin) {
+        const pickedUpAt = new Date().toISOString();
+        const next: JobWorkflowState = { stage: "unassigned", pickedUpAt, purchaseItems: [] };
+        sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
+        
+        setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: "active" as JobStatus, committedStatus: "upcoming" } : j));
+        toast.success("Job picked up! ⚡", { description: "You have 4 hours to assign a worker." });
+      } else {
+        acceptJob(jobId);
+      }
     } else if (isInspection) {
       toast.success("Inspection offer sent! 🔍");
       // Advance stage logic here if needed

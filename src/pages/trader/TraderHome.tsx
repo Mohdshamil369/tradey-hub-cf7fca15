@@ -266,7 +266,16 @@ const TraderHome = () => {
     const isInspection = !!data.inspectionMin;
     
     if (isPickup) {
-      acceptJob(jobId);
+      if (isAgencyProfile) {
+        const pickedUpAt = new Date().toISOString();
+        const next: JobWorkflowState = { stage: "unassigned", pickedUpAt, purchaseItems: [] };
+        sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
+        
+        setJobs((prev) => prev.filter((j) => j.id !== jobId));
+        toast.success("Job picked up! ⚡", { description: "You have 4 hours to assign a worker." });
+      } else {
+        acceptJob(jobId);
+      }
     } else if (isInspection) {
       toast.success("Inspection offer sent! 🔍");
     } else {
@@ -515,22 +524,28 @@ const TraderHome = () => {
               <div className="flex flex-col gap-3">
                 {[...displayScheduleJobs]
                   .sort((a, b) => a.priority - b.priority)
-                  .map((job) => (
-                    <MinimalJobCard
-                      key={job.id}
-                      job={{
-                        id: job.id,
-                        title: job.title,
-                        customer: job.customer,
-                        timeWindow: job.date,
-                        location: job.location,
-                        image: job.image,
-                        statusLabel: job.status,
-                      }}
-                      onClick={() => navigate(`/trader/jobs/${job.id}`)}
-                      onReassign={isAgencyProfile ? (id) => setDispatchJobId(id) : undefined}
-                    />
-                  ))}
+                  .map((job) => {
+                    const workflow = JSON.parse(sessionStorage.getItem(`job_workflow_${job.id}`) || "{}");
+                    const isUnassigned = workflow.stage === "unassigned";
+                    const statusLabel = isUnassigned ? "Assignment Pending" : job.status;
+
+                    return (
+                      <MinimalJobCard
+                        key={job.id}
+                        job={{
+                          id: job.id,
+                          title: job.title,
+                          customer: job.customer,
+                          timeWindow: job.date,
+                          location: job.location,
+                          image: job.image,
+                          statusLabel,
+                        }}
+                        onClick={() => navigate(`/trader/jobs/${job.id}`)}
+                        onReassign={isAgencyProfile ? (id) => setDispatchJobId(id) : undefined}
+                      />
+                    );
+                  })}
               </div>
             )
           ) : (
