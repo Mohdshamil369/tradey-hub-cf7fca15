@@ -167,9 +167,29 @@ const JobDetail = () => {
   };
 
   const handleQuoteSubmit = (data: QuoteSheetData) => {
+    if (isAgencyAdmin) {
+      // Agency admin: chain a second bottom sheet to assign group/individuals
+      setPendingQuote(data);
+      setShowQuoteSheet(false);
+      setTimeout(() => setShowAssignSheet(true), 250);
+      return;
+    }
     toast.success("Quote sent successfully!");
     setShowQuoteSheet(false);
     navigate("/trader/jobs");
+  };
+
+  const handleAssignmentConfirm = (result: AssignmentResult) => {
+    setShowAssignSheet(false);
+    const total = pendingQuote?.total ?? 0;
+    const who = result.type === "group"
+      ? `${result.groupName} (${result.memberNames.length} ${result.memberNames.length === 1 ? "member" : "members"})`
+      : result.memberNames.join(", ");
+    toast.success(`Quote sent · £${total.toFixed(2)}`, {
+      description: `Assigned to ${who}`,
+    });
+    setPendingQuote(null);
+    setTimeout(() => navigate("/trader/jobs"), 400);
   };
 
   const renderDetailsTab = () => {
