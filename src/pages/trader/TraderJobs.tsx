@@ -262,20 +262,114 @@ const initialJobs: Job[] = [
     postedAgo: "", status: "active", committedStatus: "in_progress",
     customerData: { rating: 4.8, reviews: 15, isVerified: true, memberSince: "Mar 2024" },
   },
+  // j15 — Fixed, work in progress, assigned to a team (reassignable)
+  {
+    id: "j15", type: "catA", category: "fixed",
+    title: "Garage Door Repair", icon: "🚪",
+    customer: "Tom H.", location: "Noord", distance: "5.6 km",
+    price: 140,
+    timeWindow: "Today, 13:00 – 15:00",
+    description: "Garage door spring snapped — full replacement underway.",
+    postedAgo: "", status: "active", committedStatus: "in_progress",
+    customerData: { rating: 4.7, reviews: 11, isVerified: true, memberSince: "Aug 2024" },
+    assignment: { type: "individuals", members: [
+      { id: "m1", name: "Alex Turner", role: "Technician" },
+      { id: "m2", name: "James Cooper", role: "Helper" },
+    ] },
+  },
+  // j16 — Estimate, advance paid, purchases pending (reassignable later)
+  {
+    id: "j16", type: "catB", category: "estimate",
+    title: "Loft Insulation", icon: "🏠",
+    customer: "Sophie R.", location: "Zuid", distance: "4.3 km",
+    price: 680,
+    timeWindow: "Mon – Tue, 09:00 – 17:00",
+    description: "Quote approved, advance £150 received. Awaiting material purchases.",
+    postedAgo: "", status: "active", committedStatus: "upcoming",
+    customerData: { rating: 4.9, reviews: 22, isVerified: true, memberSince: "Feb 2023" },
+    assignment: { type: "group", groupName: "Insulation Crew", members: [
+      { id: "m3", name: "Lena K.", role: "Lead" },
+      { id: "m4", name: "Tom B.", role: "Installer" },
+    ] },
+  },
+  // j17 — Inspection proposal sent, awaiting payment
+  {
+    id: "j17", type: "catB", category: "inspection",
+    title: "Boiler Noise Inspection", icon: "🔥",
+    customer: "Hans K.", location: "Oost", distance: "2.9 km",
+    price: null, inspectionFee: 50,
+    timeWindow: "Sat, 10:00 – 11:00",
+    description: "Inspection proposal of £50 sent — waiting on customer to pay before assigning inspector.",
+    postedAgo: "", status: "active", committedStatus: "upcoming",
+    customerData: { rating: 4.5, reviews: 6, isVerified: true, memberSince: "Jul 2024" },
+  },
+  // j18 — Inspection assigned to an inspector (reassignable)
+  {
+    id: "j18", type: "catB", category: "inspection",
+    title: "Damp Basement Inspection", icon: "💧",
+    customer: "Marie L.", location: "Westerpark", distance: "3.4 km",
+    price: null, inspectionFee: 65,
+    timeWindow: "Tomorrow, 14:00 – 15:00",
+    description: "Inspector dispatched. Awaiting on-site report.",
+    postedAgo: "", status: "active", committedStatus: "in_progress",
+    customerData: { rating: 4.6, reviews: 14, isVerified: true, memberSince: "Oct 2023" },
+    assignment: { type: "individual", members: [
+      { id: "m5", name: "Liam Wright", role: "Inspector" },
+    ] },
+  },
+  // j19 — Invoice sent, awaiting payment
+  {
+    id: "j19", type: "catA", category: "fixed",
+    title: "Window Lock Replacement", icon: "🪟",
+    customer: "Eva D.", location: "Centrum", distance: "1.1 km",
+    price: 95,
+    timeWindow: "12 Mar, 10:00 – 11:30",
+    description: "Work complete, invoice sent for £95 — awaiting customer payment.",
+    postedAgo: "", status: "active", committedStatus: "in_progress",
+    completedDate: "12 Mar 2025", duration: "1h 15m",
+    customerData: { rating: 4.8, reviews: 19, isVerified: true, memberSince: "Jan 2023" },
+  },
+  // j20 — Paid (fully closed) with rating
+  {
+    id: "j20", type: "catA", category: "fixed",
+    title: "Smoke Alarm Install", icon: "🚨",
+    customer: "Chris W.", location: "De Pijp", distance: "2.7 km",
+    price: 80,
+    timeWindow: "9 Mar, 11:00 – 12:00",
+    description: "Two smoke alarms installed and tested. Payment received.",
+    postedAgo: "", status: "completed", committedStatus: "completed",
+    completedDate: "9 Mar 2025", duration: "55m",
+    jobRating: 5.0,
+    jobReview: "Quick, clean and professional — would book again!",
+    assignment: { type: "individual", members: [
+      { id: "m4", name: "Sophie Baker", role: "Electrician", hours: 0.92, earnings: 13.80 },
+    ] },
+  },
 ];
 
+
 /** Pre-seeded workflow stages for demo committed jobs — keyed by job id.
- *  Real flows persist via sessionStorage; these act as defaults when no override exists. */
+ *  Real flows persist via sessionStorage; these act as defaults when no override exists.
+ *  Covers every stage from the PRD so every use case is demonstrable. */
 const demoWorkflowStages: Record<string, WorkflowStage> = {
-  j11: "inspection_completed",  // Inspection done → CTA: Create Subtasks
-  j12: "quote_sent",             // Quote sent → CTA: Await Approval (informational)
-  j13: "assigned",               // Picked up + assigned → CTA: Start Work
-  j14: "completed",              // Work done → CTA: Create Invoice
+  // Live flows (existing)
+  j11: "inspection_completed",   // Inspection done → Create Subtasks
+  j12: "quote_sent",             // Quote sent → Await Approval
+  j13: "assigned",               // Picked up + assigned → Start Work (reassignable)
+  j14: "completed",              // Work done → Create Invoice
+  // Extra demo coverage (new)
+  j15: "in_progress",            // Fixed in-progress → Mark Completed (reassignable)
+  j16: "advance_paid",           // Estimate post-advance → View Purchase List
+  j17: "inspection_proposal_sent", // Inspection proposal sent → Await Payment
+  j18: "inspection_assigned",    // Inspection assigned → Start Inspection (reassignable)
+  j19: "invoice_sent",           // Invoice sent → Awaiting Payment
+  j20: "paid",                   // Paid → View Summary
 };
 
 /** Optional purchase-list progress for cards that show it inline. */
 const demoPurchaseProgress: Record<string, { purchased: number; total: number }> = {
   j12: { purchased: 2, total: 6 },
+  j16: { purchased: 0, total: 5 },
 };
 
 const companyJobs: CompanyJobData[] = [
@@ -477,7 +571,7 @@ const TraderJobs = () => {
           if (!validStages.has(parsed?.stage)) sessionStorage.removeItem(key);
         } catch { sessionStorage.removeItem(key); }
       };
-      ["j11","j12","j13","j14"].forEach(id => cleanIfLegacy(`job_workflow_${id}`));
+      ["j11","j12","j13","j14","j15","j16","j17","j18","j19","j20"].forEach(id => cleanIfLegacy(`job_workflow_${id}`));
 
       // j14 — completed with prior advance (Create Invoice CTA)
       if (!sessionStorage.getItem("job_workflow_j14")) {
@@ -500,6 +594,20 @@ const TraderJobs = () => {
             { id: "p4", name: "Matt white emulsion (2.5L)", quantity: 1, expectedPrice: 22, status: "not_purchased", buyer: "customer" },
             { id: "p5", name: "Sandpaper (P120, pack)", quantity: 1, expectedPrice: 7, status: "not_purchased", buyer: "customer" },
             { id: "p6", name: "Wood filler (250g)", quantity: 1, expectedPrice: 8, status: "not_purchased", buyer: "customer" },
+          ],
+        }));
+      }
+      // j16 — advance paid, all items not yet purchased
+      if (!sessionStorage.getItem("job_workflow_j16")) {
+        sessionStorage.setItem("job_workflow_j16", JSON.stringify({
+          stage: "advance_paid",
+          advanceAmount: 150,
+          purchaseItems: [
+            { id: "p1", name: "Insulation rolls (200mm, 8.3m²)", quantity: 5, expectedPrice: 32, status: "not_purchased", buyer: "customer" },
+            { id: "p2", name: "Vapour barrier sheet (10m)", quantity: 2, expectedPrice: 18, status: "not_purchased", buyer: "customer" },
+            { id: "p3", name: "Loft boards (1200×320mm)", quantity: 6, expectedPrice: 12, status: "not_purchased", buyer: "customer" },
+            { id: "p4", name: "Tape (foil, 50m)", quantity: 1, expectedPrice: 9, status: "not_purchased", buyer: "customer" },
+            { id: "p5", name: "Safety masks (pack of 5)", quantity: 1, expectedPrice: 11, status: "not_purchased", buyer: "customer" },
           ],
         }));
       }
@@ -789,62 +897,52 @@ const TraderJobs = () => {
 
 
   const renderCommittedJobCard = (job: Job) => {
-    const statusTag = job.committedStatus ? committedStatusConfig[job.committedStatus] : null;
     const a = job.assignment;
     let assignLabel = "";
+    let memberCount = 0;
     if (a) {
+      memberCount = a.members.length;
       if (a.type === "group") { assignLabel = a.groupName || "Group"; }
       else if (a.type === "individual") { assignLabel = a.members[0]?.name || "Individual"; }
       else { const shown = a.members.slice(0, 2).map((m) => m.name.split(" ")[0]); const extra = a.members.length - 2; assignLabel = extra > 0 ? `${shown.join(", ")} +${extra}` : shown.join(", "); }
     }
 
-    // Stage-aware card for in-progress / upcoming committed jobs
-    const stage = getJobStage(job.id);
-    const isLiveCommitted = job.committedStatus === "in_progress" || job.committedStatus === "upcoming";
-    if (isLiveCommitted && stage) {
-      return (
-        <StageJobCard
-          key={job.id}
-          stage={stage}
-          category={job.category}
-          job={{
-            id: job.id,
-            title: job.title,
-            customer: job.customer,
-            timeWindow: job.timeWindow,
-            location: `${job.location}${job.distance ? `, ${job.distance}` : ''}`,
-            distance: job.distance,
-            image: job.customerRequest?.photos?.[0],
-            price: job.price,
-            viaOrg: job.source === "org" ? job.orgName : undefined,
-            purchaseProgress: demoPurchaseProgress[job.id],
-          }}
-          onClick={() => openJobDetail(job)}
-          onCta={handleStageCta}
-        />
-      );
+    // Resolve a stage for every committed card so the visual is consistent.
+    // Cancelled → render with last-known stage (or assigned) but mark cancelled.
+    // Completed without explicit stage → treat as "paid" (job fully closed historically).
+    const cancelled = job.committedStatus === "cancelled";
+    let stage = getJobStage(job.id);
+    if (!stage) {
+      if (cancelled) stage = "assigned";
+      else if (job.committedStatus === "completed") stage = "paid";
+      else stage = "assigned";
     }
 
-    const statusLabel = statusTag?.label;
+    const showRating = job.committedStatus === "completed" || stage === "paid";
 
     return (
-      <MinimalJobCard
+      <StageJobCard
         key={job.id}
+        stage={stage}
+        category={job.category}
         job={{
           id: job.id,
           title: job.title,
           customer: job.customer,
           timeWindow: job.timeWindow,
           location: `${job.location}${job.distance ? `, ${job.distance}` : ''}`,
+          distance: job.distance,
           image: job.customerRequest?.photos?.[0],
-          statusLabel,
-          assignLabel: assignLabel || undefined,
           price: job.price,
-          rating: job.committedStatus === "completed" ? (job.jobRating || job.customerData?.rating || 5.0) : undefined,
-          review: job.committedStatus === "completed" ? job.jobReview : undefined,
           viaOrg: job.source === "org" ? job.orgName : undefined,
+          purchaseProgress: demoPurchaseProgress[job.id],
+          assignedTo: assignLabel ? { label: assignLabel, memberCount } : undefined,
+          rating: showRating ? (job.jobRating || job.customerData?.rating) : undefined,
+          review: showRating ? job.jobReview : undefined,
+          cancelled,
         }}
         onClick={() => openJobDetail(job)}
+        onCta={handleStageCta}
         onReassign={isAgencyProfile ? (id) => setDispatchJobId(id) : undefined}
       />
     );
@@ -1284,7 +1382,11 @@ const TraderJobs = () => {
                         {mockGroups.map((group) => (
                           <button
                             key={group.id}
-                            onClick={() => { setSelectedGroupId(group.id); setAssignStep("confirm"); }}
+                            onClick={() => {
+                              setSelectedGroupId(group.id);
+                              setSelectedMemberIds(new Set(group.members.map(m => m.id)));
+                              setAssignStep("select-members");
+                            }}
                             className="flex w-full items-center gap-4 rounded-2xl border-2 border-border bg-card p-4 text-left transition-all active:scale-[0.98] hover:border-primary/20"
                           >
                             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
@@ -1292,63 +1394,154 @@ const TraderJobs = () => {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-bold text-foreground">{group.name}</p>
-                              <p className="text-xs text-muted-foreground">{group.members.length} members available</p>
+                              <p className="text-xs text-muted-foreground">{group.members.length} members · pick all or some</p>
                             </div>
                             <ChevronRight className="h-5 w-5 text-muted-foreground/30" />
                           </button>
                         ))}
 
                         <div className="pt-2">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-3">Or to Individual</p>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-3">Or pick Individuals</p>
                           <div className="grid grid-cols-2 gap-3">
-                            {mockGroups[0].members.slice(0, 4).map((member) => (
+                            {mockIndividuals.map((member) => {
+                              const picked = selectedIndividuals.some(i => i.id === member.id);
+                              return (
+                                <button
+                                  key={member.id}
+                                  onClick={() => {
+                                    setSelectedIndividuals(prev =>
+                                      prev.some(i => i.id === member.id)
+                                        ? prev.filter(i => i.id !== member.id)
+                                        : [...prev, member]
+                                    );
+                                  }}
+                                  className={`relative flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all active:scale-[0.98] text-center ${
+                                    picked ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/20"
+                                  }`}
+                                >
+                                  {picked && (
+                                    <CheckCircle2 className="absolute top-2 right-2 h-4 w-4 text-primary" />
+                                  )}
+                                  <div className="h-12 w-12 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-foreground overflow-hidden">
+                                    {member.name.split(" ").map(n => n[0]).join("")}
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-bold text-foreground truncate max-w-full">{member.name.split(" ")[0]}</p>
+                                    <p className="text-[10px] text-muted-foreground">{member.role}</p>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {selectedIndividuals.length > 0 && (
+                            <button
+                              onClick={() => { setSelectedGroupId(null); setAssignStep("confirm"); }}
+                              className="w-full mt-4 rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground active:scale-[0.98]"
+                            >
+                              Continue with {selectedIndividuals.length} {selectedIndividuals.length === 1 ? "person" : "people"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ) : assignStep === "select-members" ? (
+                      (() => {
+                        const group = mockGroups.find(g => g.id === selectedGroupId);
+                        if (!group) return null;
+                        const allSelected = group.members.every(m => selectedMemberIds.has(m.id));
+                        return (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between px-1">
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{group.name} · pick members</p>
                               <button
-                                key={member.id}
-                                onClick={() => { setSelectedGroupId(member.id); setAssignStep("confirm"); }}
-                                className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border bg-card p-4 transition-all active:scale-[0.98] hover:border-primary/20 text-center"
+                                onClick={() => setSelectedMemberIds(allSelected ? new Set() : new Set(group.members.map(m => m.id)))}
+                                className="text-[10px] font-bold text-primary"
                               >
-                                <div className="h-12 w-12 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-foreground overflow-hidden">
-                                  {member.name.split(" ").map(n => n[0]).join("")}
-                                </div>
-                                <div>
-                                  <p className="text-xs font-bold text-foreground truncate max-w-full">{member.name.split(" ")[0]}</p>
-                                  <p className="text-[10px] text-muted-foreground">{member.role}</p>
-                                </div>
+                                {allSelected ? "Clear all" : "Select all"}
                               </button>
-                            ))}
+                            </div>
+                            <div className="space-y-2">
+                              {group.members.map((member) => {
+                                const checked = selectedMemberIds.has(member.id);
+                                return (
+                                  <button
+                                    key={member.id}
+                                    onClick={() => toggleMember(member.id)}
+                                    className={`flex w-full items-center gap-3 rounded-2xl border-2 p-3 text-left transition-all active:scale-[0.99] ${
+                                      checked ? "border-primary bg-primary/5" : "border-border bg-card"
+                                    }`}
+                                  >
+                                    <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-foreground">
+                                      {member.name.split(" ").map(n => n[0]).join("")}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-bold text-foreground truncate">{member.name}</p>
+                                      <p className="text-[11px] text-muted-foreground">{member.role}</p>
+                                    </div>
+                                    {checked ? (
+                                      <CheckCircle2 className="h-5 w-5 text-primary" />
+                                    ) : (
+                                      <div className="h-5 w-5 rounded-full border-2 border-border" />
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            <button
+                              onClick={() => setAssignStep("confirm")}
+                              disabled={selectedMemberIds.size === 0}
+                              className="w-full mt-2 rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground active:scale-[0.98] disabled:opacity-40"
+                            >
+                              Continue with {selectedMemberIds.size} {selectedMemberIds.size === 1 ? "member" : "members"}
+                            </button>
                           </div>
-                        </div>
-                      </div>
+                        );
+                      })()
                     ) : (
-                      <div className="space-y-6">
-                        <div className="rounded-2xl bg-primary/5 border border-primary/20 p-5 text-center">
-                          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-3">
-                            <ShieldCheck className="h-8 w-8 text-primary" />
-                          </div>
-                          <h3 className="text-base font-bold text-foreground">Confirm Assignment</h3>
-                          <p className="text-xs text-muted-foreground mt-1 max-w-[200px] mx-auto">
-                            By confirming, this job will be dispatched to the selected team members instantly.
-                          </p>
-                        </div>
+                      (() => {
+                        const group = mockGroups.find(g => g.id === selectedGroupId);
+                        const groupMembers = group ? group.members.filter(m => selectedMemberIds.has(m.id)) : [];
+                        const targets = group ? groupMembers : selectedIndividuals;
+                        const summary = group
+                          ? `${group.name} · ${groupMembers.length} of ${group.members.length}`
+                          : `${selectedIndividuals.length} ${selectedIndividuals.length === 1 ? "individual" : "individuals"}`;
+                        return (
+                          <div className="space-y-6">
+                            <div className="rounded-2xl bg-primary/5 border border-primary/20 p-5 text-center">
+                              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-3">
+                                <ShieldCheck className="h-8 w-8 text-primary" />
+                              </div>
+                              <h3 className="text-base font-bold text-foreground">Confirm Assignment</h3>
+                              <p className="text-xs text-muted-foreground mt-1">{summary}</p>
+                              <div className="mt-3 flex flex-wrap justify-center gap-1.5">
+                                {targets.map(t => (
+                                  <span key={t.id} className="rounded-full bg-card border border-border px-2.5 py-1 text-[10.5px] font-semibold text-foreground">
+                                    {t.name}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
 
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => setAssignStep("choose")}
-                            className="flex-1 rounded-2xl border border-border py-4 text-sm font-bold text-muted-foreground active:bg-muted"
-                          >
-                            Go Back
-                          </button>
-                          <button
-                            onClick={() => {
-                              toast.success("Job accepted & assigned!");
-                              resetAssignFlow();
-                            }}
-                            className="flex-[2] rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
-                          >
-                            Confirm & Accept
-                          </button>
-                        </div>
-                      </div>
+                            <div className="flex gap-3">
+                              <button
+                                onClick={() => setAssignStep(group ? "select-members" : "choose")}
+                                className="flex-1 rounded-2xl border border-border py-4 text-sm font-bold text-muted-foreground active:bg-muted"
+                              >
+                                Go Back
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const names = targets.map(t => t.name).join(", ");
+                                  toast.success(`Assigned to ${names}!`);
+                                  resetAssignFlow();
+                                }}
+                                className="flex-[2] rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
+                              >
+                                Confirm & Assign
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })()
                     )}
                   </>
                 );
