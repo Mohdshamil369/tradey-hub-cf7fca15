@@ -170,6 +170,10 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
   const inspection = parseFloat(inspectionFee) || 0;
   const total = itemsTotal + (category === "inspection" ? inspection : 0);
   const canSubmit = category === "inspection" ? inspection > 0 : items.length > 0;
+  const previewAdvance = category === "estimate"
+    ? (advanceMode === "percent" ? +(total * advancePercent / 100).toFixed(2) : (parseFloat(advanceAmount) || 0))
+    : 0;
+  const previewRemaining = Math.max(0, total - previewAdvance);
 
   // Template actions
   const handleSaveTemplate = () => {
