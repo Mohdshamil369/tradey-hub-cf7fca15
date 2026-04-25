@@ -287,7 +287,7 @@ const TraderServicesPage = () => {
                       </div>
 
                       <div>
-                        <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Duration</label>
+                        <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Estimated Avg Duration</label>
                         <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
                           <Clock className="h-5 w-5 text-muted-foreground" />
                           <input
@@ -340,7 +340,7 @@ const TraderServicesPage = () => {
 
               {/* Duration */}
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Duration</label>
+                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Estimated Avg Duration</label>
                 <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
                   <Clock className="h-5 w-5 text-muted-foreground" />
                   <input
