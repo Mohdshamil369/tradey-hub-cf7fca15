@@ -467,7 +467,11 @@ const JobDetail = () => {
       <div>
         <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground mb-2 px-1">Customer</h3>
         <div className="rounded-xl bg-card border border-border/30 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3">
+          <button
+            type="button"
+            onClick={() => navigate(`/trader/customers/${encodeURIComponent(job.customer.name.toLowerCase().replace(/\s+/g, "-"))}?name=${encodeURIComponent(job.customer.name)}`)}
+            className="flex w-full items-center justify-between px-4 py-3 text-left active:bg-muted/40"
+          >
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full overflow-hidden ring-2 ring-background">
                 <Avatar name={job.customer.name} variant="beam" size={40} colors={["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7"]} />
@@ -487,7 +491,7 @@ const JobDetail = () => {
               </div>
               <p className="text-[9px] text-muted-foreground">{job.customer.reviews} reviews</p>
             </div>
-          </div>
+          </button>
 
           <div className="grid grid-cols-3 gap-px bg-border/20 border-t border-border/30">
             <div className="bg-card py-2.5 text-center">
@@ -520,7 +524,7 @@ const JobDetail = () => {
 
           <div className="flex gap-2 px-4 py-3 border-t border-border/30">
             <button
-              onClick={() => toast.info("Full customer profile coming soon")}
+              onClick={() => navigate(`/trader/customers/${encodeURIComponent(job.customer.name.toLowerCase().replace(/\s+/g, "-"))}?name=${encodeURIComponent(job.customer.name)}`)}
               className="flex-1 flex items-center justify-center gap-1 rounded-lg bg-muted/50 border border-border/30 py-2 text-[10px] font-bold text-foreground active:bg-muted"
             >
               <Info className="h-3 w-3" /> Full Profile
