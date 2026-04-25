@@ -1,4 +1,4 @@
-import { MapPin, Clock, Camera, Calendar, ChevronLeft, ChevronRight, Heart, CalendarDays, Users, Building2, ShieldCheck, Sparkles, Send } from "lucide-react";
+import { MapPin, Clock, Camera, Calendar, ChevronLeft, ChevronRight, Heart, CalendarDays, Users, Building2, ShieldCheck, Sparkles } from "lucide-react";
 import { useState } from "react";
 import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 
@@ -218,36 +218,24 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
 
       </div>
 
-      {/* Schedule + Respond CTA footer */}
-      <div className="flex items-center justify-between gap-2 border-t border-border/50 px-3 py-2">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <Calendar className="h-3 w-3 text-primary shrink-0" />
-          <span className="text-[10.5px] font-semibold text-foreground truncate">{job.timeWindow}</span>
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          {onShowSchedule && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onShowSchedule(job);
-              }}
-              className="flex items-center gap-1 rounded-lg bg-secondary px-2 py-1 text-[10px] font-bold text-foreground active:bg-secondary/70 transition-colors"
-              aria-label="View my schedule"
-            >
-              <CalendarDays className="h-3 w-3" />
-            </button>
-          )}
+      {/* Schedule footer — Respond CTA lives on the detail page only */}
+      <div className="flex items-center justify-between border-t border-border/50 px-3 py-1.5">
+        <span className="flex items-center gap-1 text-[11px] font-semibold text-foreground">
+          <Calendar className="h-3 w-3 text-primary" />
+          {job.timeWindow}
+        </span>
+        {onShowSchedule && (
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onRespond?.(job);
+              onShowSchedule(job);
             }}
-            className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[10.5px] font-bold text-primary-foreground active:scale-95 shadow-sm shadow-primary/20 transition-all"
+            className="flex items-center gap-1 rounded-lg bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary active:bg-primary/20 transition-colors"
           >
-            <Send className="h-3 w-3" />
-            Respond to Job
+            <CalendarDays className="h-3 w-3" />
+            My Schedule
           </button>
-        </div>
+        )}
       </div>
     </div>
   );
