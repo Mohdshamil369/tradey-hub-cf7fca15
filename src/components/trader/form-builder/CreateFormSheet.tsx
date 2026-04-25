@@ -17,6 +17,7 @@ export const CreateFormSheet = ({
   onOpenChange,
   onContinue,
   templates = adminTemplates,
+  frequentForms = [],
 }: CreateFormSheetProps) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
