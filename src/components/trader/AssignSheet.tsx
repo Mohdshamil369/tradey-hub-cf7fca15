@@ -50,6 +50,8 @@ const AssignSheet = ({
   groups,
   individuals,
   onConfirm,
+  confirmLabel = "Send Quote & Assign",
+  confirmHelperText = "The quote will be sent to the customer and the job will be dispatched to the selected team.",
 }: AssignSheetProps) => {
   const [step, setStep] = useState<Step>("choose");
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
