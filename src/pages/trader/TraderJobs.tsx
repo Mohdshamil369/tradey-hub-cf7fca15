@@ -930,6 +930,9 @@ const TraderJobs = () => {
 
     const showRating = job.committedStatus === "completed" || stage === "paid";
 
+    // Picked-up but not yet routed → highlight as "Assign Worker" card.
+    const pickedNotAssigned = !cancelled && stage === "assigned" && !a;
+
     return (
       <StageJobCard
         key={job.id}
@@ -950,10 +953,12 @@ const TraderJobs = () => {
           rating: showRating ? (job.jobRating || job.customerData?.rating) : undefined,
           review: showRating ? job.jobReview : undefined,
           cancelled,
+          pickedNotAssigned,
         }}
         onClick={() => openJobDetail(job)}
         onCta={handleStageCta}
         onReassign={isAgencyProfile ? (id) => setDispatchJobId(id) : undefined}
+        onAssign={(id) => setDispatchJobId(id)}
       />
     );
   };
