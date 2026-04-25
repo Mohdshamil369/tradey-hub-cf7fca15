@@ -689,36 +689,39 @@ const TraderJobs = () => {
     return demoWorkflowStages[jobId] ?? null;
   };
 
-  /** Footer CTA action — routes per stage. Most actions open the job detail sheet at the right context. */
+  /** Footer CTA action — routes per stage. Most actions open the job detail page at the right context. */
   const handleStageCta = (jobId: string, stage: WorkflowStage) => {
     const job = jobs.find((j) => j.id === jobId);
     if (!job) return;
-    if (stage === "unassigned") {
-      setDispatchJobId(jobId);
-      return;
-    }
-    if (stage === "fee_paid") {
+    // Inspection: fee paid → assign for inspection
+    if (stage === "inspection_fee_paid") {
       setDispatchJobId(jobId);
       toast("Pick an inspector to send on-site.");
       return;
     }
-    // Inspection done → open the quote builder (with PDF preview before sending)
-    if (stage === "inspected") {
-      setPostInspectionJob(job);
+    // Inspection completed → open detail (Create Subtasks)
+    if (stage === "inspection_completed") {
+      openJobDetail(job, "subtasks");
       return;
     }
-    // Estimate approved → detail page handles "Break into Subtasks" then "Create Quote"
+    // Estimate workflow stages that need detail page
     if (stage === "estimate_approved" || stage === "subtasks_created") {
       openJobDetail(job, "subtasks");
       return;
     }
-    // Quote shared / accepted / purchasing → open detail page on the Purchase List tab
-    if (stage === "quote_sent" || stage === "quote_accepted" || stage === "purchasing") {
+    // Estimate "assigned" stage means subtasks done, time to create the quote.
+    // Open quote builder via detail page so PDF preview flow runs.
+    if (stage === "assigned" && job.category !== "fixed") {
+      openJobDetail(job, "quotes");
+      return;
+    }
+    // Quote sent / approved / advance paid / purchases ongoing → Purchase List
+    if (stage === "quote_sent" || stage === "quote_approved" || stage === "advance_paid" || stage === "purchases_ongoing" || stage === "ready_to_start") {
       openJobDetail(job, "purchase-list");
       return;
     }
-    // Work finished → raise an invoice (with PDF preview before sending)
-    if (stage === "work_in_progress") {
+    // Work complete → invoice builder (with PDF preview)
+    if (stage === "completed") {
       setInvoiceJob(job);
       return;
     }
@@ -730,7 +733,6 @@ const TraderJobs = () => {
   const handlePostInspectionQuote = (data: QuoteSheetData) => {
     if (!postInspectionJob) return;
     const job = postInspectionJob;
-    // Persist new stage
     try {
       const prev = JSON.parse(sessionStorage.getItem(`job_workflow_${job.id}`) || "{}");
       sessionStorage.setItem(`job_workflow_${job.id}`, JSON.stringify({
@@ -738,11 +740,10 @@ const TraderJobs = () => {
         stage: "quote_sent",
         purchaseItems: data.items.filter(i => i.type === "material").map(i => ({
           id: i.id, name: i.name, quantity: i.quantity, expectedPrice: i.cost,
-          status: "pending", buyer: "customer",
+          status: "not_purchased", buyer: "customer",
         })),
       }));
     } catch {}
-    // Add to sent quotes list
     setSentQuotes(prev => [{
       id: crypto.randomUUID(),
       jobTitle: job.title,
@@ -755,7 +756,6 @@ const TraderJobs = () => {
       materialsCount: data.items.filter(i => i.type === "material").length,
       status: "pending" as const,
     }, ...prev]);
-    // Force re-render so StageJobCard picks up the new stage from sessionStorage
     setJobs(prev => prev.map(j => j.id === job.id ? { ...j } : j));
     setPostInspectionJob(null);
     toast.success("Quote sent to customer 📄", { description: `Total £${data.total.toFixed(2)} — purchase list activated.` });
