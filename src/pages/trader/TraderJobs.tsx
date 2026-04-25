@@ -1501,6 +1501,36 @@ const TraderJobs = () => {
                           </div>
                         )}
 
+                        {/* Assignment Source */}
+                        {section.id === "assignmentSource" && (
+                          <div className="grid grid-cols-2 gap-2">
+                            {[
+                              { key: "any", label: "Any" },
+                              { key: "direct", label: "Direct" },
+                              { key: "org", label: "From organisation" },
+                              { key: "admin", label: "Assigned by admin" },
+                            ].map((opt) => {
+                              const selected = filterAssignmentSource.has(opt.key);
+                              return (
+                                <button
+                                  key={opt.key}
+                                  onClick={() => toggleAssignmentSource(opt.key)}
+                                  className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-left border transition-all ${
+                                    selected ? "bg-primary/10 border-primary" : "bg-card border-border/60"
+                                  }`}
+                                >
+                                  <div className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 ${selected ? "border-primary bg-primary" : "border-muted-foreground/30"}`}>
+                                    {selected && <CheckCircle2 className="h-2.5 w-2.5 text-primary-foreground" />}
+                                  </div>
+                                  <span className={`text-[11px] font-semibold truncate ${selected ? "text-primary" : "text-foreground"}`}>
+                                    {opt.label}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+
                         {/* Job Status */}
                         {section.id === "status" && (
                           <div className="grid grid-cols-2 gap-1.5">
