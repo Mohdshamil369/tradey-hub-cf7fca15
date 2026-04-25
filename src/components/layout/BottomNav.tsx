@@ -1,4 +1,4 @@
-import { Home, User, Briefcase, Users } from "lucide-react";
+import { Home, User, Briefcase, Users, MessageCircle } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
 
 // Customer navigation removed
@@ -8,6 +8,7 @@ const individualTraderNav = [
   { icon: Home, label: "Home", path: "/" },
   { icon: Briefcase, label: "Jobs", path: "/trader/jobs" },
   { icon: Users, label: "Groups", path: "/trader/groups" },
+  { icon: MessageCircle, label: "Messages", path: "/chat" },
   { icon: User, label: "Settings", path: "/profile" },
 ];
 
@@ -15,6 +16,7 @@ const agencyTraderNav = [
   { icon: Home, label: "Home", path: "/" },
   { icon: Briefcase, label: "Jobs", path: "/trader/jobs" },
   { icon: Users, label: "Groups", path: "/trader/groups" },
+  { icon: MessageCircle, label: "Messages", path: "/chat" },
   { icon: User, label: "Settings", path: "/profile" },
 ];
 
