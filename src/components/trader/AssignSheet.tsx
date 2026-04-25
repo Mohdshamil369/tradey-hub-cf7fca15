@@ -353,7 +353,7 @@ const AssignSheet = ({
                     onClick={handleConfirm}
                     className="flex-[2] rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98]"
                   >
-                    Send Quote & Assign
+                    {confirmLabel}
                   </button>
                 </div>
               </div>
