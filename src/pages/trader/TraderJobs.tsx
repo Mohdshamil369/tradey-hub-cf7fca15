@@ -737,6 +737,7 @@ const TraderJobs = () => {
     setSelectedIndividual(null);
     setSelectedIndividuals([]);
     setIndividualSearch("");
+    setAssignTab("group");
   };
 
   const toggleMember = (memberId: string) => {
