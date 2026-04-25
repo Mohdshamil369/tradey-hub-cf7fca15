@@ -400,6 +400,13 @@ const TraderHome = () => {
               <p className="text-[10px] text-primary-foreground/70">This Month</p>
             </div>
           </div>
+          <button
+            onClick={() => navigate("/trader/earnings")}
+            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-white/15 py-2.5 text-xs font-bold text-primary-foreground transition-all active:scale-[0.98] hover:bg-white/20"
+          >
+            View Earnings Details
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
         </div>
 
 
