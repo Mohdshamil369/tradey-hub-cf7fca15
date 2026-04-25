@@ -188,12 +188,14 @@ const JobDetail = () => {
   const handleAssignmentConfirm = (result: AssignmentResult) => {
     setShowAssignSheet(false);
     const total = pendingQuote?.total ?? 0;
+    const isPickup = (pendingQuote?.items?.length ?? 0) === 0;
     const who = result.type === "group"
       ? `${result.groupName} (${result.memberNames.length} ${result.memberNames.length === 1 ? "member" : "members"})`
       : result.memberNames.join(", ");
-    toast.success(`Quote sent · £${total.toFixed(2)}`, {
-      description: `Assigned to ${who}`,
-    });
+    toast.success(
+      isPickup ? `Job picked up · £${total.toFixed(2)}` : `Quote approved · £${total.toFixed(2)}`,
+      { description: `Assigned to ${who}` }
+    );
     setPendingQuote(null);
     setTimeout(() => navigate("/trader/jobs"), 400);
   };
