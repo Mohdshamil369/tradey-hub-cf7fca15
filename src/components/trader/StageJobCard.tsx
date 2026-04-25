@@ -1,7 +1,15 @@
-import { ChevronRight, Clock, MapPin, Building2, ShoppingCart } from "lucide-react";
+import { ChevronRight, Clock, MapPin, Building2, ShoppingCart, Users, Star } from "lucide-react";
 import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 import type { WorkflowStage, JobCategory } from "@/data/jobWorkflowState";
 import { getStageCta } from "@/data/stageCta";
+
+/** Stages where the admin can still re-route the job to a different group/members. */
+const REASSIGNABLE_STAGES: WorkflowStage[] = [
+  "assigned",
+  "in_progress",
+  "inspection_assigned",
+  "ready_to_start",
+];
 
 const ctaToneClass = {
   primary: "bg-primary text-primary-foreground",
