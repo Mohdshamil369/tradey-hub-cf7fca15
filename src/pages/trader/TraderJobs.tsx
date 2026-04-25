@@ -696,6 +696,7 @@ const TraderJobs = () => {
   const [selectedIndividual, setSelectedIndividual] = useState<{ id: string; name: string } | null>(null);
   const [selectedIndividuals, setSelectedIndividuals] = useState<{ id: string; name: string; role: string }[]>([]);
   const [individualSearch, setIndividualSearch] = useState("");
+  const [assignTab, setAssignTab] = useState<"group" | "individual">("group");
   const [showSavedJobs, setShowSavedJobs] = useState(false);
   const [activeResponseJob, setActiveResponseJob] = useState<ResponseJobData | null>(null);
   const [showResponseWorkflow, setShowResponseWorkflow] = useState(false);
