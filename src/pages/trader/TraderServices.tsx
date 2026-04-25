@@ -345,21 +345,6 @@ const TraderServicesPage = () => {
                 </div>
               </div>
 
-              {/* Price */}
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Customer Price (£)</label>
-                <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
-                  <PoundSterling className="h-5 w-5 text-muted-foreground" />
-                  <input
-                    type="number"
-                    placeholder="Leave empty for Custom Quote"
-                    value={editPrice}
-                    onChange={(e) => setEditPrice(e.target.value)}
-                    className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-                  />
-                </div>
-              </div>
-
               {/* Duration */}
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Duration</label>
