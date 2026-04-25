@@ -91,11 +91,11 @@ const ActiveJobCard = ({ job, isUpNext = false, expanded = false, onToggleExpand
             <img
               src={photos[photoIndex]}
               alt={job.title}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="h-full w-full object-cover"
               loading="lazy"
             />
             {photos.length > 1 && (
-              <div className="absolute inset-0 flex items-center justify-between px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute inset-0 flex items-center justify-between px-2">
                 <button
                   onClick={(e) => { e.stopPropagation(); setPhotoIndex(i => (i - 1 + photos.length) % photos.length); }}
                   className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-foreground shadow-sm active:scale-90"
