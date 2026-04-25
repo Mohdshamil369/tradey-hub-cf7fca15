@@ -458,6 +458,19 @@ const TraderJobs = () => {
   const [postInspectionJob, setPostInspectionJob] = useState<Job | null>(null);
   // Invoice builder (opened from work_in_progress CTA)
   const [invoiceJob, setInvoiceJob] = useState<Job | null>(null);
+
+  // Seed demo workflow state for j14 (work_in_progress with prior advance) once per session
+  useEffect(() => {
+    try {
+      if (!sessionStorage.getItem("job_workflow_j14")) {
+        sessionStorage.setItem("job_workflow_j14", JSON.stringify({
+          stage: "work_in_progress",
+          advanceAmount: 80,
+          purchaseItems: [],
+        }));
+      }
+    } catch { /* sessionStorage unavailable */ }
+  }, []);
   
   // Detail sheet state
   const [selectedJob, setSelectedJob] = useState<JobDetailData | null>(null);
