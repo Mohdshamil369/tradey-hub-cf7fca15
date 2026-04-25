@@ -57,6 +57,16 @@ export interface EstimateData {
   description: string;
   hasVoiceNote: boolean;
   sentAt: string;
+  /**
+   * Optional advance hint shown to the customer alongside the estimate range.
+   * The actual advance is locked in later during Quote (PRD §9), but admins
+   * may pre-signal expected upfront so the customer isn't surprised.
+   */
+  advanceHint?: {
+    mode: "percent" | "amount";
+    /** Percent of the mid-estimate (when mode=percent) or absolute £ (when mode=amount). */
+    value: number;
+  };
 }
 
 /** Purchase list item statuses per spec. */
