@@ -69,7 +69,7 @@ export const CreateFormSheet = ({
     }
     const selectedTemplate =
       startFrom === "template" && selectedTemplateId
-        ? templates.find((t) => t.id === selectedTemplateId)
+        ? [...frequentForms, ...templates].find((t) => t.id === selectedTemplateId)
         : null;
 
     onContinue(
