@@ -713,7 +713,7 @@ const TraderJobs = () => {
     setJobs(prev => prev.map(j => j.id === job.id ? { ...j } : j));
     setInvoiceJob(null);
     toast.success("Invoice sent 🧾", {
-      description: `£${data.remaining.toFixed(2)} due from ${job.customer.name}.`,
+      description: `£${data.remaining.toFixed(2)} due from ${typeof job.customer === "string" ? job.customer : (job.customer as { name: string }).name}.`,
     });
   };
 
