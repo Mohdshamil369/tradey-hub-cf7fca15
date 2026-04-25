@@ -2,10 +2,12 @@ import MobileLayout from "@/components/layout/MobileLayout";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, X, Clock, PoundSterling, ToggleLeft, ToggleRight, ChevronRight } from "lucide-react";
+import { Plus, X, Clock, PoundSterling, ToggleLeft, ToggleRight, ChevronRight, Pencil } from "lucide-react";
 import { catAServices, catBServices } from "@/data/services";
 import { EmojiIcon, getEmojiIconColors } from "@/lib/icons";
 import { useAuth } from "@/contexts/AuthContext";
+
+const UNIVERSAL_BASE_PAY = 30; // £/hr default universal rate
 
 interface TraderService {
   id: string;
@@ -16,14 +18,16 @@ interface TraderService {
   priceLabel: string;
   duration: string;
   active: boolean;
+  useUniversalPay: boolean;
+  customBasePay: number | null;
 }
 
 const initialServices: TraderService[] = [
-  { id: "ts1", name: "Tap Repair", icon: "🔧", category: "plumbing", price: 65, priceLabel: "£65", duration: "1-2 hours", active: true },
-  { id: "ts2", name: "Drain Unblocking", icon: "🚿", category: "plumbing", price: 75, priceLabel: "£75", duration: "1-2 hours", active: true },
-  { id: "ts3", name: "Toilet Repair", icon: "🔧", category: "plumbing", price: 55, priceLabel: "£55", duration: "1-2 hours", active: true },
-  { id: "ts4", name: "Full Bathroom Renovation", icon: "🛁", category: "plumbing", price: null, priceLabel: "Custom Quote", duration: "1-3 weeks", active: true },
-  { id: "ts5", name: "Boiler Service", icon: "🔥", category: "hvac", price: 85, priceLabel: "£85", duration: "1-2 hours", active: false },
+  { id: "ts1", name: "Tap Repair", icon: "🔧", category: "plumbing", price: 65, priceLabel: "£65", duration: "1-2 hours", active: true, useUniversalPay: true, customBasePay: null },
+  { id: "ts2", name: "Drain Unblocking", icon: "🚿", category: "plumbing", price: 75, priceLabel: "£75", duration: "1-2 hours", active: true, useUniversalPay: true, customBasePay: null },
+  { id: "ts3", name: "Toilet Repair", icon: "🔧", category: "plumbing", price: 55, priceLabel: "£55", duration: "1-2 hours", active: true, useUniversalPay: true, customBasePay: null },
+  { id: "ts4", name: "Full Bathroom Renovation", icon: "🛁", category: "plumbing", price: null, priceLabel: "Custom Quote", duration: "1-3 weeks", active: true, useUniversalPay: false, customBasePay: 40 },
+  { id: "ts5", name: "Boiler Service", icon: "🔥", category: "hvac", price: 85, priceLabel: "£85", duration: "1-2 hours", active: false, useUniversalPay: true, customBasePay: null },
 ];
 
 const TraderServicesPage = () => {
@@ -35,6 +39,59 @@ const TraderServicesPage = () => {
   const [selectedServiceToAdd, setSelectedServiceToAdd] = useState<string | null>(null);
   const [customPrice, setCustomPrice] = useState("");
   const [customDuration, setCustomDuration] = useState("");
+
+  // Edit state
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+  const [editPrice, setEditPrice] = useState("");
+  const [editDuration, setEditDuration] = useState("");
+  const [editUseUniversal, setEditUseUniversal] = useState(true);
+  const [editCustomPay, setEditCustomPay] = useState("");
+
+  const editingService = services.find((s) => s.id === editingServiceId) || null;
+
+  const openEdit = (s: TraderService) => {
+    setEditingServiceId(s.id);
+    setEditPrice(s.price !== null ? String(s.price) : "");
+    setEditDuration(s.duration);
+    setEditUseUniversal(s.useUniversalPay);
+    setEditCustomPay(s.customBasePay !== null ? String(s.customBasePay) : "");
+  };
+
+  const closeEdit = () => {
+    setEditingServiceId(null);
+    setEditPrice("");
+    setEditDuration("");
+    setEditUseUniversal(true);
+    setEditCustomPay("");
+  };
+
+  const saveEdit = () => {
+    if (!editingService) return;
+    const priceNum = editPrice ? parseFloat(editPrice) : null;
+    const customPayNum = editCustomPay ? parseFloat(editCustomPay) : null;
+
+    if (!editUseUniversal && (!customPayNum || customPayNum <= 0)) {
+      toast.error("Enter a valid custom base pay");
+      return;
+    }
+
+    setServices((prev) =>
+      prev.map((s) =>
+        s.id === editingService.id
+          ? {
+              ...s,
+              price: priceNum,
+              priceLabel: priceNum ? `£${priceNum}` : "Custom Quote",
+              duration: editDuration || s.duration,
+              useUniversalPay: editUseUniversal,
+              customBasePay: editUseUniversal ? null : customPayNum,
+            }
+          : s
+      )
+    );
+    toast.success("Service updated");
+    closeEdit();
+  };
 
   const activeCount = services.filter((s) => s.active).length;
 
@@ -60,6 +117,8 @@ const TraderServicesPage = () => {
       priceLabel: customPrice ? `£${customPrice}` : source.price ? `£${source.price}` : "Custom Quote",
       duration: customDuration || source.duration || "TBD",
       active: true,
+      useUniversalPay: true,
+      customBasePay: null,
     };
     setServices((prev) => [...prev, newService]);
     setShowAddModal(false);
