@@ -132,7 +132,8 @@ const JobDetail = () => {
   const isCompleted = job.status === "completed" || job.committedStatus === "completed";
   const isCancelled = job.committedStatus === "cancelled";
   const isLongTerm = !!job.isLongTerm;
-  const hasAttachments = hasPhotos || hasVoice || isCommitted;
+  // Notes / form-builder are always available, so the Attachments tab is too
+  const hasAttachments = true;
 
   // Long-term committed jobs in admin mode get the full workspace
   const showAdminTabs = isCommitted && isLongTerm && adminMode && !isCompleted && !isCancelled;
