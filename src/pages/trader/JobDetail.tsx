@@ -166,7 +166,7 @@ const JobDetail = () => {
   // ── Workflow-aware tabs ──
   const showQuotesTab = job.category !== "fixed" && (["estimate_approved", "subtasks_created", "quote_sent", "quote_accepted", "purchasing", "work_in_progress", "invoice_sent", "completed", "inspected"] as string[]).includes(workflow.stage);
   const showSubtasksTab = job.category !== "fixed" && (["estimate_approved", "subtasks_created", "quote_sent", "quote_accepted", "purchasing", "work_in_progress", "invoice_sent", "completed", "inspected"] as string[]).includes(workflow.stage);
-  const showPurchaseListTab = job.category !== "fixed" && (["quote_accepted", "purchasing", "work_in_progress", "invoice_sent", "completed"] as string[]).includes(workflow.stage);
+  const showPurchaseListTab = job.category !== "fixed" && (["quote_sent", "quote_accepted", "purchasing", "work_in_progress", "invoice_sent", "completed"] as string[]).includes(workflow.stage);
 
   const tabs: { key: TabKey; label: string; icon: any }[] = showAdminTabs
     ? [
