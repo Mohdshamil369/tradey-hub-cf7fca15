@@ -459,14 +459,29 @@ const TraderJobs = () => {
   // Invoice builder (opened from work_in_progress CTA)
   const [invoiceJob, setInvoiceJob] = useState<Job | null>(null);
 
-  // Seed demo workflow state for j14 (work_in_progress with prior advance) once per session
+  // Seed demo workflow state for committed jobs (one-shot per session)
   useEffect(() => {
     try {
+      // j14 — work_in_progress with prior advance (used for the invoice flow demo)
       if (!sessionStorage.getItem("job_workflow_j14")) {
         sessionStorage.setItem("job_workflow_j14", JSON.stringify({
           stage: "work_in_progress",
           advanceAmount: 80,
           purchaseItems: [],
+        }));
+      }
+      // j12 — quote sent, purchase list active (2 of 6 items purchased)
+      if (!sessionStorage.getItem("job_workflow_j12")) {
+        sessionStorage.setItem("job_workflow_j12", JSON.stringify({
+          stage: "quote_sent",
+          purchaseItems: [
+            { id: "p1", name: "Pine planks (2.4m)", quantity: 4, expectedPrice: 28, status: "purchased", buyer: "customer" },
+            { id: "p2", name: "Wood screws (5×40mm, box)", quantity: 1, expectedPrice: 9, status: "purchased", buyer: "customer" },
+            { id: "p3", name: "Wall plugs (8mm, pack)", quantity: 2, expectedPrice: 6, status: "pending", buyer: "customer" },
+            { id: "p4", name: "Matt white emulsion (2.5L)", quantity: 1, expectedPrice: 22, status: "pending", buyer: "customer" },
+            { id: "p5", name: "Sandpaper (P120, pack)", quantity: 1, expectedPrice: 7, status: "pending", buyer: "customer" },
+            { id: "p6", name: "Wood filler (250g)", quantity: 1, expectedPrice: 8, status: "pending", buyer: "customer" },
+          ],
         }));
       }
     } catch { /* sessionStorage unavailable */ }
