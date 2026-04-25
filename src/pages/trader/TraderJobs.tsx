@@ -1382,7 +1382,11 @@ const TraderJobs = () => {
                         {mockGroups.map((group) => (
                           <button
                             key={group.id}
-                            onClick={() => { setSelectedGroupId(group.id); setAssignStep("confirm"); }}
+                            onClick={() => {
+                              setSelectedGroupId(group.id);
+                              setSelectedMemberIds(new Set(group.members.map(m => m.id)));
+                              setAssignStep("select-members");
+                            }}
                             className="flex w-full items-center gap-4 rounded-2xl border-2 border-border bg-card p-4 text-left transition-all active:scale-[0.98] hover:border-primary/20"
                           >
                             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
@@ -1390,63 +1394,154 @@ const TraderJobs = () => {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-bold text-foreground">{group.name}</p>
-                              <p className="text-xs text-muted-foreground">{group.members.length} members available</p>
+                              <p className="text-xs text-muted-foreground">{group.members.length} members · pick all or some</p>
                             </div>
                             <ChevronRight className="h-5 w-5 text-muted-foreground/30" />
                           </button>
                         ))}
 
                         <div className="pt-2">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-3">Or to Individual</p>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-3">Or pick Individuals</p>
                           <div className="grid grid-cols-2 gap-3">
-                            {mockGroups[0].members.slice(0, 4).map((member) => (
+                            {mockIndividuals.map((member) => {
+                              const picked = selectedIndividuals.some(i => i.id === member.id);
+                              return (
+                                <button
+                                  key={member.id}
+                                  onClick={() => {
+                                    setSelectedIndividuals(prev =>
+                                      prev.some(i => i.id === member.id)
+                                        ? prev.filter(i => i.id !== member.id)
+                                        : [...prev, member]
+                                    );
+                                  }}
+                                  className={`relative flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all active:scale-[0.98] text-center ${
+                                    picked ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/20"
+                                  }`}
+                                >
+                                  {picked && (
+                                    <CheckCircle2 className="absolute top-2 right-2 h-4 w-4 text-primary" />
+                                  )}
+                                  <div className="h-12 w-12 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-foreground overflow-hidden">
+                                    {member.name.split(" ").map(n => n[0]).join("")}
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-bold text-foreground truncate max-w-full">{member.name.split(" ")[0]}</p>
+                                    <p className="text-[10px] text-muted-foreground">{member.role}</p>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {selectedIndividuals.length > 0 && (
+                            <button
+                              onClick={() => { setSelectedGroupId(null); setAssignStep("confirm"); }}
+                              className="w-full mt-4 rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground active:scale-[0.98]"
+                            >
+                              Continue with {selectedIndividuals.length} {selectedIndividuals.length === 1 ? "person" : "people"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ) : assignStep === "select-members" ? (
+                      (() => {
+                        const group = mockGroups.find(g => g.id === selectedGroupId);
+                        if (!group) return null;
+                        const allSelected = group.members.every(m => selectedMemberIds.has(m.id));
+                        return (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between px-1">
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{group.name} · pick members</p>
                               <button
-                                key={member.id}
-                                onClick={() => { setSelectedGroupId(member.id); setAssignStep("confirm"); }}
-                                className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border bg-card p-4 transition-all active:scale-[0.98] hover:border-primary/20 text-center"
+                                onClick={() => setSelectedMemberIds(allSelected ? new Set() : new Set(group.members.map(m => m.id)))}
+                                className="text-[10px] font-bold text-primary"
                               >
-                                <div className="h-12 w-12 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-foreground overflow-hidden">
-                                  {member.name.split(" ").map(n => n[0]).join("")}
-                                </div>
-                                <div>
-                                  <p className="text-xs font-bold text-foreground truncate max-w-full">{member.name.split(" ")[0]}</p>
-                                  <p className="text-[10px] text-muted-foreground">{member.role}</p>
-                                </div>
+                                {allSelected ? "Clear all" : "Select all"}
                               </button>
-                            ))}
+                            </div>
+                            <div className="space-y-2">
+                              {group.members.map((member) => {
+                                const checked = selectedMemberIds.has(member.id);
+                                return (
+                                  <button
+                                    key={member.id}
+                                    onClick={() => toggleMember(member.id)}
+                                    className={`flex w-full items-center gap-3 rounded-2xl border-2 p-3 text-left transition-all active:scale-[0.99] ${
+                                      checked ? "border-primary bg-primary/5" : "border-border bg-card"
+                                    }`}
+                                  >
+                                    <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-foreground">
+                                      {member.name.split(" ").map(n => n[0]).join("")}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-bold text-foreground truncate">{member.name}</p>
+                                      <p className="text-[11px] text-muted-foreground">{member.role}</p>
+                                    </div>
+                                    {checked ? (
+                                      <CheckCircle2 className="h-5 w-5 text-primary" />
+                                    ) : (
+                                      <div className="h-5 w-5 rounded-full border-2 border-border" />
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            <button
+                              onClick={() => setAssignStep("confirm")}
+                              disabled={selectedMemberIds.size === 0}
+                              className="w-full mt-2 rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground active:scale-[0.98] disabled:opacity-40"
+                            >
+                              Continue with {selectedMemberIds.size} {selectedMemberIds.size === 1 ? "member" : "members"}
+                            </button>
                           </div>
-                        </div>
-                      </div>
+                        );
+                      })()
                     ) : (
-                      <div className="space-y-6">
-                        <div className="rounded-2xl bg-primary/5 border border-primary/20 p-5 text-center">
-                          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-3">
-                            <ShieldCheck className="h-8 w-8 text-primary" />
-                          </div>
-                          <h3 className="text-base font-bold text-foreground">Confirm Assignment</h3>
-                          <p className="text-xs text-muted-foreground mt-1 max-w-[200px] mx-auto">
-                            By confirming, this job will be dispatched to the selected team members instantly.
-                          </p>
-                        </div>
+                      (() => {
+                        const group = mockGroups.find(g => g.id === selectedGroupId);
+                        const groupMembers = group ? group.members.filter(m => selectedMemberIds.has(m.id)) : [];
+                        const targets = group ? groupMembers : selectedIndividuals;
+                        const summary = group
+                          ? `${group.name} · ${groupMembers.length} of ${group.members.length}`
+                          : `${selectedIndividuals.length} ${selectedIndividuals.length === 1 ? "individual" : "individuals"}`;
+                        return (
+                          <div className="space-y-6">
+                            <div className="rounded-2xl bg-primary/5 border border-primary/20 p-5 text-center">
+                              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-3">
+                                <ShieldCheck className="h-8 w-8 text-primary" />
+                              </div>
+                              <h3 className="text-base font-bold text-foreground">Confirm Assignment</h3>
+                              <p className="text-xs text-muted-foreground mt-1">{summary}</p>
+                              <div className="mt-3 flex flex-wrap justify-center gap-1.5">
+                                {targets.map(t => (
+                                  <span key={t.id} className="rounded-full bg-card border border-border px-2.5 py-1 text-[10.5px] font-semibold text-foreground">
+                                    {t.name}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
 
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => setAssignStep("choose")}
-                            className="flex-1 rounded-2xl border border-border py-4 text-sm font-bold text-muted-foreground active:bg-muted"
-                          >
-                            Go Back
-                          </button>
-                          <button
-                            onClick={() => {
-                              toast.success("Job accepted & assigned!");
-                              resetAssignFlow();
-                            }}
-                            className="flex-[2] rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
-                          >
-                            Confirm & Accept
-                          </button>
-                        </div>
-                      </div>
+                            <div className="flex gap-3">
+                              <button
+                                onClick={() => setAssignStep(group ? "select-members" : "choose")}
+                                className="flex-1 rounded-2xl border border-border py-4 text-sm font-bold text-muted-foreground active:bg-muted"
+                              >
+                                Go Back
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const names = targets.map(t => t.name).join(", ");
+                                  toast.success(`Assigned to ${names}!`);
+                                  resetAssignFlow();
+                                }}
+                                className="flex-[2] rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
+                              >
+                                Confirm & Assign
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })()
                     )}
                   </>
                 );
