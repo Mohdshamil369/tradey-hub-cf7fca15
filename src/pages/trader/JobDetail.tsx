@@ -15,6 +15,8 @@ import Avatar from "boring-avatars";
 import { toast } from "sonner";
 import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 import QuoteSheet, { type QuoteSheetData } from "@/components/trader/QuoteSheet";
+import AssignSheet, { type AssignmentResult } from "@/components/trader/AssignSheet";
+import { useAuth } from "@/contexts/AuthContext";
 import JobNotesTab from "@/components/trader/form-builder/JobNotesTab";
 import JobSubtasksTab from "@/components/trader/JobSubtasksTab";
 import JobFinancesTab from "@/components/trader/job-admin/JobFinancesTab";
@@ -92,6 +94,8 @@ type TabKey =
 const JobDetail = () => {
   const navigate = useNavigate();
   const { jobId } = useParams();
+  const { profile } = useAuth();
+  const isAgencyAdmin = profile?.trader_type === "agency";
   const [searchParams] = useSearchParams();
   const initialTab: TabKey = searchParams.get("tab") === "quotes" ? "quotes" : "details";
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
@@ -101,6 +105,8 @@ const JobDetail = () => {
   const [heroIndex, setHeroIndex] = useState(0);
   const [adminMode, setAdminMode] = useState(true);
   const [showMoreActions, setShowMoreActions] = useState(false);
+  const [showAssignSheet, setShowAssignSheet] = useState(false);
+  const [pendingQuote, setPendingQuote] = useState<QuoteSheetData | null>(null);
 
   const stored = sessionStorage.getItem(`job_detail_${jobId}`);
   const job: JobDetailPageData | null = stored ? JSON.parse(stored) : null;
@@ -161,9 +167,29 @@ const JobDetail = () => {
   };
 
   const handleQuoteSubmit = (data: QuoteSheetData) => {
+    if (isAgencyAdmin) {
+      // Agency admin: chain a second bottom sheet to assign group/individuals
+      setPendingQuote(data);
+      setShowQuoteSheet(false);
+      setTimeout(() => setShowAssignSheet(true), 250);
+      return;
+    }
     toast.success("Quote sent successfully!");
     setShowQuoteSheet(false);
     navigate("/trader/jobs");
+  };
+
+  const handleAssignmentConfirm = (result: AssignmentResult) => {
+    setShowAssignSheet(false);
+    const total = pendingQuote?.total ?? 0;
+    const who = result.type === "group"
+      ? `${result.groupName} (${result.memberNames.length} ${result.memberNames.length === 1 ? "member" : "members"})`
+      : result.memberNames.join(", ");
+    toast.success(`Quote sent · £${total.toFixed(2)}`, {
+      description: `Assigned to ${who}`,
+    });
+    setPendingQuote(null);
+    setTimeout(() => navigate("/trader/jobs"), 400);
   };
 
   const renderDetailsTab = () => {
@@ -1000,6 +1026,39 @@ const JobDetail = () => {
         category={selectedQuoteCategory as "estimate" | "inspection"}
         jobTitle={job.title}
         onSubmit={handleQuoteSubmit}
+      />
+
+      <AssignSheet
+        isOpen={showAssignSheet}
+        onOpenChange={setShowAssignSheet}
+        jobTitle={job.title}
+        jobSubtitle={`${job.customer.name} · ${job.location}`}
+        jobAmount={pendingQuote?.total}
+        groups={[
+          { id: "g1", name: "Plumbing Squad", members: [
+            { id: "m1", name: "Alex Turner", role: "Plumber" },
+            { id: "m2", name: "James Cooper", role: "Plumber" },
+          ]},
+          { id: "g2", name: "Electrical Team", members: [
+            { id: "m4", name: "Sophie Baker", role: "Electrician" },
+            { id: "m5", name: "Liam Wright", role: "Electrician" },
+          ]},
+          { id: "g3", name: "General Crew", members: [
+            { id: "m6", name: "Erik D.", role: "Helper" },
+            { id: "m7", name: "Jos V.", role: "Helper" },
+            { id: "m3", name: "Lena K.", role: "Tiler" },
+          ]},
+        ]}
+        individuals={[
+          { id: "m1", name: "Alex Turner", role: "Plumber" },
+          { id: "m2", name: "James Cooper", role: "Plumber" },
+          { id: "m3", name: "Lena K.", role: "Tiler" },
+          { id: "m4", name: "Sophie Baker", role: "Electrician" },
+          { id: "m5", name: "Liam Wright", role: "Electrician" },
+          { id: "m6", name: "Erik D.", role: "Helper" },
+          { id: "m7", name: "Jos V.", role: "Helper" },
+        ]}
+        onConfirm={handleAssignmentConfirm}
       />
     </MobileLayout>
   );
