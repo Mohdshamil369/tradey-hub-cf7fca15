@@ -412,6 +412,7 @@ const TraderJobs = () => {
   const [filterCategories, setFilterCategories] = useState<Set<string>>(new Set());
   const [filterTimeWindows, setFilterTimeWindows] = useState<Set<string>>(new Set());
   const [filterJobType, setFilterJobType] = useState<Set<string>>(new Set(["any"]));
+  const [filterAssignmentSource, setFilterAssignmentSource] = useState<Set<string>>(new Set(["any"]));
 
   const toggleCommittedFilter = (status: string) => {
     setCommittedFilter(prev => {
