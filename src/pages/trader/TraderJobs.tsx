@@ -27,6 +27,7 @@ import JobDetailSheet, { type JobDetailData, type JobCategory } from "@/componen
 import QuoteDetailSheet, { type SentQuoteData } from "@/components/trader/QuoteDetailSheet";
 import ResponseWorkflowSheet, { type ResponseJobData } from "@/components/trader/ResponseWorkflowSheet";
 import QuoteSheet, { type QuoteSheetData } from "@/components/trader/QuoteSheet";
+import InvoiceBuilderSheet from "@/components/trader/InvoiceBuilderSheet";
 import { type JobWorkflowState, type WorkflowStage } from "@/data/jobWorkflowState";
 import StageJobCard from "@/components/trader/StageJobCard";
 
