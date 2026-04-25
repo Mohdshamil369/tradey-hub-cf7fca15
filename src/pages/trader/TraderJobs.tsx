@@ -27,7 +27,8 @@ import JobDetailSheet, { type JobDetailData, type JobCategory } from "@/componen
 import QuoteDetailSheet, { type SentQuoteData } from "@/components/trader/QuoteDetailSheet";
 import ResponseWorkflowSheet, { type ResponseJobData } from "@/components/trader/ResponseWorkflowSheet";
 import { type QuoteSheetData } from "@/components/trader/QuoteSheet";
-import { type JobWorkflowState } from "@/data/jobWorkflowState";
+import { type JobWorkflowState, type WorkflowStage } from "@/data/jobWorkflowState";
+import StageJobCard from "@/components/trader/StageJobCard";
 
 type JobStatus = "incoming" | "quotes" | "active" | "completed";
 
