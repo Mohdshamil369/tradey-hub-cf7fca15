@@ -1,4 +1,4 @@
-import { ChevronRight, Clock, MapPin, Building2, ShoppingCart, UserPlus, FileText, CheckCircle2, Send, Hammer, Wrench, Search, Receipt } from "lucide-react";
+import { ChevronRight, Clock, MapPin, Building2, ShoppingCart, UserPlus, FileText, CheckCircle2, Receipt, ListChecks, PlayCircle, Hammer, Users } from "lucide-react";
 import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 import type { WorkflowStage } from "@/data/jobWorkflowState";
 
