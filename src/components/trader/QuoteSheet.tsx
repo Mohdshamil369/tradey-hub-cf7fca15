@@ -92,6 +92,7 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
   const [isRecording, setIsRecording] = useState(false);
   const [hasVoiceNote, setHasVoiceNote] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   // New item form
   const [newName, setNewName] = useState("");
