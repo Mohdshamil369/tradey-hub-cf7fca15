@@ -63,7 +63,7 @@ const CustomerDetail = () => {
   };
 
   return (
-    <MobileLayout hideBottomNav>
+    <MobileLayout hideNav>
       <div className="flex h-full flex-col bg-background">
         {/* Header */}
         <div className="flex items-center gap-2 px-4 py-3 border-b border-border/30">
