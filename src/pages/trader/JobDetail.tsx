@@ -7,7 +7,7 @@ import {
   ArrowLeft, MapPin, Clock, Star, Play, Info, ChevronRight, ChevronLeft,
   ShieldCheck, Timer, MessageCircle, XCircle, FileText, StickyNote,
   Image, Mic, ClipboardList, Package, Wrench, Ban, RotateCcw, Plus, Sparkles,
-  Camera, Calendar, User, Briefcase, Heart, Share2, CheckCircle2,
+  Camera, Calendar, User, Users, Briefcase, Heart, Share2, CheckCircle2,
   Image as ImageIcon, MoreHorizontal, PoundSterling, FolderOpen,
   PlayCircle, Truck, UserCog,
 } from "lucide-react";
