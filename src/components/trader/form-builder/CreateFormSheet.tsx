@@ -2,24 +2,27 @@ import { Drawer } from "vaul";
 import { X, ArrowLeft, FileText, LayoutGrid, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { FormTemplate } from "./schema";
+import { adminTemplates, FormTemplate } from "./schema";
 
 interface CreateFormSheetProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onContinue: (formDraft: Partial<FormTemplate>, source: "blank" | "template") => void;
+  templates?: FormTemplate[];
 }
 
 export const CreateFormSheet = ({
   isOpen,
   onOpenChange,
   onContinue,
+  templates = adminTemplates,
 }: CreateFormSheetProps) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
   const [startFrom, setStartFrom] = useState<"blank" | "template">("blank");
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -28,6 +31,7 @@ export const CreateFormSheet = ({
       setTags([]);
       setNewTag("");
       setStartFrom("blank");
+      setSelectedTemplateId(null);
     }
   }, [isOpen]);
 
@@ -42,13 +46,44 @@ export const CreateFormSheet = ({
   const removeTag = (tagToRemove: string) =>
     setTags(tags.filter((t) => t !== tagToRemove));
 
+  const handleSelectTemplate = (template: FormTemplate) => {
+    setSelectedTemplateId(template.id);
+    setStartFrom("template");
+    // Dynamically prefill metadata from template
+    setName(template.title);
+    setDescription(template.description || "");
+    setTags(template.tags || []);
+  };
+
+  const handleSelectBlank = () => {
+    setStartFrom("blank");
+    setSelectedTemplateId(null);
+  };
+
   const handleCreate = () => {
     if (!name.trim()) {
       toast.error("Please enter a form name");
       return;
     }
+    const selectedTemplate =
+      startFrom === "template" && selectedTemplateId
+        ? templates.find((t) => t.id === selectedTemplateId)
+        : null;
+
     onContinue(
-      { title: name.trim(), description: description.trim(), tags, status: "draft" },
+      {
+        title: name.trim(),
+        description: description.trim(),
+        tags,
+        status: "draft",
+        ...(selectedTemplate
+          ? {
+              fields: selectedTemplate.fields,
+              category: selectedTemplate.category,
+              stepsCount: selectedTemplate.stepsCount,
+            }
+          : {}),
+      },
       startFrom
     );
   };
@@ -78,6 +113,72 @@ export const CreateFormSheet = ({
 
           {/* Body */}
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
+            {/* Templates (top) */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Start from a template
+                </label>
+                {selectedTemplateId && (
+                  <button
+                    onClick={handleSelectBlank}
+                    className="text-[10px] font-semibold text-primary active:opacity-70"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 pb-1">
+                <button
+                  onClick={handleSelectBlank}
+                  className={`shrink-0 w-[140px] rounded-xl border p-3 text-left transition-all ${
+                    startFrom === "blank"
+                      ? "border-primary bg-primary/5"
+                      : "border-border bg-card active:bg-muted/40"
+                  }`}
+                >
+                  <div className={`mb-1.5 flex h-7 w-7 items-center justify-center rounded-lg ${
+                    startFrom === "blank" ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+                  }`}>
+                    <FileText className="h-3.5 w-3.5" />
+                  </div>
+                  <p className="text-[12px] font-bold text-foreground">Blank</p>
+                  <p className="text-[10px] text-muted-foreground leading-tight">Build from scratch</p>
+                </button>
+
+                {templates.map((tpl) => {
+                  const selected = selectedTemplateId === tpl.id;
+                  return (
+                    <button
+                      key={tpl.id}
+                      onClick={() => handleSelectTemplate(tpl)}
+                      className={`relative shrink-0 w-[160px] rounded-xl border p-3 text-left transition-all ${
+                        selected
+                          ? "border-primary bg-primary/5"
+                          : "border-border bg-card active:bg-muted/40"
+                      }`}
+                    >
+                      {selected && (
+                        <div className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                          <Check className="h-2.5 w-2.5" />
+                        </div>
+                      )}
+                      <div className={`mb-1.5 flex h-7 w-7 items-center justify-center rounded-lg ${
+                        selected ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+                      }`}>
+                        <LayoutGrid className="h-3.5 w-3.5" />
+                      </div>
+                      <p className="text-[12px] font-bold text-foreground truncate">{tpl.title}</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight">
+                        {tpl.fields.length} field{tpl.fields.length === 1 ? "" : "s"}
+                        {tpl.category ? ` · ${tpl.category}` : ""}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Form Name */}
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -139,29 +240,6 @@ export const CreateFormSheet = ({
                 </div>
               )}
             </div>
-
-            {/* Start from */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                Start from
-              </label>
-              <div className="grid grid-cols-2 gap-2.5">
-                <StartFromCard
-                  selected={startFrom === "blank"}
-                  onClick={() => setStartFrom("blank")}
-                  icon={<FileText className="h-5 w-5" />}
-                  label="Blank"
-                  desc="Build from scratch"
-                />
-                <StartFromCard
-                  selected={startFrom === "template"}
-                  onClick={() => setStartFrom("template")}
-                  icon={<LayoutGrid className="h-5 w-5" />}
-                  label="Template"
-                  desc="Pick a starter"
-                />
-              </div>
-            </div>
           </div>
 
           {/* Footer */}
@@ -178,39 +256,5 @@ export const CreateFormSheet = ({
     </Drawer.Root>
   );
 };
-
-const StartFromCard = ({
-  selected,
-  onClick,
-  icon,
-  label,
-  desc,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  label: string;
-  desc: string;
-}) => (
-  <button
-    onClick={onClick}
-    className={`relative flex flex-col items-start gap-1.5 rounded-xl border p-3 text-left transition-all ${
-      selected
-        ? "border-primary bg-primary/5"
-        : "border-border bg-card active:bg-muted/50"
-    }`}
-  >
-    {selected && (
-      <div className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
-        <Check className="h-2.5 w-2.5" />
-      </div>
-    )}
-    <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${selected ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
-      {icon}
-    </div>
-    <span className="text-[12px] font-bold text-foreground">{label}</span>
-    <span className="text-[10px] text-muted-foreground leading-tight">{desc}</span>
-  </button>
-);
 
 export default CreateFormSheet;
