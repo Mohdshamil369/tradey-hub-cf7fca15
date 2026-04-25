@@ -24,12 +24,18 @@ interface PayoutRecord {
   status: "paid" | "processing" | "failed";
 }
 
+interface RolePay {
+  role: string;
+  rate: number;
+}
+
 const mockWorkers: Record<string, {
   name: string; email: string; phone: string; joinedDate: string;
   totalJobs: number; totalHours: number; totalEarned: number; avgRating: number; completionRate: number;
   reviews: { id: string; customer: string; rating: number; text: string; date: string }[];
   assignments: { id: string; title: string; date: string; status: "completed" | "cancelled" | "in_progress"; amount: number; hours: number; address: string }[];
   payouts: PayoutRecord[];
+  basePays: RolePay[];
 }> = {
   m1: {
     name: "Alex Turner", email: "alex@example.com", phone: "+44 7700 900001", joinedDate: "Jan 2024",
@@ -53,6 +59,11 @@ const mockWorkers: Record<string, {
       { id: "p4", date: "17 Feb 2026", amount: 390, hours: 13, period: "10 Feb – 16 Feb", mode: "scheduled", status: "paid" },
       { id: "p5", date: "10 Feb 2026", amount: 360, hours: 12, period: "3 Feb – 9 Feb", mode: "manual", status: "paid" },
     ],
+    basePays: [
+      { role: "Lead Plumber", rate: 35 },
+      { role: "Maintenance", rate: 25 },
+      { role: "Emergency", rate: 45 },
+    ],
   },
   m2: {
     name: "James Cooper", email: "james@example.com", phone: "+44 7700 900002", joinedDate: "Mar 2024",
@@ -71,6 +82,10 @@ const mockWorkers: Record<string, {
       { id: "p7", date: "3 Mar 2026", amount: 360, hours: 12, period: "24 Feb – 2 Mar", mode: "scheduled", status: "paid" },
       { id: "p8", date: "24 Feb 2026", amount: 300, hours: 10, period: "17 Feb – 23 Feb", mode: "scheduled", status: "paid" },
     ],
+    basePays: [
+      { role: "Plumber", rate: 30 },
+      { role: "Assistant", rate: 20 },
+    ],
   },
   m4: {
     name: "Sophie Baker", email: "sophie@example.com", phone: "+44 7700 900004", joinedDate: "Feb 2024",
@@ -86,6 +101,10 @@ const mockWorkers: Record<string, {
       { id: "p9", date: "7 Mar 2026", amount: 210, hours: 7, period: "3 Mar – 7 Mar", mode: "manual", status: "paid" },
       { id: "p10", date: "3 Mar 2026", amount: 270, hours: 9, period: "24 Feb – 2 Mar", mode: "scheduled", status: "paid" },
     ],
+    basePays: [
+      { role: "Electrician", rate: 35 },
+      { role: "Testing", rate: 40 },
+    ],
   },
   m5: {
     name: "Liam Wright", email: "liam@example.com", phone: "+44 7700 900005", joinedDate: "Jun 2024",
@@ -98,6 +117,9 @@ const mockWorkers: Record<string, {
     ],
     payouts: [
       { id: "p11", date: "3 Mar 2026", amount: 240, hours: 8, period: "24 Feb – 2 Mar", mode: "scheduled", status: "paid" },
+    ],
+    basePays: [
+      { role: "Junior Electrician", rate: 25 },
     ],
   },
 };
@@ -115,6 +137,18 @@ const WorkerDetail = () => {
   const worker = mockWorkers[workerId || ""] || mockWorkers.m1;
   const [activeTab, setActiveTab] = useState("performance");
   const [isWorkerActive, setIsWorkerActive] = useState(true);
+  const [editingRole, setEditingRole] = useState<string | null>(null);
+  const [tempRate, setTempRate] = useState<string>("");
+
+  const handleEdit = (role: string, rate: number) => {
+    setEditingRole(role);
+    setTempRate(rate.toString());
+  };
+
+  const handleSave = (role: string) => {
+    toast.success(`Updated ${role} rate to £${tempRate}/hr`);
+    setEditingRole(null);
+  };
 
   const totalPaid = worker.payouts.reduce((s, p) => s + p.amount, 0);
 
@@ -176,6 +210,9 @@ const WorkerDetail = () => {
           </TabsTrigger>
           <TabsTrigger value="payouts" className="flex-1 rounded-lg text-[10px] font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm">
             Payouts
+          </TabsTrigger>
+          <TabsTrigger value="base-pays" className="flex-1 rounded-lg text-[10px] font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm">
+            Base Pays
           </TabsTrigger>
         </TabsList>
 
@@ -318,6 +355,67 @@ const WorkerDetail = () => {
                 <p className="text-xs text-muted-foreground">Payments will appear here once processed.</p>
               </div>
             )}
+          </div>
+        </TabsContent>
+
+        {/* Base Pays */}
+        <TabsContent value="base-pays" className="pb-6">
+          <div className="mt-4 flex flex-col gap-3">
+            <div className="rounded-2xl bg-card p-4 card-shadow border border-border/50">
+              <div className="flex items-center gap-2 mb-4">
+                <PoundSterling className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-bold text-foreground">Role Base Rates</h3>
+              </div>
+              <p className="text-[11px] text-muted-foreground mb-4 leading-relaxed">
+                Configure the hourly base pay for this worker across different roles. These rates are used for quote generation and automated payroll calculations.
+              </p>
+              
+              <div className="space-y-3">
+                {worker.basePays.map((bp) => (
+                  <div key={bp.role} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/30">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-foreground">{bp.role}</span>
+                      <span className="text-[10px] text-muted-foreground">Standard Rate</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {editingRole === bp.role ? (
+                        <div className="flex items-center gap-2">
+                           <div className="relative">
+                             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">£</span>
+                             <input 
+                               value={tempRate}
+                               onChange={(e) => setTempRate(e.target.value)}
+                               className="w-16 rounded-lg border border-primary bg-background py-1 pl-5 pr-2 text-xs font-bold outline-none"
+                               autoFocus
+                             />
+                           </div>
+                           <button onClick={() => handleSave(bp.role)} className="rounded-lg bg-primary p-1.5 text-primary-foreground">
+                             <CheckCircle2 className="h-3.5 w-3.5" />
+                           </button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-end">
+                          <span className="text-sm font-extrabold text-foreground">£{bp.rate}/hr</span>
+                          <button 
+                            onClick={() => handleEdit(bp.role, bp.rate)}
+                            className="text-[10px] font-bold text-primary hover:underline mt-0.5"
+                          >
+                            Edit
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="rounded-xl bg-primary/5 p-3 border border-primary/10 flex items-center gap-3">
+              <Zap className="h-4 w-4 text-primary shrink-0" />
+              <p className="text-[10px] text-muted-foreground leading-tight">
+                Any changes made here will be applied to future quotes and new job assignments. Existing assignments remain unaffected.
+              </p>
+            </div>
           </div>
         </TabsContent>
       </Tabs>

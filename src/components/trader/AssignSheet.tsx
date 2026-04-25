@@ -58,12 +58,14 @@ const AssignSheet = ({
   const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set());
   const [selectedIndividuals, setSelectedIndividuals] = useState<AssignIndividual[]>([]);
   const [individualSearch, setIndividualSearch] = useState("");
+  const [assignmentMode, setAssignmentMode] = useState<"group" | "individual">("group");
 
   useEffect(() => {
     if (!isOpen) {
       // Reset on close
       setTimeout(() => {
         setStep("choose");
+        setAssignmentMode("group");
         setSelectedGroupId(null);
         setSelectedMemberIds(new Set());
         setSelectedIndividuals([]);
@@ -167,8 +169,29 @@ const AssignSheet = ({
             </div>
 
             {step === "choose" && (
-              <div className="space-y-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">Assign to a Group</p>
+              <div className="space-y-4">
+                <div className="flex p-1 bg-muted rounded-xl mb-2">
+                  <button
+                    onClick={() => setAssignmentMode("group")}
+                    className={`flex-1 py-2 text-[11px] font-bold rounded-lg transition-all ${
+                      assignmentMode === "group" ? "bg-background shadow-sm text-primary" : "text-muted-foreground"
+                    }`}
+                  >
+                    Assign to a group
+                  </button>
+                  <button
+                    onClick={() => setAssignmentMode("individual")}
+                    className={`flex-1 py-2 text-[11px] font-bold rounded-lg transition-all ${
+                      assignmentMode === "individual" ? "bg-background shadow-sm text-primary" : "text-muted-foreground"
+                    }`}
+                  >
+                    Assign to individual
+                  </button>
+                </div>
+
+                {assignmentMode === "group" ? (
+                  <div className="space-y-3">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">Available Groups</p>
                 {groups.map((group) => (
                   <button
                     key={group.id}
@@ -190,9 +213,10 @@ const AssignSheet = ({
                     <ChevronRight className="h-5 w-5 text-muted-foreground/30" />
                   </button>
                 ))}
-
-                <div className="pt-3">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-2">Or Assign Individuals</p>
+                </div>
+                ) : (
+                <div className="pt-0">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-2">Select Individuals</p>
 
                   {selectedIndividuals.length > 0 && (
                     <div className="mb-2 flex flex-wrap gap-1.5">
@@ -207,7 +231,7 @@ const AssignSheet = ({
                     </div>
                   )}
 
-                  <div className="relative mb-2">
+                  <div className="relative mb-3">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <input
                       value={individualSearch}
@@ -258,6 +282,7 @@ const AssignSheet = ({
                     </button>
                   )}
                 </div>
+                )}
               </div>
             )}
 
