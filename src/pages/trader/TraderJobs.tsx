@@ -1816,6 +1816,21 @@ const TraderJobs = () => {
         jobTitle={postInspectionJob?.title ?? ""}
         onSubmit={handlePostInspectionQuote}
       />
+      {/* Invoice builder w/ PDF preview — opened from work_in_progress CTA */}
+      <InvoiceBuilderSheet
+        isOpen={!!invoiceJob}
+        onOpenChange={(open) => { if (!open) setInvoiceJob(null); }}
+        jobTitle={invoiceJob?.title ?? ""}
+        customerName={invoiceJob?.customer ?? ""}
+        quoteTotal={invoiceJob ? (sentQuotes.find(q => q.jobTitle === invoiceJob.title)?.quoteTotal ?? invoiceJob.price ?? 0) : 0}
+        advancePaid={invoiceJob ? (() => {
+          try {
+            const ws = JSON.parse(sessionStorage.getItem(`job_workflow_${invoiceJob.id}`) || "{}");
+            return ws.advanceAmount || ws.invoiceData?.advancePaid || 0;
+          } catch { return 0; }
+        })() : 0}
+        onSend={handleInvoiceSend}
+      />
     </MobileLayout>
   );
 };
