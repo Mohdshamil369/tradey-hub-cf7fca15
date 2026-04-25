@@ -145,10 +145,27 @@ export const JobNotesTab = ({ jobId, isInline = false }: JobNotesTabProps) => {
   };
 
   const handleFillTemplate = (template: FormTemplate) => {
+    // Track usage so it can surface in "frequent forms"
+    setTemplates((prev) =>
+      prev.map((t) =>
+        t.id === template.id
+          ? {
+              ...t,
+              usageCount: (t.usageCount ?? 0) + 1,
+              lastUsedAt: new Date().toISOString(),
+            }
+          : t
+      )
+    );
     setSelectedTemplate(template);
     setPreviewMode(false);
     setIsFillerOpen(true);
   };
+
+  const frequentForms = templates
+    .filter((t) => t.isCustom && (t.usageCount ?? 0) > 0)
+    .sort((a, b) => (b.usageCount ?? 0) - (a.usageCount ?? 0))
+    .slice(0, 6);
 
   // ── Render ────────────────────────────────────────────────
   return (
