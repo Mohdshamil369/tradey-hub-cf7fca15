@@ -26,7 +26,7 @@ import CalendarDayView from "@/components/home/CalendarDayView";
 import JobDetailSheet, { type JobDetailData, type JobCategory } from "@/components/trader/JobDetailSheet";
 import QuoteDetailSheet, { type SentQuoteData } from "@/components/trader/QuoteDetailSheet";
 import ResponseWorkflowSheet, { type ResponseJobData } from "@/components/trader/ResponseWorkflowSheet";
-import { type QuoteSheetData } from "@/components/trader/QuoteSheet";
+import QuoteSheet, { type QuoteSheetData } from "@/components/trader/QuoteSheet";
 import { type JobWorkflowState, type WorkflowStage } from "@/data/jobWorkflowState";
 import StageJobCard from "@/components/trader/StageJobCard";
 
