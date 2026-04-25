@@ -1027,6 +1027,39 @@ const JobDetail = () => {
         jobTitle={job.title}
         onSubmit={handleQuoteSubmit}
       />
+
+      <AssignSheet
+        isOpen={showAssignSheet}
+        onOpenChange={setShowAssignSheet}
+        jobTitle={job.title}
+        jobSubtitle={`${job.customer.name} · ${job.location}`}
+        jobAmount={pendingQuote?.total}
+        groups={[
+          { id: "g1", name: "Plumbing Squad", members: [
+            { id: "m1", name: "Alex Turner", role: "Plumber" },
+            { id: "m2", name: "James Cooper", role: "Plumber" },
+          ]},
+          { id: "g2", name: "Electrical Team", members: [
+            { id: "m4", name: "Sophie Baker", role: "Electrician" },
+            { id: "m5", name: "Liam Wright", role: "Electrician" },
+          ]},
+          { id: "g3", name: "General Crew", members: [
+            { id: "m6", name: "Erik D.", role: "Helper" },
+            { id: "m7", name: "Jos V.", role: "Helper" },
+            { id: "m3", name: "Lena K.", role: "Tiler" },
+          ]},
+        ]}
+        individuals={[
+          { id: "m1", name: "Alex Turner", role: "Plumber" },
+          { id: "m2", name: "James Cooper", role: "Plumber" },
+          { id: "m3", name: "Lena K.", role: "Tiler" },
+          { id: "m4", name: "Sophie Baker", role: "Electrician" },
+          { id: "m5", name: "Liam Wright", role: "Electrician" },
+          { id: "m6", name: "Erik D.", role: "Helper" },
+          { id: "m7", name: "Jos V.", role: "Helper" },
+        ]}
+        onConfirm={handleAssignmentConfirm}
+      />
     </MobileLayout>
   );
 };
