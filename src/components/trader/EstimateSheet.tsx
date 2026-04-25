@@ -4,6 +4,7 @@ import { Send, Mic, PoundSterling, X } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import type { EstimateData } from "@/data/jobWorkflowState";
+import AdvancePaymentField from "@/components/trader/AdvancePaymentField";
 
 interface EstimateSheetProps {
   isOpen: boolean;
@@ -19,26 +20,34 @@ const EstimateSheet = ({ isOpen, onOpenChange, jobTitle, onSubmit }: EstimateShe
   const [description, setDescription] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [hasVoiceNote, setHasVoiceNote] = useState(false);
+  // Optional upfront-advance hint — confirmed for real during Quote.
+  const [advanceMode, setAdvanceMode] = useState<"percent" | "amount">("percent");
+  const [advancePercent, setAdvancePercent] = useState(0);
+  const [advanceAmount, setAdvanceAmount] = useState("");
 
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
-        
         setMinPrice("");
         setMaxPrice("");
         setDescription("");
         setIsRecording(false);
         setHasVoiceNote(false);
+        setAdvanceMode("percent");
+        setAdvancePercent(0);
+        setAdvanceAmount("");
       }, 300);
     }
   }, [isOpen]);
 
   const min = parseFloat(minPrice) || 0;
   const max = parseFloat(maxPrice) || 0;
+  const midEstimate = min > 0 && max >= min ? (min + max) / 2 : 0;
   const canSubmit = min > 0 && max >= min && description.trim().length > 0;
 
   const handleSubmit = () => {
     if (!canSubmit) return;
+    const advanceValue = advanceMode === "percent" ? advancePercent : (parseFloat(advanceAmount) || 0);
     onSubmit({
       title: jobTitle,
       minPrice: min,
@@ -46,6 +55,9 @@ const EstimateSheet = ({ isOpen, onOpenChange, jobTitle, onSubmit }: EstimateShe
       description: description.trim(),
       hasVoiceNote,
       sentAt: "Just now",
+      advanceHint: advanceValue > 0
+        ? { mode: advanceMode, value: advanceValue }
+        : undefined,
     });
   };
 
