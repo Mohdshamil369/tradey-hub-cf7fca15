@@ -161,6 +161,7 @@ const App = () => (
             <Route path="/trader/groups/:groupId" element={<ProtectedRoute><GroupDetail /></ProtectedRoute>} />
             <Route path="/trader/workers/:workerId" element={<ProtectedRoute><WorkerDetail /></ProtectedRoute>} />
             <Route path="/trader/member-payouts/:memberId" element={<ProtectedRoute><MemberPayouts /></ProtectedRoute>} />
+            <Route path="/trader/customers/:customerId" element={<ProtectedRoute><CustomerDetail /></ProtectedRoute>} />
 
             {/* Shared routes */}
             <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
