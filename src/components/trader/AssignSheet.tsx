@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Drawer } from "vaul";
-import { Users, ChevronRight, ChevronDown, X, ShieldCheck, Search, CheckCircle2 } from "lucide-react";
+import { Users, ChevronRight, ChevronDown, X, ShieldCheck, Search, CheckCircle2, UserCircle2, Clock } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 
@@ -17,7 +17,7 @@ export interface AssignIndividual {
 }
 
 export interface AssignmentResult {
-  type: "group" | "individuals";
+  type: "group" | "individuals" | "self";
   groupId?: string;
   groupName?: string;
   memberIds: string[];
