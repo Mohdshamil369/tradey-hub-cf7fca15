@@ -100,9 +100,10 @@ const stageMetaMap: Partial<Record<WorkflowStage, StageMeta>> = {
   work_in_progress: {
     label: "Work In Progress",
     pillClass: "bg-primary/10 text-primary",
-    cta: "Mark Complete",
-    ctaIcon: Hammer,
+    cta: "Raise Invoice",
+    ctaIcon: Receipt,
     ctaTone: "primary",
+    hint: "Work complete — bill the customer for the remaining balance.",
   },
   invoice_sent: {
     label: "Invoice Sent",

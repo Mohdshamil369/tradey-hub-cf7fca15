@@ -1,5 +1,5 @@
 import MobileLayout from "@/components/layout/MobileLayout";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import jobTapImg from "@/assets/job-tap-repair.jpg";
 import jobBathroomImg from "@/assets/job-bathroom-reno.jpg";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +27,7 @@ import JobDetailSheet, { type JobDetailData, type JobCategory } from "@/componen
 import QuoteDetailSheet, { type SentQuoteData } from "@/components/trader/QuoteDetailSheet";
 import ResponseWorkflowSheet, { type ResponseJobData } from "@/components/trader/ResponseWorkflowSheet";
 import QuoteSheet, { type QuoteSheetData } from "@/components/trader/QuoteSheet";
+import InvoiceBuilderSheet from "@/components/trader/InvoiceBuilderSheet";
 import { type JobWorkflowState, type WorkflowStage } from "@/data/jobWorkflowState";
 import StageJobCard from "@/components/trader/StageJobCard";
 
@@ -250,14 +251,26 @@ const initialJobs: Job[] = [
     customerData: { rating: 4.6, reviews: 9, isVerified: true, memberSince: "Jun 2024" },
     source: "org", orgName: "BuildRight Ltd.",
   },
+  // Scenario D — Work finished on site, ready to bill the customer
+  {
+    id: "j14", type: "catA", category: "estimate",
+    title: "Bathroom Tile Repair", icon: "🛁",
+    customer: "Olivia P.", location: "Jordaan", distance: "1.2 km",
+    price: 320,
+    timeWindow: "Today, 09:00 – 14:00",
+    description: "Re-grouted shower wall and replaced 6 cracked tiles. £80 advance already paid.",
+    postedAgo: "", status: "active", committedStatus: "in_progress",
+    customerData: { rating: 4.8, reviews: 15, isVerified: true, memberSince: "Mar 2024" },
+  },
 ];
 
 /** Pre-seeded workflow stages for demo committed jobs — keyed by job id.
  *  Real flows persist via sessionStorage; these act as defaults when no override exists. */
 const demoWorkflowStages: Record<string, WorkflowStage> = {
-  j11: "inspected",        // Inspection done → CTA: Send Estimate
-  j12: "quote_sent",       // Quote sent + purchase list active → CTA: View Purchase List
-  j13: "unassigned",       // Picked up, not assigned → CTA: Assign Worker
+  j11: "inspected",         // Inspection done → CTA: Send Estimate
+  j12: "quote_sent",        // Quote sent + purchase list active → CTA: View Purchase List
+  j13: "unassigned",        // Picked up, not assigned → CTA: Assign Worker
+  j14: "work_in_progress",  // On-site work done → CTA: Raise Invoice
 };
 
 /** Optional purchase-list progress for cards that show it inline. */
@@ -443,6 +456,21 @@ const TraderJobs = () => {
   const [sentQuotes, setSentQuotes] = useState(initialSentQuotes);
   // Post-inspection quote builder (opened from inspected-stage CTA)
   const [postInspectionJob, setPostInspectionJob] = useState<Job | null>(null);
+  // Invoice builder (opened from work_in_progress CTA)
+  const [invoiceJob, setInvoiceJob] = useState<Job | null>(null);
+
+  // Seed demo workflow state for j14 (work_in_progress with prior advance) once per session
+  useEffect(() => {
+    try {
+      if (!sessionStorage.getItem("job_workflow_j14")) {
+        sessionStorage.setItem("job_workflow_j14", JSON.stringify({
+          stage: "work_in_progress",
+          advanceAmount: 80,
+          purchaseItems: [],
+        }));
+      }
+    } catch { /* sessionStorage unavailable */ }
+  }, []);
   
   // Detail sheet state
   const [selectedJob, setSelectedJob] = useState<JobDetailData | null>(null);
@@ -645,6 +673,11 @@ const TraderJobs = () => {
       setPostInspectionJob(job);
       return;
     }
+    // Work finished → raise an invoice (with PDF preview before sending)
+    if (stage === "work_in_progress" || stage === "quote_accepted" || stage === "purchasing") {
+      setInvoiceJob(job);
+      return;
+    }
     // Default: open job detail — workflow tabs handle the rest.
     openJobDetail(job);
   };
@@ -682,6 +715,32 @@ const TraderJobs = () => {
     setJobs(prev => prev.map(j => j.id === job.id ? { ...j } : j));
     setPostInspectionJob(null);
     toast.success("Quote sent to customer 📄", { description: `Total £${data.total.toFixed(2)} — purchase list activated.` });
+  };
+
+  /** Persist the invoice and advance the workflow to invoice_sent. */
+  const handleInvoiceSend = (data: import("@/components/trader/InvoiceBuilderSheet").InvoiceSubmitData) => {
+    if (!invoiceJob) return;
+    const job = invoiceJob;
+    try {
+      const prev = JSON.parse(sessionStorage.getItem(`job_workflow_${job.id}`) || "{}");
+      sessionStorage.setItem(`job_workflow_${job.id}`, JSON.stringify({
+        ...prev,
+        stage: "invoice_sent",
+        invoiceData: {
+          id: data.id,
+          items: data.items.map(({ label, amount }) => ({ label, amount })),
+          subtotal: data.subtotal,
+          advancePaid: data.advancePaid,
+          remaining: data.remaining,
+          sentAt: new Date().toISOString(),
+        },
+      }));
+    } catch {}
+    setJobs(prev => prev.map(j => j.id === job.id ? { ...j } : j));
+    setInvoiceJob(null);
+    toast.success("Invoice sent 🧾", {
+      description: `£${data.remaining.toFixed(2)} due from ${job.customer}.`,
+    });
   };
 
 
@@ -1782,6 +1841,21 @@ const TraderJobs = () => {
         category="estimate"
         jobTitle={postInspectionJob?.title ?? ""}
         onSubmit={handlePostInspectionQuote}
+      />
+      {/* Invoice builder w/ PDF preview — opened from work_in_progress CTA */}
+      <InvoiceBuilderSheet
+        isOpen={!!invoiceJob}
+        onOpenChange={(open) => { if (!open) setInvoiceJob(null); }}
+        jobTitle={invoiceJob?.title ?? ""}
+        customerName={invoiceJob?.customer ?? ""}
+        quoteTotal={invoiceJob ? (sentQuotes.find(q => q.jobTitle === invoiceJob.title)?.quoteTotal ?? invoiceJob.price ?? 0) : 0}
+        advancePaid={invoiceJob ? (() => {
+          try {
+            const ws = JSON.parse(sessionStorage.getItem(`job_workflow_${invoiceJob.id}`) || "{}");
+            return ws.advanceAmount || ws.invoiceData?.advancePaid || 0;
+          } catch { return 0; }
+        })() : 0}
+        onSend={handleInvoiceSend}
       />
     </MobileLayout>
   );
