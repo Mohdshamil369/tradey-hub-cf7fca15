@@ -170,6 +170,34 @@ const AssignSheet = ({
 
             {step === "choose" && (
               <div className="space-y-4">
+                {/* Skip / Pick up myself — admin can decide later */}
+                <button
+                  onClick={() => {
+                    onConfirm({
+                      type: "self",
+                      memberIds: [],
+                      memberNames: ["You"],
+                    });
+                  }}
+                  className="flex w-full items-center gap-3 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-3.5 text-left transition-all active:scale-[0.98]"
+                >
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15">
+                    <UserCircle2 className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
+                      Pick Up Myself
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-primary">
+                        <Clock className="h-2.5 w-2.5" /> Decide Later
+                      </span>
+                    </p>
+                    <p className="text-[10.5px] text-muted-foreground leading-snug mt-0.5">
+                      Take this job yourself now — assign to a group or individual anytime later.
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-primary/60 shrink-0" />
+                </button>
+
                 <div className="flex p-1 bg-muted rounded-xl mb-2">
                   <button
                     onClick={() => setAssignmentMode("group")}
