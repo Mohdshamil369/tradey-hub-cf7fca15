@@ -934,245 +934,176 @@ const JobDetail = () => {
       );
     }
 
-    // ── FIXED JOB FOOTER (After pick up) — 4-stage tracker ──
-    if (job.category === "fixed" && (["unassigned", "assigned", "active", "completed"] as string[]).includes(workflow.stage)) {
-      const stage = workflow.stage as "unassigned" | "assigned" | "active" | "completed";
-      const stageOrder: Array<"unassigned" | "assigned" | "active" | "completed"> = ["unassigned", "assigned", "active", "completed"];
-      const currentIdx = stageOrder.indexOf(stage);
+    // ── UNIFIED STAGE FOOTER (mirrors the list-card CTA exactly) ──
+    // Single source of truth: getStageCta(stage, category) provides label + icon.
+    // The action map below routes each CTA to the right sheet / advance call.
+    const stage = workflow.stage;
+    const meta = getStageCta(stage, job.category);
+    const CtaIcon = meta.ctaIcon;
 
-      const stageCards: {
-        key: typeof stageOrder[number];
-        label: string;
-        icon: any;
-        cta: string;
-        ctaIcon: any;
-        action: () => void;
-      }[] = [
-        {
-          key: "unassigned",
-          label: "Picked Up",
-          icon: Package,
-          cta: "Assign Worker",
-          ctaIcon: Users,
-          action: () => {
+    /** Map a stage CTA to the action that the detail page should run. */
+    const runStageCta = () => {
+      switch (stage) {
+        // ── Fixed flow ──
+        case "assigned":
+          // Picked up but no worker yet → open assign sheet. Otherwise start work.
+          if (!workflow.assignment && (job.category === "fixed" || isAgencyAdmin)) {
             setPendingQuote({ items: [], notes: "", total: job.price ?? 0 });
             setShowAssignSheet(true);
-          },
-        },
-        {
-          key: "assigned",
-          label: "Assigned",
-          icon: Users,
-          cta: "Start Job",
-          ctaIcon: PlayCircle,
-          action: () => advanceStage("in_progress"),
-        },
-        {
-          key: "active",
-          label: "In Progress",
-          icon: PlayCircle,
-          cta: "Mark Complete",
-          ctaIcon: CheckCircle2,
-          action: () => advanceStage("completed"),
-        },
-        {
-          key: "completed",
-          label: "Completed",
-          icon: CheckCircle2,
-          cta: "View Invoice",
-          ctaIcon: FileText,
-          action: () => toast.info("Viewing invoice feature coming soon"),
-        },
-      ];
+          } else if (job.category !== "fixed") {
+            // Estimate / inspection flow: assigned → Create Quote
+            setSelectedQuoteCategory(job.category);
+            setShowQuoteSheet(true);
+          } else {
+            advanceStage("in_progress");
+            toast.success("Job started");
+          }
+          return;
+        case "in_progress":
+          if (job.category === "fixed") {
+            advanceStage("completed");
+            toast.success("Job marked complete 🎉");
+          } else {
+            const inv = generateInvoice();
+            const next = { ...workflow, stage: "invoice_sent" as const, invoiceData: inv };
+            setWorkflow(next);
+            sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
+            setShowInvoiceSheet(true);
+          }
+          return;
+        case "completed":
+          // Fixed flow → Create Invoice
+          {
+            const inv = generateInvoice();
+            const next = { ...workflow, stage: "invoice_sent" as const, invoiceData: inv };
+            setWorkflow(next);
+            sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
+            setShowInvoiceSheet(true);
+          }
+          return;
+        case "paid":
+          toast.info("Opening summary…");
+          return;
 
-      const active = stageCards[currentIdx];
-      const ActiveCtaIcon = active.ctaIcon;
+        // ── Estimate flow ──
+        case "estimate_approved":
+          advanceStage("subtasks_created");
+          setActiveTab("subtasks");
+          toast.success("Break this job into subtasks and assign workers");
+          return;
+        case "subtasks_created":
+          // CTA from getStageCta = "Assign Work"
+          setPendingQuote({ items: [], notes: "", total: job.price ?? 0 });
+          setShowAssignSheet(true);
+          return;
+        case "quote_approved":
+          // Wait for advance — informational. Simulate handled below.
+          return;
+        case "advance_paid":
+        case "purchases_ongoing":
+          setActiveTab("purchase-list");
+          return;
+        case "ready_to_start":
+          advanceStage("in_progress");
+          toast.success("Work started");
+          return;
 
-      return (
-        <div className="flex flex-col gap-3 p-4 bg-background border-t border-border/40">
-          {workflow.assignment && (stage === "assigned" || stage === "active") && renderAssignmentInfo()}
+        // ── Inspection flow ──
+        case "inspection_fee_paid":
+          setPendingQuote({ items: [], notes: "", total: workflow.inspectionFee ?? 0 });
+          setShowAssignSheet(true);
+          return;
+        case "inspection_assigned":
+          advanceStage("inspection_completed");
+          toast.success("Inspection complete — create estimate now");
+          return;
+        case "inspection_completed":
+          advanceStage("subtasks_created");
+          setActiveTab("subtasks");
+          toast.success("Break the inspection findings into subtasks");
+          return;
 
-          {/* 4-card stage tracker */}
-          <div className="grid grid-cols-4 gap-1.5">
-            {stageCards.map((s, i) => {
-              const isDone = i < currentIdx;
-              const isActive = i === currentIdx;
-              const Icon = s.icon;
-              return (
-                <div
-                  key={s.key}
-                  className={`relative flex flex-col items-center gap-1.5 rounded-xl p-2 border transition-all ${
-                    isActive
-                      ? "bg-primary/5 border-primary/30 shadow-sm"
-                      : isDone
-                        ? "bg-[hsl(142,70%,45%)]/5 border-[hsl(142,70%,45%)]/20"
-                        : "bg-muted/40 border-border/40"
-                  }`}
-                >
-                  <div className={`flex h-7 w-7 items-center justify-center rounded-full ${
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : isDone
-                        ? "bg-[hsl(142,70%,45%)] text-white"
-                        : "bg-muted text-muted-foreground"
-                  }`}>
-                    {isDone ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Icon className="h-3.5 w-3.5" />}
-                  </div>
-                  <span className={`text-[9px] font-bold text-center leading-tight uppercase tracking-wide ${
-                    isActive ? "text-primary" : isDone ? "text-[hsl(142,70%,45%)]" : "text-muted-foreground"
-                  }`}>
-                    {s.label}
-                  </span>
-                  <span className={`text-[8px] font-bold ${
-                    isActive ? "text-primary" : isDone ? "text-[hsl(142,70%,45%)]" : "text-muted-foreground/60"
-                  }`}>
-                    {i + 1}/4
-                  </span>
-                </div>
-              );
-            })}
+        default:
+          return;
+      }
+    };
+
+    /** Optional simulator — keeps the dev demo flow working for awaiting stages. */
+    const simulate = (() => {
+      switch (stage) {
+        case "estimate_sent":
+          return { label: "⚡ Simulate: Customer Approves", run: () => { advanceStage("estimate_approved"); toast.success("Customer approved the estimate!"); } };
+        case "quote_sent":
+          return { label: "⚡ Simulate: Customer Accepts Quote", run: () => { advanceStage("quote_approved"); toast.success("Customer accepted the quote!"); } };
+        case "quote_approved":
+          return { label: "⚡ Simulate: Customer Pays Advance", run: () => { advanceStage("advance_paid"); setActiveTab("purchase-list"); toast.success("Advance received!"); } };
+        case "invoice_sent":
+          return { label: "⚡ Simulate: Customer Pays", run: () => { advanceStage("paid"); toast.success("Payment received — job completed! 🎉"); } };
+        case "inspection_proposal_sent":
+          return { label: "⚡ Simulate: Customer Pays Fee", run: () => {
+            const next = { ...workflow, stage: "inspection_fee_paid" as const, inspectionFeePaid: true };
+            setWorkflow(next);
+            sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
+            toast.success("Customer paid the inspection fee!");
+          } };
+        default:
+          return null;
+      }
+    })();
+
+    const purchasesReady = workflow.purchaseItems.length > 0
+      && workflow.purchaseItems.every(i => i.status === "purchased_by_admin" || i.status === "purchased_by_customer");
+
+    // CTA tone → button colour (matches StageJobCard)
+    const toneClass = {
+      primary: "bg-primary text-primary-foreground shadow-primary/20",
+      warning: "bg-amber-500 text-white",
+      success: "bg-[hsl(142,70%,45%)] text-white",
+      info: "bg-secondary text-foreground",
+    }[meta.tone];
+
+    // Picked-up-not-assigned banner for fixed jobs
+    const pickedNotAssigned = stage === "assigned" && !workflow.assignment;
+
+    return (
+      <div className="flex flex-col gap-2 p-4 bg-background border-t border-border/40">
+        {workflow.assignment && renderAssignmentInfo()}
+
+        {pickedNotAssigned && (
+          <div className="rounded-xl bg-primary/5 border border-dashed border-primary/30 p-3 flex items-center gap-2.5">
+            <div className="h-8 w-8 shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
+              <Package className="h-4 w-4 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold text-primary">You picked this up</p>
+              <p className="text-[10px] text-muted-foreground leading-tight">Assign a worker to start the job.</p>
+            </div>
           </div>
+        )}
 
-          {/* CTA for the active stage */}
+        {meta.hint && !pickedNotAssigned && (
+          <p className="text-[10.5px] text-muted-foreground leading-relaxed px-1">{meta.hint}</p>
+        )}
+
+        <button
+          onClick={runStageCta}
+          disabled={meta.awaiting || (stage === "purchases_ongoing" && !purchasesReady)}
+          className={`w-full rounded-xl py-3.5 text-[12px] font-bold shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${toneClass}`}
+        >
+          <CtaIcon className="h-4 w-4" />
+          {pickedNotAssigned ? "Assign Worker" : meta.cta}
+        </button>
+
+        {simulate && (
           <button
-            onClick={active.action}
-            className={`w-full rounded-xl py-3.5 text-[12px] font-bold shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${
-              stage === "active"
-                ? "bg-[hsl(142,70%,45%)] text-white"
-                : stage === "completed"
-                  ? "bg-foreground text-background"
-                  : "bg-primary text-primary-foreground shadow-primary/20"
-            }`}
+            onClick={simulate.run}
+            className="rounded-xl border border-dashed border-primary/30 py-2.5 text-[10px] font-bold text-primary active:bg-primary/5"
           >
-            <ActiveCtaIcon className="h-4 w-4" /> {active.cta}
+            {simulate.label}
           </button>
-        </div>
-      );
-    }
-
-    // ── ESTIMATE JOB FOOTER (Post-Incoming) ──
-    if (job.category === "estimate") {
-      const stage = workflow.stage;
-      return (
-        <div className="flex flex-col gap-2 p-4 bg-background border-t border-border/40">
-          {stage === "estimate_sent" && (
-            <>
-              <div className="rounded-xl bg-[hsl(25,90%,55%)]/10 py-3.5 text-center text-[12px] font-bold text-[hsl(25,90%,55%)]">
-                ⏳ Awaiting Customer Approval
-              </div>
-              <button onClick={() => { advanceStage("estimate_approved"); toast.success("Customer approved the estimate!"); }} className="rounded-xl border border-dashed border-primary/30 py-2.5 text-[10px] font-bold text-primary active:bg-primary/5">
-                ⚡ Simulate: Customer Approves
-              </button>
-            </>
-          )}
-          {stage === "estimate_approved" && (
-            <button onClick={() => { advanceStage("subtasks_created"); setActiveTab("subtasks"); toast.success("Break this job into subtasks and assign workers"); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-              <ListChecks className="h-4 w-4" /> Break into Subtasks
-            </button>
-          )}
-          {stage === "subtasks_created" && (
-            <button onClick={() => { setSelectedQuoteCategory("estimate"); setShowQuoteSheet(true); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-              <FileText className="h-4 w-4" /> Create Quote
-            </button>
-          )}
-          {stage === "quote_sent" && (
-            <>
-              <div className="rounded-xl bg-[hsl(25,90%,55%)]/10 py-3.5 text-center text-[12px] font-bold text-[hsl(25,90%,55%)]">
-                ⏳ Quote Sent — Awaiting Customer
-              </div>
-              <button onClick={() => { advanceStage("quote_approved"); setActiveTab("purchase-list"); toast.success("Customer accepted the quote!"); }} className="rounded-xl border border-dashed border-primary/30 py-2.5 text-[10px] font-bold text-primary active:bg-primary/5">
-                ⚡ Simulate: Customer Accepts Quote
-              </button>
-            </>
-          )}
-          {stage === "quote_approved" && (
-            <button onClick={() => { advanceStage("purchases_ongoing"); setActiveTab("purchase-list"); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-              <ShoppingCart className="h-4 w-4" /> View Purchase List
-            </button>
-          )}
-          {stage === "purchases_ongoing" && (
-            <button onClick={() => { advanceStage("in_progress"); toast.success("All items purchased — work can begin!"); }} disabled={!workflow.purchaseItems.every(i => i.status === "purchased_by_admin" || i.status === "purchased_by_customer")} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40">
-              <CheckCircle2 className="h-4 w-4" /> All Purchased — Continue
-            </button>
-          )}
-          {stage === "in_progress" && (
-            <button onClick={() => { advanceStage("invoice_sent"); const inv = generateInvoice(); const next = { ...workflow, stage: "invoice_sent" as const, invoiceData: inv }; setWorkflow(next); sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next)); setShowInvoiceSheet(true); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-              <FileText className="h-4 w-4" /> Generate Invoice
-            </button>
-          )}
-          {stage === "invoice_sent" && (
-            <>
-              <div className="rounded-xl bg-[hsl(25,90%,55%)]/10 py-3.5 text-center text-[12px] font-bold text-[hsl(25,90%,55%)]">
-                ⏳ Invoice Sent — Awaiting Payment
-              </div>
-              <button onClick={() => { advanceStage("completed"); toast.success("Payment received — job completed! 🎉"); }} className="rounded-xl border border-dashed border-primary/30 py-2.5 text-[10px] font-bold text-primary active:bg-primary/5">
-                ⚡ Simulate: Customer Pays Remaining
-              </button>
-            </>
-          )}
-        </div>
-      );
-    }
-
-    // ── INSPECTION JOB FOOTER (Post-Incoming) ──
-    if (job.category === "inspection") {
-      const stage = workflow.stage;
-      return (
-        <div className="flex flex-col gap-2 p-4 bg-background border-t border-border/40">
-          {stage === "inspection_proposal_sent" && (
-            <>
-              <div className="rounded-xl bg-[hsl(25,90%,55%)]/10 py-3.5 text-center text-[12px] font-bold text-[hsl(25,90%,55%)]">
-                ⏳ Awaiting Customer Payment (£{workflow.inspectionFee})
-              </div>
-              <button onClick={() => { const next = { ...workflow, stage: "inspection_fee_paid" as const, inspectionFeePaid: true }; setWorkflow(next); sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next)); toast.success("Customer paid the inspection fee!"); }} className="rounded-xl border border-dashed border-primary/30 py-2.5 text-[10px] font-bold text-primary active:bg-primary/5">
-                ⚡ Simulate: Customer Pays Fee
-              </button>
-            </>
-          )}
-          {stage === "inspection_fee_paid" && (
-            <button onClick={() => { setPendingQuote({ items: [], notes: "", total: workflow.inspectionFee ?? 0 }); setShowAssignSheet(true); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-              <Users className="h-4 w-4" /> Assign Worker for Inspection
-            </button>
-          )}
-          {stage === "inspection_assigned" && (
-            <>
-              {renderAssignmentInfo()}
-              <button onClick={() => { advanceStage("inspection_completed"); toast.success("Inspection complete — create estimate now"); }} className="w-full rounded-xl bg-[hsl(142,70%,45%)] py-3.5 text-[12px] font-bold text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                <CheckCircle2 className="h-4 w-4" /> Mark Inspection Complete
-              </button>
-            </>
-          )}
-          {stage === "inspection_completed" && (
-            <button onClick={() => setShowEstimateSheet(true)} className="w-full rounded-xl bg-blue-600 py-3.5 text-[12px] font-bold text-white shadow-lg shadow-blue-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-              <FileText className="h-4 w-4" /> Create Estimate
-            </button>
-          )}
-          {/* After inspection, the estimate stages kick in — reuse same logic */}
-          {(["estimate_sent", "estimate_approved", "subtasks_created", "quote_sent", "quote_approved", "purchases_ongoing", "in_progress", "invoice_sent"] as string[]).includes(stage) && (
-            (() => {
-              if (stage === "estimate_sent") return (<>
-                <div className="rounded-xl bg-[hsl(25,90%,55%)]/10 py-3.5 text-center text-[12px] font-bold text-[hsl(25,90%,55%)]">⏳ Awaiting Customer Approval</div>
-                <button onClick={() => { advanceStage("estimate_approved"); toast.success("Customer approved!"); }} className="rounded-xl border border-dashed border-primary/30 py-2.5 text-[10px] font-bold text-primary active:bg-primary/5">⚡ Simulate: Customer Approves</button>
-              </>);
-              if (stage === "estimate_approved") return <button onClick={() => { advanceStage("subtasks_created"); setActiveTab("subtasks"); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"><ListChecks className="h-4 w-4" /> Break into Subtasks</button>;
-              if (stage === "subtasks_created") return <button onClick={() => { setSelectedQuoteCategory("estimate"); setShowQuoteSheet(true); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"><FileText className="h-4 w-4" /> Create Quote</button>;
-              if (stage === "quote_sent") return (<>
-                <div className="rounded-xl bg-[hsl(25,90%,55%)]/10 py-3.5 text-center text-[12px] font-bold text-[hsl(25,90%,55%)]">⏳ Quote Sent — Awaiting Customer</div>
-                <button onClick={() => { advanceStage("quote_approved"); setActiveTab("purchase-list"); toast.success("Customer accepted!"); }} className="rounded-xl border border-dashed border-primary/30 py-2.5 text-[10px] font-bold text-primary active:bg-primary/5">⚡ Simulate: Customer Accepts</button>
-              </>);
-              if (stage === "quote_approved") return <button onClick={() => { advanceStage("purchases_ongoing"); setActiveTab("purchase-list"); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"><ShoppingCart className="h-4 w-4" /> View Purchase List</button>;
-              if (stage === "purchases_ongoing") return <button onClick={() => { advanceStage("in_progress"); toast.success("Work can begin!"); }} disabled={!workflow.purchaseItems.every(i => i.status === "purchased_by_admin" || i.status === "purchased_by_customer")} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-40"><CheckCircle2 className="h-4 w-4" /> All Purchased — Continue</button>;
-              if (stage === "in_progress") return <button onClick={() => { const inv = generateInvoice(); const next = { ...workflow, stage: "invoice_sent" as const, invoiceData: inv }; setWorkflow(next); sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next)); setShowInvoiceSheet(true); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"><FileText className="h-4 w-4" /> Generate Invoice</button>;
-              if (stage === "invoice_sent") return (<>
-                <div className="rounded-xl bg-[hsl(25,90%,55%)]/10 py-3.5 text-center text-[12px] font-bold text-[hsl(25,90%,55%)]">⏳ Invoice Sent — Awaiting Payment</div>
-                <button onClick={() => { advanceStage("paid"); toast.success("Payment received — job completed! 🎉"); }} className="rounded-xl border border-dashed border-primary/30 py-2.5 text-[10px] font-bold text-primary active:bg-primary/5">⚡ Simulate: Customer Pays</button>
-              </>);
-              return null;
-            })()
-          )}
-        </div>
-      );
-    }
+        )}
+      </div>
+    );
 
     // Fallback
     return (
