@@ -133,6 +133,7 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
       setNewUnit("pcs");
       setShowTemplates(false);
       setShowSaveTemplate(false);
+      setShowPreview(false);
       setTemplateName("");
     }
   }, [isOpen]);
