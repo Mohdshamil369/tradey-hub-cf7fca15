@@ -1370,7 +1370,7 @@ const TraderJobs = () => {
                           </button>
                         )}
                         <h2 className="text-lg font-bold text-foreground">
-                          {assignStep === "choose" ? "Quick Assign" : "Confirm Assignment"}
+                          {assignStep === "choose" ? "Assign to Team" : assignStep === "select-members" ? "Select Members" : "Confirm Assignment"}
                         </h2>
                       </div>
                       <button onClick={resetAssignFlow} className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-muted/80">
