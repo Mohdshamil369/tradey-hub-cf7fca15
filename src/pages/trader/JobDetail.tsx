@@ -104,7 +104,11 @@ const JobDetail = () => {
   const { profile } = useAuth();
   const isAgencyAdmin = profile?.trader_type === "agency";
   const [searchParams] = useSearchParams();
-  const initialTab: TabKey = searchParams.get("tab") === "quotes" ? "quotes" : "details";
+  const initialTab: TabKey = (() => {
+    const t = searchParams.get("tab");
+    if (t === "quotes" || t === "subtasks" || t === "purchase-list" || t === "attachments" || t === "progress" || t === "finances" || t === "chat" || t === "docs") return t as TabKey;
+    return "details";
+  })();
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
   const [showQuoteSheet, setShowQuoteSheet] = useState(false);
   const [showQuoteOptions, setShowQuoteOptions] = useState(false);
@@ -162,7 +166,7 @@ const JobDetail = () => {
   // ── Workflow-aware tabs ──
   const showQuotesTab = job.category !== "fixed" && (["estimate_approved", "subtasks_created", "quote_sent", "quote_accepted", "purchasing", "work_in_progress", "invoice_sent", "completed", "inspected"] as string[]).includes(workflow.stage);
   const showSubtasksTab = job.category !== "fixed" && (["estimate_approved", "subtasks_created", "quote_sent", "quote_accepted", "purchasing", "work_in_progress", "invoice_sent", "completed", "inspected"] as string[]).includes(workflow.stage);
-  const showPurchaseListTab = job.category !== "fixed" && (["quote_accepted", "purchasing", "work_in_progress", "invoice_sent", "completed"] as string[]).includes(workflow.stage);
+  const showPurchaseListTab = job.category !== "fixed" && (["quote_sent", "quote_accepted", "purchasing", "work_in_progress", "invoice_sent", "completed"] as string[]).includes(workflow.stage);
 
   const tabs: { key: TabKey; label: string; icon: any }[] = showAdminTabs
     ? [

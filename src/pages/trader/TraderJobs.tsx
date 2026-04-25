@@ -459,14 +459,32 @@ const TraderJobs = () => {
   // Invoice builder (opened from work_in_progress CTA)
   const [invoiceJob, setInvoiceJob] = useState<Job | null>(null);
 
-  // Seed demo workflow state for j14 (work_in_progress with prior advance) once per session
+  // Seed demo workflow state for committed jobs (one-shot per session)
   useEffect(() => {
     try {
+      // j14 — work_in_progress with prior advance (used for the invoice flow demo)
       if (!sessionStorage.getItem("job_workflow_j14")) {
         sessionStorage.setItem("job_workflow_j14", JSON.stringify({
           stage: "work_in_progress",
           advanceAmount: 80,
           purchaseItems: [],
+        }));
+      }
+      // j12 — quote sent, purchase list active (2 of 6 items purchased)
+      // Re-seed when the stored entry is missing purchase items so older sessions get the demo list.
+      const j12raw = sessionStorage.getItem("job_workflow_j12");
+      const j12needsSeed = !j12raw || !(JSON.parse(j12raw)?.purchaseItems?.length);
+      if (j12needsSeed) {
+        sessionStorage.setItem("job_workflow_j12", JSON.stringify({
+          stage: "quote_sent",
+          purchaseItems: [
+            { id: "p1", name: "Pine planks (2.4m)", quantity: 4, expectedPrice: 28, status: "purchased", buyer: "customer" },
+            { id: "p2", name: "Wood screws (5×40mm, box)", quantity: 1, expectedPrice: 9, status: "purchased", buyer: "customer" },
+            { id: "p3", name: "Wall plugs (8mm, pack)", quantity: 2, expectedPrice: 6, status: "pending", buyer: "customer" },
+            { id: "p4", name: "Matt white emulsion (2.5L)", quantity: 1, expectedPrice: 22, status: "pending", buyer: "customer" },
+            { id: "p5", name: "Sandpaper (P120, pack)", quantity: 1, expectedPrice: 7, status: "pending", buyer: "customer" },
+            { id: "p6", name: "Wood filler (250g)", quantity: 1, expectedPrice: 8, status: "pending", buyer: "customer" },
+          ],
         }));
       }
     } catch { /* sessionStorage unavailable */ }
@@ -673,8 +691,13 @@ const TraderJobs = () => {
       setPostInspectionJob(job);
       return;
     }
+    // Quote shared / accepted / purchasing → open detail page on the Purchase List tab
+    if (stage === "quote_sent" || stage === "quote_accepted" || stage === "purchasing") {
+      openJobDetail(job, "purchase-list");
+      return;
+    }
     // Work finished → raise an invoice (with PDF preview before sending)
-    if (stage === "work_in_progress" || stage === "quote_accepted" || stage === "purchasing") {
+    if (stage === "work_in_progress") {
       setInvoiceJob(job);
       return;
     }
@@ -873,7 +896,7 @@ const TraderJobs = () => {
     toast.success("Job marked as complete! 🎉");
   };
 
-  const openJobDetail = (job: Job) => {
+  const openJobDetail = (job: Job, initialTab?: string) => {
     // Heuristic: any committed job whose schedule spans days/weeks counts as long-term
     const isLongTerm = job.id === "j5" || /week|–\s*\d+\s*(Apr|Mar|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i.test(job.timeWindow);
     // Store job data in sessionStorage for the detail page
@@ -911,7 +934,7 @@ const TraderJobs = () => {
       jobReview: job.jobReview,
     };
     sessionStorage.setItem(`job_detail_${job.id}`, JSON.stringify(detailData));
-    navigate(`/trader/jobs/${job.id}`);
+    navigate(initialTab ? `/trader/jobs/${job.id}?tab=${initialTab}` : `/trader/jobs/${job.id}`);
   };
 
   const handleDetailAction = (jobId: string, action: string, data?: any) => {
