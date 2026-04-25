@@ -443,6 +443,8 @@ const TraderJobs = () => {
   const [sentQuotes, setSentQuotes] = useState(initialSentQuotes);
   // Post-inspection quote builder (opened from inspected-stage CTA)
   const [postInspectionJob, setPostInspectionJob] = useState<Job | null>(null);
+  // Invoice builder (opened from work_in_progress CTA)
+  const [invoiceJob, setInvoiceJob] = useState<Job | null>(null);
   
   // Detail sheet state
   const [selectedJob, setSelectedJob] = useState<JobDetailData | null>(null);
