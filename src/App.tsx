@@ -61,6 +61,7 @@ import BasePayConfig from "./pages/trader/BasePayConfig";
 import Groups from "./pages/trader/Groups";
 import GroupDetail from "./pages/trader/GroupDetail";
 import WorkerDetail from "./pages/trader/WorkerDetail";
+import CustomerDetail from "./pages/trader/CustomerDetail";
 import MemberPayouts from "./pages/trader/MemberPayouts";
 import Payouts from "./pages/profile/Payouts";
 import ReferFriends from "./pages/profile/ReferFriends";
