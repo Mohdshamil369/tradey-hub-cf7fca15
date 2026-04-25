@@ -35,12 +35,12 @@ const EstimateSheet = ({ isOpen, onOpenChange, jobTitle, onSubmit }: EstimateShe
 
   const min = parseFloat(minPrice) || 0;
   const max = parseFloat(maxPrice) || 0;
-  const canSubmit = title.trim().length > 0 && min > 0 && max >= min && description.trim().length > 0;
+  const canSubmit = min > 0 && max >= min && description.trim().length > 0;
 
   const handleSubmit = () => {
     if (!canSubmit) return;
     onSubmit({
-      title: title.trim(),
+      title: jobTitle,
       minPrice: min,
       maxPrice: max,
       description: description.trim(),
