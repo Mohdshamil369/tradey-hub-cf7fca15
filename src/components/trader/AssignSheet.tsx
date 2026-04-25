@@ -312,7 +312,7 @@ const AssignSheet = ({
                   </div>
                   <h3 className="text-base font-bold text-foreground">Confirm Assignment</h3>
                   <p className="text-xs text-muted-foreground mt-1 max-w-[240px] mx-auto">
-                    The quote will be sent to the customer and the job will be dispatched to the selected team.
+                    {confirmHelperText}
                   </p>
                 </div>
 
