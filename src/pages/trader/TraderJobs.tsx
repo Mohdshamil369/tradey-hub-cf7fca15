@@ -441,6 +441,8 @@ const TraderJobs = () => {
   const [selectedQuote, setSelectedQuote] = useState<SentQuoteData | null>(null);
   const [isQuoteDetailOpen, setIsQuoteDetailOpen] = useState(false);
   const [sentQuotes, setSentQuotes] = useState(initialSentQuotes);
+  // Post-inspection quote builder (opened from inspected-stage CTA)
+  const [postInspectionJob, setPostInspectionJob] = useState<Job | null>(null);
   
   // Detail sheet state
   const [selectedJob, setSelectedJob] = useState<JobDetailData | null>(null);
