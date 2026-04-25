@@ -610,6 +610,7 @@ const TraderJobs = () => {
             { id: "p5", name: "Safety masks (pack of 5)", quantity: 1, expectedPrice: 11, status: "not_purchased", buyer: "customer" },
           ],
         }));
+      }
     } catch { /* sessionStorage unavailable */ }
   }, []);
   
