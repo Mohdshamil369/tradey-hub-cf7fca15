@@ -280,7 +280,7 @@ const TraderHome = () => {
     if (isPickup) {
       if (isAgencyProfile) {
         const pickedUpAt = new Date().toISOString();
-        const next: JobWorkflowState = { stage: "unassigned", pickedUpAt, purchaseItems: [] };
+        const next: JobWorkflowState = { stage: "assigned", pickedUpAt, purchaseItems: [] };
         sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
         
         setJobs((prev) => prev.filter((j) => j.id !== jobId));
