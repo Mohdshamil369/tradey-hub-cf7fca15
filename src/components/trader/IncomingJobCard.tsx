@@ -216,17 +216,6 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
           <span className="ml-auto text-[9px] text-muted-foreground/50">{job.postedAgo || "Just now"}</span>
         </div>
 
-        {/* Respond to Job Button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onRespond?.(job);
-          }}
-          className="mt-3 w-full py-2 bg-primary rounded-xl text-[12px] font-bold text-primary-foreground shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-        >
-          <Sparkles className="h-3.5 w-3.5" />
-          Respond to Job
-        </button>
       </div>
 
       {/* Schedule footer */}
