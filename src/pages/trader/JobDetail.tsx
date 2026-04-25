@@ -1067,6 +1067,10 @@ const JobDetail = () => {
           { id: "m7", name: "Jos V.", role: "Helper" },
         ]}
         onConfirm={handleAssignmentConfirm}
+        confirmLabel={(pendingQuote?.items?.length ?? 0) === 0 ? "Pick Up & Assign" : "Approve & Assign"}
+        confirmHelperText={(pendingQuote?.items?.length ?? 0) === 0
+          ? "The job will be picked up and dispatched to the selected team instantly."
+          : "The approved quote will be sent to the customer and the job dispatched to the selected team."}
       />
     </MobileLayout>
   );
