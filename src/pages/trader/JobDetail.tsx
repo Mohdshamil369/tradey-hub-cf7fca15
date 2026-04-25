@@ -524,7 +524,7 @@ const JobDetail = () => {
 
           <div className="flex gap-2 px-4 py-3 border-t border-border/30">
             <button
-              onClick={() => toast.info("Full customer profile coming soon")}
+              onClick={() => navigate(`/trader/customers/${encodeURIComponent(job.customer.name.toLowerCase().replace(/\s+/g, "-"))}?name=${encodeURIComponent(job.customer.name)}`)}
               className="flex-1 flex items-center justify-center gap-1 rounded-lg bg-muted/50 border border-border/30 py-2 text-[10px] font-bold text-foreground active:bg-muted"
             >
               <Info className="h-3 w-3" /> Full Profile
