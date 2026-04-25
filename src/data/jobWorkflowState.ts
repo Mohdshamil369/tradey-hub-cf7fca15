@@ -196,6 +196,7 @@ export const quoteTabVisibleStages: WorkflowStage[] = [
 /* ─── Stages where Subtasks tab is visible ─── */
 export const subtasksTabVisibleStages: WorkflowStage[] = [
   "estimate_approved",
+  "inspection_completed", // PRD: post-inspection flow joins estimate at subtasks
   "subtasks_created",
   "assigned",
   "quote_sent",
