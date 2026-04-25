@@ -115,45 +115,20 @@ export const CreateFormSheet = ({
 
           {/* Body */}
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
-            {/* Blank starter + clear */}
-            <div className="space-y-2">
+            {/* Blank starter (only shown when a template is selected, to allow clearing) */}
+            {selectedTemplateId && (
               <div className="flex items-center justify-between">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   Start from
                 </label>
-                {selectedTemplateId && (
-                  <button
-                    onClick={handleSelectBlank}
-                    className="text-[10px] font-semibold text-primary active:opacity-70"
-                  >
-                    Clear selection
-                  </button>
-                )}
+                <button
+                  onClick={handleSelectBlank}
+                  className="text-[10px] font-semibold text-primary active:opacity-70"
+                >
+                  Clear selection
+                </button>
               </div>
-              <button
-                onClick={handleSelectBlank}
-                className={`w-full flex items-center gap-2.5 rounded-xl border p-3 text-left transition-all ${
-                  startFrom === "blank"
-                    ? "border-primary bg-primary/5"
-                    : "border-border bg-card active:bg-muted/40"
-                }`}
-              >
-                <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-                  startFrom === "blank" ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
-                }`}>
-                  <FileText className="h-4 w-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-bold text-foreground">Blank form</p>
-                  <p className="text-[10px] text-muted-foreground leading-tight">Build from scratch</p>
-                </div>
-                {startFrom === "blank" && (
-                  <div className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                    <Check className="h-2.5 w-2.5" />
-                  </div>
-                )}
-              </button>
-            </div>
+            )}
 
             {/* Frequently used by user */}
             {frequentForms.length > 0 && (
