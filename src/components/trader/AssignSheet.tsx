@@ -33,6 +33,10 @@ interface AssignSheetProps {
   groups: AssignGroup[];
   individuals: AssignIndividual[];
   onConfirm: (result: AssignmentResult) => void;
+  /** Label for the final confirm button. Defaults to "Send Quote & Assign". */
+  confirmLabel?: string;
+  /** Helper text shown above the Confirm Assignment header. */
+  confirmHelperText?: string;
 }
 
 type Step = "choose" | "select-members" | "confirm";
@@ -46,6 +50,8 @@ const AssignSheet = ({
   groups,
   individuals,
   onConfirm,
+  confirmLabel = "Send Quote & Assign",
+  confirmHelperText = "The quote will be sent to the customer and the job will be dispatched to the selected team.",
 }: AssignSheetProps) => {
   const [step, setStep] = useState<Step>("choose");
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
@@ -306,7 +312,7 @@ const AssignSheet = ({
                   </div>
                   <h3 className="text-base font-bold text-foreground">Confirm Assignment</h3>
                   <p className="text-xs text-muted-foreground mt-1 max-w-[240px] mx-auto">
-                    The quote will be sent to the customer and the job will be dispatched to the selected team.
+                    {confirmHelperText}
                   </p>
                 </div>
 
@@ -347,7 +353,7 @@ const AssignSheet = ({
                     onClick={handleConfirm}
                     className="flex-[2] rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98]"
                   >
-                    Send Quote & Assign
+                    {confirmLabel}
                   </button>
                 </div>
               </div>

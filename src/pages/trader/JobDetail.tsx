@@ -156,6 +156,12 @@ const JobDetail = () => {
   const handleAction = (action: string) => {
     switch (action) {
       case "accept":
+        if (isAgencyAdmin) {
+          // Agency admin: chain assign sheet to dispatch the picked-up job
+          setPendingQuote({ items: [], notes: "", total: job.price ?? 0 });
+          setShowAssignSheet(true);
+          return;
+        }
         toast.success("Job accepted!");
         navigate("/trader/jobs");
         break;
@@ -182,12 +188,14 @@ const JobDetail = () => {
   const handleAssignmentConfirm = (result: AssignmentResult) => {
     setShowAssignSheet(false);
     const total = pendingQuote?.total ?? 0;
+    const isPickup = (pendingQuote?.items?.length ?? 0) === 0;
     const who = result.type === "group"
       ? `${result.groupName} (${result.memberNames.length} ${result.memberNames.length === 1 ? "member" : "members"})`
       : result.memberNames.join(", ");
-    toast.success(`Quote sent · £${total.toFixed(2)}`, {
-      description: `Assigned to ${who}`,
-    });
+    toast.success(
+      isPickup ? `Job picked up · £${total.toFixed(2)}` : `Quote approved · £${total.toFixed(2)}`,
+      { description: `Assigned to ${who}` }
+    );
     setPendingQuote(null);
     setTimeout(() => navigate("/trader/jobs"), 400);
   };
@@ -1059,6 +1067,10 @@ const JobDetail = () => {
           { id: "m7", name: "Jos V.", role: "Helper" },
         ]}
         onConfirm={handleAssignmentConfirm}
+        confirmLabel={(pendingQuote?.items?.length ?? 0) === 0 ? "Pick Up & Assign" : "Approve & Assign"}
+        confirmHelperText={(pendingQuote?.items?.length ?? 0) === 0
+          ? "The job will be picked up and dispatched to the selected team instantly."
+          : "The approved quote will be sent to the customer and the job dispatched to the selected team."}
       />
     </MobileLayout>
   );
