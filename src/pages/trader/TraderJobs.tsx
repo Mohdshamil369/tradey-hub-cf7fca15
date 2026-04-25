@@ -444,12 +444,24 @@ const TraderJobs = () => {
     setFilterTimeWindows(prev => { const n = new Set(prev); if (n.has(tw)) n.delete(tw); else n.add(tw); return n; });
   };
 
-  const activeFilterCount = (filterDistanceKm < 50 ? 1 : 0) + (filterPriceMin > 0 || filterPriceMax < 500 ? 1 : 0) + (filterCategories.size > 0 ? 1 : 0) + (filterTimeWindows.size > 0 ? 1 : 0) + (!filterJobType.has("any") ? 1 : 0) + (!committedFilter.has("all") ? 1 : 0);
+  const activeFilterCount = (filterDistanceKm < 50 ? 1 : 0) + (filterPriceMin > 0 || filterPriceMax < 500 ? 1 : 0) + (filterCategories.size > 0 ? 1 : 0) + (filterTimeWindows.size > 0 ? 1 : 0) + (!filterJobType.has("any") ? 1 : 0) + (!filterAssignmentSource.has("any") ? 1 : 0) + (!committedFilter.has("all") ? 1 : 0);
 
   const resetAllFilters = () => {
     setFilterDistanceKm(50); setFilterDistanceInput("");
     setFilterPriceMin(0); setFilterPriceMax(500); setFilterPriceMinInput(""); setFilterPriceMaxInput("");
-    setFilterCategories(new Set()); setFilterTimeWindows(new Set()); setFilterJobType(new Set(["any"])); setCommittedFilter(new Set(["all"]));
+    setFilterCategories(new Set()); setFilterTimeWindows(new Set()); setFilterJobType(new Set(["any"])); setFilterAssignmentSource(new Set(["any"])); setCommittedFilter(new Set(["all"]));
+  };
+
+  const toggleAssignmentSource = (src: string) => {
+    setFilterAssignmentSource(prev => {
+      const next = new Set(prev);
+      if (src === "any") return new Set(["any"]);
+      if (next.has("any")) next.delete("any");
+      if (next.has(src)) next.delete(src);
+      else next.add(src);
+      if (next.size === 0) return new Set(["any"]);
+      return next;
+    });
   };
 
   const [dispatchJobId, setDispatchJobId] = useState<string | null>(null);
