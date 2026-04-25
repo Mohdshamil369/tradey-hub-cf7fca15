@@ -928,78 +928,120 @@ const JobDetail = () => {
       );
     }
 
-    // ── FIXED JOB FOOTER (After pick up) ──
-    if (job.category === "fixed") {
-      const stage = workflow.stage;
-      
-      if (stage === "unassigned") {
-        const pickedUpAt = new Date(workflow.pickedUpAt || Date.now());
-        const deadline = new Date(pickedUpAt.getTime() + 4 * 60 * 60 * 1000);
-        const now = new Date();
-        const diff = deadline.getTime() - now.getTime();
-        const hours = Math.max(0, Math.floor(diff / (1000 * 60 * 60)));
-        const mins = Math.max(0, Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
-        const isOverdue = diff <= 0;
+    // ── FIXED JOB FOOTER (After pick up) — 4-stage tracker ──
+    if (job.category === "fixed" && (["unassigned", "assigned", "active", "completed"] as string[]).includes(workflow.stage)) {
+      const stage = workflow.stage as "unassigned" | "assigned" | "active" | "completed";
+      const stageOrder: Array<"unassigned" | "assigned" | "active" | "completed"> = ["unassigned", "assigned", "active", "completed"];
+      const currentIdx = stageOrder.indexOf(stage);
 
-        return (
-          <div className="flex flex-col gap-3 p-5 bg-background border-t border-border/40 shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
-            <div className={`flex items-center gap-3 rounded-2xl p-4 border transition-colors ${
-              isOverdue ? "bg-destructive/10 border-destructive/20" : "bg-primary/5 border-primary/20"
-            }`}>
-              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                isOverdue ? "bg-destructive/20 text-destructive" : "bg-primary/20 text-primary"
-              }`}>
-                <Clock className="h-5 w-5" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-black uppercase tracking-wider text-muted-foreground mb-0.5">Assignment Deadline</p>
-                <p className={`text-[15px] font-black tracking-tight ${isOverdue ? "text-destructive" : "text-foreground"}`}>
-                  {isOverdue ? "Assignment Overdue!" : `${hours}h ${mins}m remaining`}
-                </p>
-              </div>
-              {isOverdue && (
-                <span className="flex h-2 w-2 rounded-full bg-destructive animate-pulse" />
-              )}
-            </div>
-            
-            <button 
-              onClick={() => {
-                setPendingQuote({ items: [], notes: "", total: job.price ?? 0 });
-                setShowAssignSheet(true);
-              }} 
-              className="w-full rounded-2xl bg-primary py-4 text-[13px] font-black text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-            >
-              <Users className="h-4.5 w-4.5" /> 
-              Assign to Worker Now
-            </button>
-            <p className="text-[10px] text-center text-muted-foreground font-medium px-4 leading-relaxed">
-              As admin, you have a 4-hour window to assign this job to a worker. Customers are notified of pickup.
-            </p>
-          </div>
-        );
-      }
+      const stageCards: {
+        key: typeof stageOrder[number];
+        label: string;
+        icon: any;
+        cta: string;
+        ctaIcon: any;
+        action: () => void;
+      }[] = [
+        {
+          key: "unassigned",
+          label: "Picked Up",
+          icon: Package,
+          cta: "Assign Worker",
+          ctaIcon: Users,
+          action: () => {
+            setPendingQuote({ items: [], notes: "", total: job.price ?? 0 });
+            setShowAssignSheet(true);
+          },
+        },
+        {
+          key: "assigned",
+          label: "Assigned",
+          icon: Users,
+          cta: "Start Job",
+          ctaIcon: PlayCircle,
+          action: () => advanceStage("active"),
+        },
+        {
+          key: "active",
+          label: "In Progress",
+          icon: PlayCircle,
+          cta: "Mark Complete",
+          ctaIcon: CheckCircle2,
+          action: () => advanceStage("completed"),
+        },
+        {
+          key: "completed",
+          label: "Completed",
+          icon: CheckCircle2,
+          cta: "View Invoice",
+          ctaIcon: FileText,
+          action: () => toast.info("Viewing invoice feature coming soon"),
+        },
+      ];
 
-      if (stage === "assigned") {
-        return (
-          <div className="flex flex-col gap-2 p-4 bg-background border-t border-border/40">
-            {renderAssignmentInfo()}
-            <button onClick={() => advanceStage("active")} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-              <PlayCircle className="h-4 w-4" /> Start Job
-            </button>
+      const active = stageCards[currentIdx];
+      const ActiveCtaIcon = active.ctaIcon;
+
+      return (
+        <div className="flex flex-col gap-3 p-4 bg-background border-t border-border/40">
+          {workflow.assignment && (stage === "assigned" || stage === "active") && renderAssignmentInfo()}
+
+          {/* 4-card stage tracker */}
+          <div className="grid grid-cols-4 gap-1.5">
+            {stageCards.map((s, i) => {
+              const isDone = i < currentIdx;
+              const isActive = i === currentIdx;
+              const Icon = s.icon;
+              return (
+                <div
+                  key={s.key}
+                  className={`relative flex flex-col items-center gap-1.5 rounded-xl p-2 border transition-all ${
+                    isActive
+                      ? "bg-primary/5 border-primary/30 shadow-sm"
+                      : isDone
+                        ? "bg-[hsl(142,70%,45%)]/5 border-[hsl(142,70%,45%)]/20"
+                        : "bg-muted/40 border-border/40"
+                  }`}
+                >
+                  <div className={`flex h-7 w-7 items-center justify-center rounded-full ${
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : isDone
+                        ? "bg-[hsl(142,70%,45%)] text-white"
+                        : "bg-muted text-muted-foreground"
+                  }`}>
+                    {isDone ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Icon className="h-3.5 w-3.5" />}
+                  </div>
+                  <span className={`text-[9px] font-bold text-center leading-tight uppercase tracking-wide ${
+                    isActive ? "text-primary" : isDone ? "text-[hsl(142,70%,45%)]" : "text-muted-foreground"
+                  }`}>
+                    {s.label}
+                  </span>
+                  <span className={`text-[8px] font-bold ${
+                    isActive ? "text-primary" : isDone ? "text-[hsl(142,70%,45%)]" : "text-muted-foreground/60"
+                  }`}>
+                    {i + 1}/4
+                  </span>
+                </div>
+              );
+            })}
           </div>
-        );
-      }
-      if (stage === "active") {
-        return (
-          <div className="flex flex-col gap-2 p-4 bg-background border-t border-border/40">
-            {renderAssignmentInfo()}
-            <button onClick={() => advanceStage("completed")} className="w-full rounded-xl bg-[hsl(142,70%,45%)] py-3.5 text-[12px] font-bold text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-4 w-4" /> Mark Complete
-            </button>
-          </div>
-        );
-      }
-      return null;
+
+          {/* CTA for the active stage */}
+          <button
+            onClick={active.action}
+            className={`w-full rounded-xl py-3.5 text-[12px] font-bold shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${
+              stage === "active"
+                ? "bg-[hsl(142,70%,45%)] text-white"
+                : stage === "completed"
+                  ? "bg-foreground text-background"
+                  : "bg-primary text-primary-foreground shadow-primary/20"
+            }`}
+          >
+            <ActiveCtaIcon className="h-4 w-4" /> {active.cta}
+          </button>
+        </div>
+      );
     }
 
     // ── ESTIMATE JOB FOOTER (Post-Incoming) ──
