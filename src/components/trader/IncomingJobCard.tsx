@@ -1,4 +1,4 @@
-import { MapPin, Clock, Camera, Calendar, ChevronLeft, ChevronRight, Heart, CalendarDays, Users, Building2 } from "lucide-react";
+import { MapPin, Clock, Camera, Calendar, ChevronLeft, ChevronRight, Heart, CalendarDays, Users, Building2, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 
