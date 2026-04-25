@@ -13,7 +13,7 @@ interface EstimateSheetProps {
 }
 
 const EstimateSheet = ({ isOpen, onOpenChange, jobTitle, onSubmit }: EstimateSheetProps) => {
-  const [title, setTitle] = useState("");
+  // title is auto-derived from the job
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [description, setDescription] = useState("");
