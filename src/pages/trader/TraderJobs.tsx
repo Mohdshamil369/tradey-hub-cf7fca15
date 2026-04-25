@@ -640,9 +640,50 @@ const TraderJobs = () => {
       toast("Pick an inspector to send on-site.");
       return;
     }
+    // Inspection done OR estimate approved → build the quote (with PDF preview before sending)
+    if (stage === "inspected" || stage === "estimate_approved") {
+      setPostInspectionJob(job);
+      return;
+    }
     // Default: open job detail — workflow tabs handle the rest.
     openJobDetail(job);
   };
+
+  /** Persist the post-inspection quote and advance the workflow to quote_sent. */
+  const handlePostInspectionQuote = (data: QuoteSheetData) => {
+    if (!postInspectionJob) return;
+    const job = postInspectionJob;
+    // Persist new stage
+    try {
+      const prev = JSON.parse(sessionStorage.getItem(`job_workflow_${job.id}`) || "{}");
+      sessionStorage.setItem(`job_workflow_${job.id}`, JSON.stringify({
+        ...prev,
+        stage: "quote_sent",
+        purchaseItems: data.items.filter(i => i.type === "material").map(i => ({
+          id: i.id, name: i.name, quantity: i.quantity, expectedPrice: i.cost,
+          status: "pending", buyer: "customer",
+        })),
+      }));
+    } catch {}
+    // Add to sent quotes list
+    setSentQuotes(prev => [{
+      id: crypto.randomUUID(),
+      jobTitle: job.title,
+      icon: job.icon,
+      customer: job.customer,
+      location: job.location,
+      distance: job.distance,
+      sentAt: "Just now",
+      quoteTotal: data.total,
+      materialsCount: data.items.filter(i => i.type === "material").length,
+      status: "pending" as const,
+    }, ...prev]);
+    // Force re-render so StageJobCard picks up the new stage from sessionStorage
+    setJobs(prev => prev.map(j => j.id === job.id ? { ...j } : j));
+    setPostInspectionJob(null);
+    toast.success("Quote sent to customer 📄", { description: `Total £${data.total.toFixed(2)} — purchase list activated.` });
+  };
+
 
   const renderCommittedJobCard = (job: Job) => {
     const statusTag = job.committedStatus ? committedStatusConfig[job.committedStatus] : null;
