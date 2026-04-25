@@ -384,72 +384,76 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
                 )}
               </div>
 
-              {/* Existing items */}
+              {/* Existing items — fixed-height scrollable list with sticky total */}
               {items.length > 0 && (
-                <ScrollArea className="mb-6 max-h-[40vh] pr-3 -mr-3">
-                  <div className="space-y-2">
-                  {items.map((item) => {
-                    const cfg = itemTypeConfig[item.type];
-                    const Icon = cfg.icon;
-                    return (
-                      <div key={item.id} className="group rounded-xl border border-border bg-card p-3 transition-all hover:border-primary/20">
-                        <div className="flex items-start gap-2.5">
-                          <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${cfg.bg}`}>
-                            <Icon className={`h-3.5 w-3.5 ${cfg.color}`} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            {editingId === item.id ? (
-                              <div className="space-y-2">
-                                <input
-                                  autoFocus
-                                  type="text"
-                                  value={item.name}
-                                  onChange={(e) => updateItem(item.id, { name: e.target.value })}
-                                  className="w-full bg-transparent text-[12px] font-bold text-foreground outline-none border-b border-primary/30"
-                                />
-                                <input
-                                  type="text"
-                                  placeholder="Description (optional)"
-                                  value={item.description || ""}
-                                  onChange={(e) => updateItem(item.id, { description: e.target.value })}
-                                  onBlur={() => setEditingId(null)}
-                                  className="w-full bg-transparent text-[10px] text-muted-foreground outline-none border-b border-border/40"
-                                />
-                              </div>
-                            ) : (
-                              <div>
-                                <p className="text-[12px] font-bold text-foreground truncate">{item.name}</p>
-                                {item.description && (
-                                  <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{item.description}</p>
-                                )}
-                              </div>
-                            )}
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className={`text-[9px] font-bold uppercase ${cfg.color}`}>{cfg.label}</span>
-                              <span className="text-[9px] text-muted-foreground">
-                                {item.quantity} {item.unit || "pcs"} × £{item.cost.toFixed(2)}
-                              </span>
+                <div className="mb-4 rounded-2xl border border-border/60 bg-card overflow-hidden">
+                  <div className="flex items-center justify-between px-3 py-2 bg-muted/40 border-b border-border/40">
+                    <span className="text-[10px] font-black uppercase tracking-[1px] text-muted-foreground">
+                      {items.length} item{items.length !== 1 ? "s" : ""} added
+                    </span>
+                    <span className="text-[11px] font-black text-primary">£{itemsTotal.toFixed(2)}</span>
+                  </div>
+                  <ScrollArea className="h-[220px]">
+                    <div className="divide-y divide-border/40">
+                    {items.map((item) => {
+                      const cfg = itemTypeConfig[item.type];
+                      const Icon = cfg.icon;
+                      const isEditing = editingId === item.id;
+                      return (
+                        <div key={item.id} className="group p-2.5 transition-colors hover:bg-muted/30">
+                          <div className="flex items-center gap-2.5">
+                            <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${cfg.bg}`}>
+                              <Icon className={`h-3.5 w-3.5 ${cfg.color}`} />
                             </div>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <p className="text-[12px] font-extrabold text-foreground">
-                              £{(item.cost * item.quantity).toFixed(2)}
-                            </p>
-                            <div className="flex items-center justify-end gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button onClick={() => setEditingId(item.id)} className="h-6 w-6 rounded-full bg-accent flex items-center justify-center">
-                                <Edit3 className="h-2.5 w-2.5 text-muted-foreground" />
-                              </button>
-                              <button onClick={() => removeItem(item.id)} className="h-6 w-6 rounded-full bg-destructive/10 flex items-center justify-center">
-                                <Trash2 className="h-2.5 w-2.5 text-destructive" />
-                              </button>
+                            <div className="flex-1 min-w-0">
+                              {isEditing ? (
+                                <div className="space-y-1">
+                                  <input
+                                    autoFocus
+                                    type="text"
+                                    value={item.name}
+                                    onChange={(e) => updateItem(item.id, { name: e.target.value })}
+                                    className="w-full bg-transparent text-[12px] font-bold text-foreground outline-none border-b border-primary/30"
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="Description (optional)"
+                                    value={item.description || ""}
+                                    onChange={(e) => updateItem(item.id, { description: e.target.value })}
+                                    onBlur={() => setEditingId(null)}
+                                    className="w-full bg-transparent text-[10px] text-muted-foreground outline-none border-b border-border/40"
+                                  />
+                                </div>
+                              ) : (
+                                <>
+                                  <p className="text-[12px] font-bold text-foreground truncate leading-tight">{item.name}</p>
+                                  <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
+                                    {item.quantity} {item.unit || "pcs"} × £{item.cost.toFixed(2)}
+                                    {item.description ? ` · ${item.description}` : ""}
+                                  </p>
+                                </>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <p className="text-[12px] font-extrabold text-foreground tabular-nums">
+                                £{(item.cost * item.quantity).toFixed(2)}
+                              </p>
+                              <div className="flex items-center gap-0.5 ml-1">
+                                <button onClick={() => setEditingId(isEditing ? null : item.id)} aria-label="Edit item" className="h-6 w-6 rounded-full bg-accent flex items-center justify-center active:scale-90">
+                                  <Edit3 className="h-2.5 w-2.5 text-muted-foreground" />
+                                </button>
+                                <button onClick={() => removeItem(item.id)} aria-label="Remove item" className="h-6 w-6 rounded-full bg-destructive/10 flex items-center justify-center active:scale-90">
+                                  <Trash2 className="h-2.5 w-2.5 text-destructive" />
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                  </div>
-                </ScrollArea>
+                      );
+                    })}
+                    </div>
+                  </ScrollArea>
+                </div>
               )}
 
               {/* Add New Item Form (Screenshot 2 Design) */}
