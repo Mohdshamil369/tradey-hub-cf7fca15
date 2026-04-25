@@ -806,6 +806,7 @@ const TraderJobs = () => {
         <StageJobCard
           key={job.id}
           stage={stage}
+          category={job.category}
           job={{
             id: job.id,
             title: job.title,
@@ -872,7 +873,7 @@ const TraderJobs = () => {
     if (isPickup) {
       if (isAgencyProfile) {
         const pickedUpAt = new Date().toISOString();
-        const next: JobWorkflowState = { stage: "unassigned", pickedUpAt, purchaseItems: [] };
+        const next: JobWorkflowState = { stage: "assigned", pickedUpAt, purchaseItems: [] };
         sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
         
         setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: "active" as JobStatus, committedStatus: "upcoming" } : j));
