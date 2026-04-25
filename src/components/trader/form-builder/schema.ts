@@ -20,6 +20,8 @@ export interface FormTemplate {
   responsesCount?: number;
   stepsCount?: number;
   category?: string;
+  usageCount?: number;
+  lastUsedAt?: string;
 }
 
 export interface JobNote {
