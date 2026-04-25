@@ -83,6 +83,8 @@ interface Job {
   /** Where this job came to me from. "direct" = customer found me; "org" = forwarded by an organisation I work with. */
   source?: "direct" | "org";
   orgName?: string;
+  /** True if this job was directly assigned to me by my organisation's admin. */
+  assignedByAdmin?: boolean;
 }
 
 const initialJobs: Job[] = [
