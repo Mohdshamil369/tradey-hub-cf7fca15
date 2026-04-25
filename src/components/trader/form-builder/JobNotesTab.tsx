@@ -298,6 +298,8 @@ export const JobNotesTab = ({ jobId, isInline = false }: JobNotesTabProps) => {
         isOpen={isCreateSheetOpen}
         onOpenChange={setIsCreateSheetOpen}
         onContinue={handleContinueCreation}
+        templates={adminTemplates}
+        frequentForms={frequentForms}
       />
       <FormLibrarySheet
         isOpen={isLibraryOpen}
