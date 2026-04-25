@@ -1,150 +1,14 @@
-import { ChevronRight, Clock, MapPin, Building2, ShoppingCart, UserPlus, FileText, CheckCircle2, Receipt, ListChecks, PlayCircle, Hammer, Users } from "lucide-react";
+import { ChevronRight, Clock, MapPin, Building2, ShoppingCart } from "lucide-react";
 import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
-import type { WorkflowStage } from "@/data/jobWorkflowState";
+import type { WorkflowStage, JobCategory } from "@/data/jobWorkflowState";
+import { getStageCta } from "@/data/stageCta";
 
-/** Per-stage CTA + visual config */
-interface StageMeta {
-  label: string;        // pill label (current stage)
-  pillClass: string;    // pill colors (semantic-token friendly)
-  cta: string;          // footer button text
-  ctaIcon: typeof UserPlus; // footer icon
-  ctaTone: "primary" | "warning" | "success" | "info";
-  hint?: string;        // small subtitle under stage pill
-}
-
-/** Stage CTA labels MUST match the JobDetail page footer CTAs exactly so
- *  the list card and the detail page feel like one continuous action. */
-const stageMetaMap: Partial<Record<WorkflowStage, StageMeta>> = {
-  unassigned: {
-    label: "Picked up · Awaiting Assignment",
-    pillClass: "bg-amber-500/10 text-amber-600",
-    cta: "Assign Worker",
-    ctaIcon: UserPlus,
-    ctaTone: "warning",
-    hint: "Assign a worker within 4 hours.",
-  },
-  fee_set: {
-    label: "Inspection Fee Sent",
-    pillClass: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]",
-    cta: "Awaiting Customer Payment",
-    ctaIcon: Clock,
-    ctaTone: "info",
-    hint: "Customer needs to pay the inspection fee.",
-  },
-  fee_paid: {
-    label: "Inspection Fee Paid",
-    pillClass: "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]",
-    cta: "Assign Worker for Inspection",
-    ctaIcon: Users,
-    ctaTone: "primary",
-    hint: "Assign a worker to inspect the site.",
-  },
-  worker_assigned: {
-    label: "Inspector Assigned",
-    pillClass: "bg-primary/10 text-primary",
-    cta: "Mark Inspection Complete",
-    ctaIcon: CheckCircle2,
-    ctaTone: "primary",
-  },
-  inspected: {
-    label: "Inspection Complete",
-    pillClass: "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]",
-    cta: "Create Estimate",
-    ctaIcon: FileText,
-    ctaTone: "primary",
-    hint: "Inspection done — share the estimate with the customer.",
-  },
-  estimate_sent: {
-    label: "Estimate Sent",
-    pillClass: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]",
-    cta: "Awaiting Customer Approval",
-    ctaIcon: Clock,
-    ctaTone: "info",
-  },
-  estimate_approved: {
-    label: "Estimate Approved",
-    pillClass: "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]",
-    cta: "Break into Subtasks",
-    ctaIcon: ListChecks,
-    ctaTone: "primary",
-    hint: "Estimate approved — split the work into subtasks.",
-  },
-  subtasks_created: {
-    label: "Subtasks Ready",
-    pillClass: "bg-blue-500/10 text-blue-600",
-    cta: "Create Quote",
-    ctaIcon: FileText,
-    ctaTone: "primary",
-  },
-  quote_sent: {
-    label: "Quote Sent · Purchase List Active",
-    pillClass: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]",
-    cta: "View Purchase List",
-    ctaIcon: ShoppingCart,
-    ctaTone: "info",
-    hint: "Customer is reviewing items to purchase.",
-  },
-  quote_accepted: {
-    label: "Quote Accepted",
-    pillClass: "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]",
-    cta: "View Purchase List",
-    ctaIcon: ShoppingCart,
-    ctaTone: "primary",
-    hint: "Items being purchased by the customer.",
-  },
-  purchasing: {
-    label: "Purchasing Materials",
-    pillClass: "bg-blue-500/10 text-blue-600",
-    cta: "View Purchase List",
-    ctaIcon: ShoppingCart,
-    ctaTone: "primary",
-    hint: "Track items as the customer purchases them.",
-  },
-  work_in_progress: {
-    label: "Work In Progress",
-    pillClass: "bg-primary/10 text-primary",
-    cta: "Generate Invoice",
-    ctaIcon: Receipt,
-    ctaTone: "primary",
-    hint: "Work complete — bill the customer for the remaining balance.",
-  },
-  invoice_sent: {
-    label: "Invoice Sent",
-    pillClass: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]",
-    cta: "Awaiting Payment",
-    ctaIcon: Receipt,
-    ctaTone: "info",
-  },
-  completed: {
-    label: "Completed",
-    pillClass: "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]",
-    cta: "View Summary",
-    ctaIcon: CheckCircle2,
-    ctaTone: "success",
-  },
-  // Fixed-job committed stages
-  assigned: {
-    label: "Assigned",
-    pillClass: "bg-primary/10 text-primary",
-    cta: "Start Job",
-    ctaIcon: PlayCircle,
-    ctaTone: "primary",
-  },
-  active: {
-    label: "Active",
-    pillClass: "bg-primary/10 text-primary",
-    cta: "Mark Complete",
-    ctaIcon: Hammer,
-    ctaTone: "primary",
-  },
-};
-
-const ctaToneClass: Record<StageMeta["ctaTone"], string> = {
+const ctaToneClass = {
   primary: "bg-primary text-primary-foreground",
   warning: "bg-amber-500 text-white",
   success: "bg-[hsl(142,70%,45%)] text-white",
   info: "bg-secondary text-foreground",
-};
+} as const;
 
 interface StageJobCardProps {
   job: {
@@ -161,12 +25,13 @@ interface StageJobCardProps {
     purchaseProgress?: { purchased: number; total: number };
   };
   stage: WorkflowStage;
+  category: JobCategory;
   onClick?: () => void;
   onCta?: (jobId: string, stage: WorkflowStage) => void;
 }
 
-const StageJobCard = ({ job, stage, onClick, onCta }: StageJobCardProps) => {
-  const meta = stageMetaMap[stage] ?? stageMetaMap.active!;
+const StageJobCard = ({ job, stage, category, onClick, onCta }: StageJobCardProps) => {
+  const meta = getStageCta(stage, category);
   const Icon = meta.ctaIcon;
   const showProgress = !!job.purchaseProgress && job.purchaseProgress.total > 0;
   const pct = showProgress
@@ -266,8 +131,9 @@ const StageJobCard = ({ job, stage, onClick, onCta }: StageJobCardProps) => {
           Details <ChevronRight className="h-3 w-3" />
         </button>
         <button
-          onClick={(e) => { e.stopPropagation(); onCta?.(job.id, stage); }}
-          className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-bold active:scale-95 transition-all ${ctaToneClass[meta.ctaTone]}`}
+          onClick={(e) => { e.stopPropagation(); if (!meta.awaiting) onCta?.(job.id, stage); }}
+          disabled={meta.awaiting}
+          className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-bold active:scale-95 transition-all ${ctaToneClass[meta.tone]} ${meta.awaiting ? "opacity-80 cursor-default" : ""}`}
         >
           <Icon className="h-3.5 w-3.5" />
           {meta.cta}
