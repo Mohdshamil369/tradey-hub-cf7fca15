@@ -14,6 +14,7 @@ export type QuoteItemType = "material" | "labour" | "custom";
 export interface QuoteItem {
   id: string;
   name: string;
+  description?: string; // Optional description for each item
   cost: number;
   quantity: number;
   type: QuoteItemType;
@@ -86,6 +87,7 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
 
   // New item form
   const [newName, setNewName] = useState("");
+  const [newDesc, setNewDesc] = useState("");
   const [newCost, setNewCost] = useState("");
   const [newQty, setNewQty] = useState("1");
   const [newType, setNewType] = useState<QuoteItemType>("material");
@@ -113,6 +115,7 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
       setHasVoiceNote(false);
       setEditingId(null);
       setNewName("");
+      setNewDesc("");
       setNewCost("");
       setNewQty("1");
       setNewType("material");
@@ -133,12 +136,14 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
     setItems(prev => [...prev, {
       id: crypto.randomUUID(),
       name: newName,
+      description: newDesc.trim() || undefined,
       cost: parseFloat(newCost) || 0,
       quantity: parseInt(newQty) || 1,
       type: newType,
       unit: newUnit,
     }]);
     setNewName("");
+    setNewDesc("");
     setNewCost("");
     setNewQty("1");
     toast.success("Item added");
@@ -360,7 +365,8 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
 
               {/* Existing items */}
               {items.length > 0 && (
-                <div className="mb-3 space-y-1.5">
+                <ScrollArea className="mb-6 max-h-[40vh] pr-3 -mr-3">
+                  <div className="space-y-2">
                   {items.map((item) => {
                     const cfg = itemTypeConfig[item.type];
                     const Icon = cfg.icon;
@@ -372,16 +378,30 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
                           </div>
                           <div className="flex-1 min-w-0">
                             {editingId === item.id ? (
-                              <input
-                                autoFocus
-                                type="text"
-                                value={item.name}
-                                onChange={(e) => updateItem(item.id, { name: e.target.value })}
-                                onBlur={() => setEditingId(null)}
-                                className="w-full bg-transparent text-[12px] font-bold text-foreground outline-none border-b border-primary/30"
-                              />
+                              <div className="space-y-2">
+                                <input
+                                  autoFocus
+                                  type="text"
+                                  value={item.name}
+                                  onChange={(e) => updateItem(item.id, { name: e.target.value })}
+                                  className="w-full bg-transparent text-[12px] font-bold text-foreground outline-none border-b border-primary/30"
+                                />
+                                <input
+                                  type="text"
+                                  placeholder="Description (optional)"
+                                  value={item.description || ""}
+                                  onChange={(e) => updateItem(item.id, { description: e.target.value })}
+                                  onBlur={() => setEditingId(null)}
+                                  className="w-full bg-transparent text-[10px] text-muted-foreground outline-none border-b border-border/40"
+                                />
+                              </div>
                             ) : (
-                              <p className="text-[12px] font-bold text-foreground truncate">{item.name}</p>
+                              <div>
+                                <p className="text-[12px] font-bold text-foreground truncate">{item.name}</p>
+                                {item.description && (
+                                  <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{item.description}</p>
+                                )}
+                              </div>
                             )}
                             <div className="flex items-center gap-2 mt-0.5">
                               <span className={`text-[9px] font-bold uppercase ${cfg.color}`}>{cfg.label}</span>
@@ -407,7 +427,8 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
                       </div>
                     );
                   })}
-                </div>
+                  </div>
+                </ScrollArea>
               )}
 
               {/* Add New Item Form (Screenshot 2 Design) */}
@@ -451,7 +472,16 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
                   }
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full bg-transparent text-[15px] font-bold text-[#1A1C1E] outline-none placeholder:text-muted-foreground/30 mb-6 border-b border-border/40 pb-2"
+                  className="w-full bg-transparent text-[15px] font-bold text-[#1A1C1E] outline-none placeholder:text-muted-foreground/40 mb-3 border-b border-border/40 pb-2"
+                />
+
+                {/* Description Input */}
+                <textarea
+                  placeholder="Item description / notes (optional)"
+                  value={newDesc}
+                  onChange={(e) => setNewDesc(e.target.value)}
+                  rows={2}
+                  className="w-full bg-transparent text-[12px] font-medium text-foreground outline-none placeholder:text-muted-foreground/40 mb-6 border-b border-border/40 pb-2 resize-none"
                 />
 
                 {/* Price + Quantity + Unit row */}

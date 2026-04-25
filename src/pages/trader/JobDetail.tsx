@@ -29,7 +29,7 @@ import JobCustomerChatTab from "@/components/trader/job-admin/JobCustomerChatTab
 import { ListChecks, ShoppingCart } from "lucide-react";
 import {
   type WorkflowStage, type EstimateData, type PurchaseItem, type InvoiceData,
-  type JobWorkflowState, stageLabel, stageColor, createDefaultWorkflowState,
+  type JobWorkflowState, type JobAssignment, stageLabel, stageColor, createDefaultWorkflowState,
 } from "@/data/jobWorkflowState";
 
 export type JobCategory = "fixed" | "estimate" | "inspection";
@@ -217,24 +217,40 @@ const JobDetail = () => {
     setShowAssignSheet(false);
     const total = pendingQuote?.total ?? 0;
     const isPickup = (pendingQuote?.items?.length ?? 0) === 0;
+    
     const who = result.type === "group"
       ? `${result.groupName} (${result.memberNames.length} ${result.memberNames.length === 1 ? "member" : "members"})`
       : result.memberNames.join(", ");
+
+    const assignment: JobAssignment = {
+      type: result.type,
+      groupName: result.groupName,
+      memberNames: result.memberNames,
+    };
+
+    let nextStage = workflow.stage;
+    if (job.category === "fixed") nextStage = "assigned";
+    if (job.category === "inspection" && workflow.stage === "fee_paid") nextStage = "worker_assigned";
+
+    const next: JobWorkflowState = { 
+      ...workflow, 
+      stage: nextStage, 
+      assignment 
+    };
+    
+    setWorkflow(next);
+    sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
+
     toast.success(
       isPickup ? `Job picked up · £${total.toFixed(2)}` : `Quote approved · £${total.toFixed(2)}`,
       { description: `Assigned to ${who}` }
     );
     setPendingQuote(null);
-    // Advance workflow for fixed jobs
-    if (job.category === "fixed") {
-      advanceStage("assigned");
+
+    // If it's a sole trader pick-up, maybe navigate back, but for agency admin keep them here to see the new stage
+    if (!isAgencyAdmin) {
+      setTimeout(() => navigate("/trader/jobs"), 400);
     }
-    // For inspection fee_paid → worker_assigned
-    if (job.category === "inspection" && workflow.stage === "fee_paid") {
-      advanceStage("worker_assigned");
-      return;
-    }
-    setTimeout(() => navigate("/trader/jobs"), 400);
   };
 
   // ── Estimate submit handler ──
@@ -811,6 +827,38 @@ const JobDetail = () => {
   })();
 
   const renderFooter = () => {
+    const renderAssignmentInfo = () => {
+      if (!workflow.assignment) return null;
+      const who = workflow.assignment.type === "group"
+        ? `${workflow.assignment.groupName}`
+        : workflow.assignment.memberNames.join(", ");
+      
+      return (
+        <div className="flex items-center justify-between mb-4 px-1">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+              <Users className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[1px]">Assigned To</p>
+              <p className="text-[13px] font-bold text-foreground leading-tight">{who}</p>
+            </div>
+          </div>
+          {isAgencyAdmin && (
+            <button 
+              onClick={() => {
+                setPendingQuote({ items: [], notes: "", total: job.price ?? 0 });
+                setShowAssignSheet(true);
+              }} 
+              className="px-3 py-1.5 rounded-lg bg-primary/5 text-[11px] font-black text-primary active:scale-95 transition-all border border-primary/10"
+            >
+              Reassign
+            </button>
+          )}
+        </div>
+      );
+    };
+
     if (isCompleted || workflow.stage === "completed") {
       return (
         <div className="p-4 bg-background border-t border-border/40">
@@ -858,6 +906,27 @@ const JobDetail = () => {
 
     // ── FIXED JOB FOOTER (After pick up) ──
     if (job.category === "fixed") {
+      const stage = workflow.stage;
+      if (stage === "assigned") {
+        return (
+          <div className="flex flex-col gap-2 p-4 bg-background border-t border-border/40">
+            {renderAssignmentInfo()}
+            <button onClick={() => advanceStage("active")} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+              <PlayCircle className="h-4 w-4" /> Start Job
+            </button>
+          </div>
+        );
+      }
+      if (stage === "active") {
+        return (
+          <div className="flex flex-col gap-2 p-4 bg-background border-t border-border/40">
+            {renderAssignmentInfo()}
+            <button onClick={() => advanceStage("completed")} className="w-full rounded-xl bg-[hsl(142,70%,45%)] py-3.5 text-[12px] font-bold text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+              <CheckCircle2 className="h-4 w-4" /> Mark Complete
+            </button>
+          </div>
+        );
+      }
       return null;
     }
 
@@ -946,9 +1015,12 @@ const JobDetail = () => {
             </button>
           )}
           {stage === "worker_assigned" && (
-            <button onClick={() => { advanceStage("inspected"); toast.success("Inspection complete — create estimate now"); }} className="w-full rounded-xl bg-[hsl(142,70%,45%)] py-3.5 text-[12px] font-bold text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-4 w-4" /> Mark Inspection Complete
-            </button>
+            <>
+              {renderAssignmentInfo()}
+              <button onClick={() => { advanceStage("inspected"); toast.success("Inspection complete — create estimate now"); }} className="w-full rounded-xl bg-[hsl(142,70%,45%)] py-3.5 text-[12px] font-bold text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                <CheckCircle2 className="h-4 w-4" /> Mark Inspection Complete
+              </button>
+            </>
           )}
           {stage === "inspected" && (
             <button onClick={() => setShowEstimateSheet(true)} className="w-full rounded-xl bg-blue-600 py-3.5 text-[12px] font-bold text-white shadow-lg shadow-blue-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">

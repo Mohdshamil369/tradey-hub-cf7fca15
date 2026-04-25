@@ -60,6 +60,12 @@ export interface InvoiceData {
   sentAt?: string;
 }
 
+export interface JobAssignment {
+  type: "group" | "individual";
+  groupName?: string;
+  memberNames: string[];
+}
+
 export interface JobWorkflowState {
   stage: WorkflowStage;
   estimateData?: EstimateData;
@@ -68,6 +74,7 @@ export interface JobWorkflowState {
   advanceAmount?: number;
   purchaseItems: PurchaseItem[];
   invoiceData?: InvoiceData;
+  assignment?: JobAssignment;
 }
 
 /* ─── Stage Labels ─── */
