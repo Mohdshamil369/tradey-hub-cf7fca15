@@ -106,7 +106,8 @@ const initialJobs: Job[] = [
     voiceDuration: "0:23", 
     proposalsCount: 2,
     customerRequest: { expectedDuration: "1–2 hours", expectedBudget: 80, photos: [jobTapImg, jobTapImg] },
-    customerData: { rating: 4.8, reviews: 12, isVerified: true, memberSince: "Jan 2024" }
+    customerData: { rating: 4.8, reviews: 12, isVerified: true, memberSince: "Jan 2024" },
+    source: "org", orgName: "BuildRight Ltd.", assignedByAdmin: true
   },
   { 
     id: "j3", 
