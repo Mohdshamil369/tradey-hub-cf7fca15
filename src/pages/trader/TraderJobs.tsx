@@ -1775,6 +1775,14 @@ const TraderJobs = () => {
         onOpenChange={setShowResponseWorkflow}
         onSubmit={handleResponseSubmit}
       />
+      {/* Post-inspection / post-estimate-approval quote builder with PDF preview */}
+      <QuoteSheet
+        isOpen={!!postInspectionJob}
+        onOpenChange={(open) => { if (!open) setPostInspectionJob(null); }}
+        category="estimate"
+        jobTitle={postInspectionJob?.title ?? ""}
+        onSubmit={handlePostInspectionQuote}
+      />
     </MobileLayout>
   );
 };
