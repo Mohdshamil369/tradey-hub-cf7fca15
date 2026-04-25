@@ -61,7 +61,7 @@ export interface InvoiceData {
 }
 
 export interface JobAssignment {
-  type: "group" | "individual";
+  type: "group" | "individual" | "self";
   groupName?: string;
   memberNames: string[];
 }
