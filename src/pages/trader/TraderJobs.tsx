@@ -571,7 +571,7 @@ const TraderJobs = () => {
           if (!validStages.has(parsed?.stage)) sessionStorage.removeItem(key);
         } catch { sessionStorage.removeItem(key); }
       };
-      ["j11","j12","j13","j14"].forEach(id => cleanIfLegacy(`job_workflow_${id}`));
+      ["j11","j12","j13","j14","j15","j16","j17","j18","j19","j20"].forEach(id => cleanIfLegacy(`job_workflow_${id}`));
 
       // j14 — completed with prior advance (Create Invoice CTA)
       if (!sessionStorage.getItem("job_workflow_j14")) {
