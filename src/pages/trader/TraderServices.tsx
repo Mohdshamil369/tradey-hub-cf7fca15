@@ -187,13 +187,6 @@ const TraderServicesPage = () => {
                       {service.duration}
                     </span>
                   </div>
-                  <div className="mt-1.5 flex items-center gap-1.5">
-                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                      service.useUniversalPay ? "bg-primary/10 text-primary" : "bg-blaze/10 text-blaze"
-                    }`}>
-                      {service.useUniversalPay ? `Universal £${UNIVERSAL_BASE_PAY}/hr` : `Custom £${service.customBasePay}/hr`}
-                    </span>
-                  </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
                   <button
