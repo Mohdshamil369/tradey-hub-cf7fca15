@@ -1525,7 +1525,7 @@ const TraderJobs = () => {
                         return (
                           <div className="space-y-3">
                             <div className="flex items-center justify-between px-1">
-                              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{group.name} · pick members</p>
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{group.name} · {selectedMemberIds.size}/{group.members.length} selected</p>
                               <button
                                 onClick={() => setSelectedMemberIds(allSelected ? new Set() : new Set(group.members.map(m => m.id)))}
                                 className="text-[10px] font-bold text-primary"
