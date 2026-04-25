@@ -196,9 +196,13 @@ const StageJobCard = ({ job, stage, category, onClick, onCta, onReassign, onAssi
             </button>
           )}
           <button
-            onClick={(e) => { e.stopPropagation(); if (!meta.awaiting) onCta?.(job.id, stage); }}
-            disabled={meta.awaiting}
-            className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-bold active:scale-95 transition-all ${ctaToneClass[meta.tone]} ${meta.awaiting ? "opacity-80 cursor-default" : ""}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (job.pickedNotAssigned) { onAssign?.(job.id); return; }
+              if (!meta.awaiting) onCta?.(job.id, stage);
+            }}
+            disabled={meta.awaiting && !job.pickedNotAssigned}
+            className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-bold active:scale-95 transition-all ${ctaToneClass[meta.tone]} ${meta.awaiting && !job.pickedNotAssigned ? "opacity-80 cursor-default" : ""}`}
           >
             <Icon className="h-3.5 w-3.5" />
             {meta.cta}
