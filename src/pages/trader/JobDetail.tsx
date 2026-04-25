@@ -16,6 +16,9 @@ import { toast } from "sonner";
 import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 import QuoteSheet, { type QuoteSheetData } from "@/components/trader/QuoteSheet";
 import AssignSheet, { type AssignmentResult } from "@/components/trader/AssignSheet";
+import EstimateSheet from "@/components/trader/EstimateSheet";
+import PurchaseListTab from "@/components/trader/PurchaseListTab";
+import InvoiceSheet from "@/components/trader/InvoiceSheet";
 import { useAuth } from "@/contexts/AuthContext";
 import JobNotesTab from "@/components/trader/form-builder/JobNotesTab";
 import JobSubtasksTab from "@/components/trader/JobSubtasksTab";
@@ -23,7 +26,11 @@ import JobFinancesTab from "@/components/trader/job-admin/JobFinancesTab";
 import JobProgressTab from "@/components/trader/job-admin/JobProgressTab";
 import JobDocsTab from "@/components/trader/job-admin/JobDocsTab";
 import JobCustomerChatTab from "@/components/trader/job-admin/JobCustomerChatTab";
-import { ListChecks } from "lucide-react";
+import { ListChecks, ShoppingCart } from "lucide-react";
+import {
+  type WorkflowStage, type EstimateData, type PurchaseItem, type InvoiceData,
+  type JobWorkflowState, stageLabel, stageColor, createDefaultWorkflowState,
+} from "@/data/jobWorkflowState";
 
 export type JobCategory = "fixed" | "estimate" | "inspection";
 
@@ -89,7 +96,7 @@ const categoryConfig: Record<JobCategory, { label: string; emoji: string; classN
 
 type TabKey =
   | "details" | "quotes" | "subtasks" | "attachments"
-  | "finances" | "progress" | "docs" | "chat";
+  | "finances" | "progress" | "docs" | "chat" | "purchase-list";
 
 const JobDetail = () => {
   const navigate = useNavigate();
@@ -107,6 +114,21 @@ const JobDetail = () => {
   const [showMoreActions, setShowMoreActions] = useState(false);
   const [showAssignSheet, setShowAssignSheet] = useState(false);
   const [pendingQuote, setPendingQuote] = useState<QuoteSheetData | null>(null);
+  const [showEstimateSheet, setShowEstimateSheet] = useState(false);
+  const [showInvoiceSheet, setShowInvoiceSheet] = useState(false);
+
+  // ── Workflow State ──
+  const [workflow, setWorkflow] = useState<JobWorkflowState>(() => {
+    const stored = sessionStorage.getItem(`job_workflow_${jobId}`);
+    if (stored) return JSON.parse(stored);
+    return createDefaultWorkflowState((JSON.parse(sessionStorage.getItem(`job_detail_${jobId}`) || '{}')?.category) || "fixed");
+  });
+
+  const advanceStage = (stage: WorkflowStage) => {
+    const next = { ...workflow, stage };
+    setWorkflow(next);
+    sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
+  };
 
   const stored = sessionStorage.getItem(`job_detail_${jobId}`);
   const job: JobDetailPageData | null = stored ? JSON.parse(stored) : null;
@@ -123,8 +145,7 @@ const JobDetail = () => {
   }
 
   const cat = categoryConfig[job.category];
-  const showQuotesTab = job.category !== "fixed";
-  const showSubtasksTab = job.category === "estimate" || job.category === "inspection";
+
   const photos = job.media?.photos?.filter(p => p && p !== "/placeholder.svg") ?? [];
   const hasPhotos = photos.length > 0;
   const hasVoice = !!job.media?.voiceNote;
@@ -137,6 +158,11 @@ const JobDetail = () => {
 
   // Long-term committed jobs in admin mode get the full workspace
   const showAdminTabs = isCommitted && isLongTerm && adminMode && !isCompleted && !isCancelled;
+
+  // ── Workflow-aware tabs ──
+  const showQuotesTab = job.category !== "fixed" && (["estimate_approved", "subtasks_created", "quote_sent", "quote_accepted", "purchasing", "work_in_progress", "invoice_sent", "completed", "inspected"] as string[]).includes(workflow.stage);
+  const showSubtasksTab = job.category !== "fixed" && (["estimate_approved", "subtasks_created", "quote_sent", "quote_accepted", "purchasing", "work_in_progress", "invoice_sent", "completed", "inspected"] as string[]).includes(workflow.stage);
+  const showPurchaseListTab = job.category !== "fixed" && (["quote_accepted", "purchasing", "work_in_progress", "invoice_sent", "completed"] as string[]).includes(workflow.stage);
 
   const tabs: { key: TabKey; label: string; icon: any }[] = showAdminTabs
     ? [
@@ -151,6 +177,7 @@ const JobDetail = () => {
         { key: "details", label: "Details", icon: ClipboardList },
         ...(showQuotesTab ? [{ key: "quotes" as const, label: "Quote", icon: FileText }] : []),
         ...(showSubtasksTab ? [{ key: "subtasks" as const, label: "Subtasks", icon: ListChecks }] : []),
+        ...(showPurchaseListTab ? [{ key: "purchase-list" as const, label: "Purchase List", icon: ShoppingCart }] : []),
         ...(hasAttachments ? [{ key: "attachments" as const, label: "Attachments", icon: Image }] : []),
       ];
 
@@ -198,7 +225,74 @@ const JobDetail = () => {
       { description: `Assigned to ${who}` }
     );
     setPendingQuote(null);
+    // Advance workflow for fixed jobs
+    if (job.category === "fixed") {
+      advanceStage("assigned");
+    }
+    // For inspection fee_paid → worker_assigned
+    if (job.category === "inspection" && workflow.stage === "fee_paid") {
+      advanceStage("worker_assigned");
+      return;
+    }
     setTimeout(() => navigate("/trader/jobs"), 400);
+  };
+
+  // ── Estimate submit handler ──
+  const handleEstimateSubmit = (data: EstimateData) => {
+    setShowEstimateSheet(false);
+    const next: JobWorkflowState = { ...workflow, stage: "estimate_sent", estimateData: data };
+    setWorkflow(next);
+    sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
+    toast.success("Estimate sent to customer!", { description: `${data.title} · £${data.minPrice}–£${data.maxPrice}` });
+  };
+
+  // ── Quote submit (with purchase list generation) ──
+  const handleQuoteSubmitWorkflow = (data: QuoteSheetData) => {
+    if (isAgencyAdmin && job.category !== "fixed") {
+      // Chain assign sheet
+      setPendingQuote(data);
+      setShowQuoteSheet(false);
+      setTimeout(() => setShowAssignSheet(true), 250);
+      return;
+    }
+    setShowQuoteSheet(false);
+    // Generate purchase items from quote materials
+    const purchaseItems: PurchaseItem[] = data.items
+      .filter((i) => i.type === "material")
+      .map((i) => ({
+        id: crypto.randomUUID(),
+        name: i.name,
+        quantity: i.quantity,
+        expectedPrice: i.cost,
+        status: "pending" as const,
+        buyer: "customer" as const,
+      }));
+    const next: JobWorkflowState = {
+      ...workflow,
+      stage: "quote_sent",
+      advanceAmount: data.advanceAmount ?? 0,
+      purchaseItems,
+    };
+    setWorkflow(next);
+    sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
+    toast.success("Quote sent to customer!", { description: `Total: £${data.total.toFixed(2)}` });
+  };
+
+  // ── Invoice generation ──
+  const generateInvoice = (): InvoiceData => {
+    const items = workflow.purchaseItems.map((p) => ({
+      label: `${p.name} (×${p.quantity})`,
+      amount: p.expectedPrice * p.quantity,
+    }));
+    const subtotal = items.reduce((s, i) => s + i.amount, 0);
+    const advance = workflow.advanceAmount ?? 0;
+    return {
+      id: crypto.randomUUID(),
+      items,
+      subtotal,
+      advancePaid: advance,
+      remaining: subtotal - advance,
+    };
   };
 
   const renderDetailsTab = () => {
@@ -715,7 +809,7 @@ const JobDetail = () => {
   })();
 
   const renderFooter = () => {
-    if (isCompleted) {
+    if (isCompleted || workflow.stage === "completed") {
       return (
         <div className="p-4 bg-background border-t border-border/40">
            <button
@@ -729,54 +823,189 @@ const JobDetail = () => {
     }
 
     // Committed job → smart CTAs (no "Generate Quote")
-    if (isCommitted) {
+    if (isCommitted && workflow.stage === "incoming") {
       const PrimaryIcon = committedPrimary.icon;
       return (
         <div className="flex items-center gap-2 p-4 bg-background border-t border-border/40">
-          <button
-            onClick={() => toast.info("Opening chat with customer…")}
-            aria-label="Message customer"
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-card active:bg-muted"
-          >
+          <button onClick={() => toast.info("Opening chat with customer…")} aria-label="Message customer" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-card active:bg-muted">
             <MessageCircle className="h-4 w-4 text-foreground" />
           </button>
-          <button
-            onClick={() => toast.info("Reschedule — coming soon")}
-            aria-label="Reschedule"
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-card active:bg-muted"
-          >
-            <Calendar className="h-4 w-4 text-foreground" />
-          </button>
-          <button
-            onClick={committedPrimary.action}
-            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
-          >
+          <button onClick={committedPrimary.action} className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all">
             <PrimaryIcon className="h-4 w-4" /> {committedPrimary.label}
           </button>
-          <button
-            onClick={() => setShowMoreActions(true)}
-            aria-label="More actions"
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-card active:bg-muted"
-          >
+          <button onClick={() => setShowMoreActions(true)} aria-label="More actions" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-card active:bg-muted">
             <MoreHorizontal className="h-4 w-4 text-foreground" />
           </button>
         </div>
       );
     }
 
-    // Incoming (non-committed) — original generate quote flow
+    // ── FIXED JOB FOOTER ──
+    if (job.category === "fixed") {
+      if (workflow.stage === "incoming") {
+        return (
+          <div className="flex gap-3 p-4 bg-background border-t border-border/40">
+            <button onClick={() => handleAction("decline")} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted">
+              <XCircle className="h-4 w-4" /> Decline
+            </button>
+            <button onClick={() => { setPendingQuote({ items: [], notes: "", total: job.price ?? 0 }); setShowAssignSheet(true); }} className="flex-[2] rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+              <Users className="h-4 w-4" /> Assign Workers
+            </button>
+          </div>
+        );
+      }
+      return null;
+    }
+
+    // ── ESTIMATE JOB FOOTER ──
+    if (job.category === "estimate") {
+      const stage = workflow.stage;
+      return (
+        <div className="flex flex-col gap-2 p-4 bg-background border-t border-border/40">
+          {stage === "incoming" && (
+            <div className="flex gap-3">
+              <button onClick={() => handleAction("decline")} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted">
+                <XCircle className="h-4 w-4" /> Decline
+              </button>
+              <button onClick={() => setShowEstimateSheet(true)} className="flex-[2] rounded-xl bg-blue-600 py-3.5 text-[12px] font-bold text-white shadow-lg shadow-blue-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                <FileText className="h-4 w-4" /> Create Estimate
+              </button>
+            </div>
+          )}
+          {stage === "estimate_sent" && (
+            <>
+              <div className="rounded-xl bg-[hsl(25,90%,55%)]/10 py-3.5 text-center text-[12px] font-bold text-[hsl(25,90%,55%)]">
+                ⏳ Awaiting Customer Approval
+              </div>
+              <button onClick={() => { advanceStage("estimate_approved"); toast.success("Customer approved the estimate!"); }} className="rounded-xl border border-dashed border-primary/30 py-2.5 text-[10px] font-bold text-primary active:bg-primary/5">
+                ⚡ Simulate: Customer Approves
+              </button>
+            </>
+          )}
+          {stage === "estimate_approved" && (
+            <button onClick={() => { advanceStage("subtasks_created"); setActiveTab("subtasks"); toast.success("Break this job into subtasks and assign workers"); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+              <ListChecks className="h-4 w-4" /> Break into Subtasks
+            </button>
+          )}
+          {stage === "subtasks_created" && (
+            <button onClick={() => { setSelectedQuoteCategory("estimate"); setShowQuoteSheet(true); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+              <FileText className="h-4 w-4" /> Create Quote
+            </button>
+          )}
+          {stage === "quote_sent" && (
+            <>
+              <div className="rounded-xl bg-[hsl(25,90%,55%)]/10 py-3.5 text-center text-[12px] font-bold text-[hsl(25,90%,55%)]">
+                ⏳ Quote Sent — Awaiting Customer
+              </div>
+              <button onClick={() => { advanceStage("quote_accepted"); setActiveTab("purchase-list"); toast.success("Customer accepted the quote!"); }} className="rounded-xl border border-dashed border-primary/30 py-2.5 text-[10px] font-bold text-primary active:bg-primary/5">
+                ⚡ Simulate: Customer Accepts Quote
+              </button>
+            </>
+          )}
+          {stage === "quote_accepted" && (
+            <button onClick={() => { advanceStage("purchasing"); setActiveTab("purchase-list"); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+              <ShoppingCart className="h-4 w-4" /> View Purchase List
+            </button>
+          )}
+          {stage === "purchasing" && (
+            <button onClick={() => { advanceStage("work_in_progress"); toast.success("All items purchased — work can begin!"); }} disabled={!workflow.purchaseItems.every(i => i.status === "purchased")} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40">
+              <CheckCircle2 className="h-4 w-4" /> All Purchased — Continue
+            </button>
+          )}
+          {stage === "work_in_progress" && (
+            <button onClick={() => { advanceStage("invoice_sent"); const inv = generateInvoice(); const next = { ...workflow, stage: "invoice_sent" as const, invoiceData: inv }; setWorkflow(next); sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next)); setShowInvoiceSheet(true); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+              <FileText className="h-4 w-4" /> Generate Invoice
+            </button>
+          )}
+          {stage === "invoice_sent" && (
+            <>
+              <div className="rounded-xl bg-[hsl(25,90%,55%)]/10 py-3.5 text-center text-[12px] font-bold text-[hsl(25,90%,55%)]">
+                ⏳ Invoice Sent — Awaiting Payment
+              </div>
+              <button onClick={() => { advanceStage("completed"); toast.success("Payment received — job completed! 🎉"); }} className="rounded-xl border border-dashed border-primary/30 py-2.5 text-[10px] font-bold text-primary active:bg-primary/5">
+                ⚡ Simulate: Customer Pays Remaining
+              </button>
+            </>
+          )}
+        </div>
+      );
+    }
+
+    // ── INSPECTION JOB FOOTER ──
+    if (job.category === "inspection") {
+      const stage = workflow.stage;
+      return (
+        <div className="flex flex-col gap-2 p-4 bg-background border-t border-border/40">
+          {stage === "incoming" && (
+            <div className="flex gap-3">
+              <button onClick={() => handleAction("decline")} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted">
+                <XCircle className="h-4 w-4" /> Decline
+              </button>
+              <button onClick={() => { const fee = job.inspectionFee ?? 45; const next: JobWorkflowState = { ...workflow, stage: "fee_set", inspectionFee: fee }; setWorkflow(next); sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next)); toast.success(`Inspection fee set: £${fee}`); }} className="flex-[2] rounded-xl bg-[hsl(25,90%,55%)] py-3.5 text-[12px] font-bold text-white shadow-lg shadow-orange-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                <PoundSterling className="h-4 w-4" /> Set Inspection Fee (£{job.inspectionFee ?? 45})
+              </button>
+            </div>
+          )}
+          {stage === "fee_set" && (
+            <>
+              <div className="rounded-xl bg-[hsl(25,90%,55%)]/10 py-3.5 text-center text-[12px] font-bold text-[hsl(25,90%,55%)]">
+                ⏳ Awaiting Customer Payment (£{workflow.inspectionFee})
+              </div>
+              <button onClick={() => { const next = { ...workflow, stage: "fee_paid" as const, inspectionFeePaid: true }; setWorkflow(next); sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next)); toast.success("Customer paid the inspection fee!"); }} className="rounded-xl border border-dashed border-primary/30 py-2.5 text-[10px] font-bold text-primary active:bg-primary/5">
+                ⚡ Simulate: Customer Pays Fee
+              </button>
+            </>
+          )}
+          {stage === "fee_paid" && (
+            <button onClick={() => { setPendingQuote({ items: [], notes: "", total: workflow.inspectionFee ?? 0 }); setShowAssignSheet(true); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+              <Users className="h-4 w-4" /> Assign Worker for Inspection
+            </button>
+          )}
+          {stage === "worker_assigned" && (
+            <button onClick={() => { advanceStage("inspected"); toast.success("Inspection complete — create estimate now"); }} className="w-full rounded-xl bg-[hsl(142,70%,45%)] py-3.5 text-[12px] font-bold text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+              <CheckCircle2 className="h-4 w-4" /> Mark Inspection Complete
+            </button>
+          )}
+          {stage === "inspected" && (
+            <button onClick={() => setShowEstimateSheet(true)} className="w-full rounded-xl bg-blue-600 py-3.5 text-[12px] font-bold text-white shadow-lg shadow-blue-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+              <FileText className="h-4 w-4" /> Create Estimate
+            </button>
+          )}
+          {/* After inspection, the estimate stages kick in — reuse same logic */}
+          {(["estimate_sent", "estimate_approved", "subtasks_created", "quote_sent", "quote_accepted", "purchasing", "work_in_progress", "invoice_sent"] as string[]).includes(stage) && (
+            (() => {
+              // Delegate to estimate flow rendering
+              if (stage === "estimate_sent") return (<>
+                <div className="rounded-xl bg-[hsl(25,90%,55%)]/10 py-3.5 text-center text-[12px] font-bold text-[hsl(25,90%,55%)]">⏳ Awaiting Customer Approval</div>
+                <button onClick={() => { advanceStage("estimate_approved"); toast.success("Customer approved!"); }} className="rounded-xl border border-dashed border-primary/30 py-2.5 text-[10px] font-bold text-primary active:bg-primary/5">⚡ Simulate: Customer Approves</button>
+              </>);
+              if (stage === "estimate_approved") return <button onClick={() => { advanceStage("subtasks_created"); setActiveTab("subtasks"); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"><ListChecks className="h-4 w-4" /> Break into Subtasks</button>;
+              if (stage === "subtasks_created") return <button onClick={() => { setSelectedQuoteCategory("estimate"); setShowQuoteSheet(true); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"><FileText className="h-4 w-4" /> Create Quote</button>;
+              if (stage === "quote_sent") return (<>
+                <div className="rounded-xl bg-[hsl(25,90%,55%)]/10 py-3.5 text-center text-[12px] font-bold text-[hsl(25,90%,55%)]">⏳ Quote Sent — Awaiting Customer</div>
+                <button onClick={() => { advanceStage("quote_accepted"); setActiveTab("purchase-list"); toast.success("Customer accepted!"); }} className="rounded-xl border border-dashed border-primary/30 py-2.5 text-[10px] font-bold text-primary active:bg-primary/5">⚡ Simulate: Customer Accepts</button>
+              </>);
+              if (stage === "quote_accepted") return <button onClick={() => { advanceStage("purchasing"); setActiveTab("purchase-list"); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"><ShoppingCart className="h-4 w-4" /> View Purchase List</button>;
+              if (stage === "purchasing") return <button onClick={() => { advanceStage("work_in_progress"); toast.success("Work can begin!"); }} disabled={!workflow.purchaseItems.every(i => i.status === "purchased")} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-40"><CheckCircle2 className="h-4 w-4" /> All Purchased — Continue</button>;
+              if (stage === "work_in_progress") return <button onClick={() => { const inv = generateInvoice(); const next = { ...workflow, stage: "invoice_sent" as const, invoiceData: inv }; setWorkflow(next); sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next)); setShowInvoiceSheet(true); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"><FileText className="h-4 w-4" /> Generate Invoice</button>;
+              if (stage === "invoice_sent") return (<>
+                <div className="rounded-xl bg-[hsl(25,90%,55%)]/10 py-3.5 text-center text-[12px] font-bold text-[hsl(25,90%,55%)]">⏳ Invoice Sent — Awaiting Payment</div>
+                <button onClick={() => { advanceStage("completed"); toast.success("Payment received — job completed! 🎉"); }} className="rounded-xl border border-dashed border-primary/30 py-2.5 text-[10px] font-bold text-primary active:bg-primary/5">⚡ Simulate: Customer Pays</button>
+              </>);
+              return null;
+            })()
+          )}
+        </div>
+      );
+    }
+
+    // Fallback
     return (
       <div className="flex gap-3 p-4 bg-background border-t border-border/40">
-        <button
-          onClick={() => handleAction("decline")}
-          className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted"
-        >
+        <button onClick={() => handleAction("decline")} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted">
           <XCircle className="h-4 w-4" /> Decline
         </button>
-        <button
-          onClick={() => setShowQuoteOptions(true)}
-          className="flex-[2] rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-        >
+        <button onClick={() => setShowQuoteOptions(true)} className="flex-[2] rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
           <FileText className="h-4 w-4" /> Generate Quote
         </button>
       </div>
@@ -927,9 +1156,38 @@ const JobDetail = () => {
 
         {/* Content */}
         <ScrollArea className="flex-1 overflow-y-auto px-4 pt-4">
+          {/* Workflow status banner */}
+          {activeTab === "details" && workflow.stage !== "incoming" && (
+            <div className={`rounded-xl ${stageColor[workflow.stage]?.bg ?? "bg-muted"} px-4 py-3 mb-4 flex items-center gap-2.5`}>
+              <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${stageColor[workflow.stage]?.bg ?? "bg-muted"}`}>
+                <ClipboardList className={`h-4 w-4 ${stageColor[workflow.stage]?.text ?? "text-muted-foreground"}`} />
+              </div>
+              <div>
+                <p className={`text-[11px] font-bold ${stageColor[workflow.stage]?.text ?? "text-foreground"}`}>
+                  {stageLabel[workflow.stage] ?? workflow.stage}
+                </p>
+                {workflow.estimateData && (["estimate_sent", "estimate_approved", "subtasks_created", "quote_sent", "quote_accepted", "purchasing", "work_in_progress", "invoice_sent"] as string[]).includes(workflow.stage) && (
+                  <p className="text-[9px] text-muted-foreground mt-0.5">
+                    {workflow.estimateData.title} · £{workflow.estimateData.minPrice}–£{workflow.estimateData.maxPrice}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
           {activeTab === "details" && renderDetailsTab()}
           {activeTab === "quotes" && renderQuotesTab()}
           {activeTab === "subtasks" && <JobSubtasksTab jobId={job.id} jobTitle={job.title} />}
+          {activeTab === "purchase-list" && (
+            <PurchaseListTab
+              items={workflow.purchaseItems}
+              onUpdateItems={(items) => {
+                const next = { ...workflow, purchaseItems: items };
+                setWorkflow(next);
+                sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
+              }}
+              onAllPurchased={() => toast.success("All materials purchased! You can now proceed.")}
+            />
+          )}
           {activeTab === "attachments" && renderAttachmentsTab()}
           {activeTab === "finances" && <JobFinancesTab jobId={job.id} budget={job.price ?? job.quote?.total ?? 0} />}
           {activeTab === "progress" && <JobProgressTab jobId={job.id} />}
@@ -937,8 +1195,8 @@ const JobDetail = () => {
           {activeTab === "chat" && <JobCustomerChatTab jobId={job.id} customerName={job.customer.name} />}
         </ScrollArea>
 
-        {/* Footer CTA — show on details for incoming, on details/progress/subtasks for committed */}
-        {(activeTab === "details" ||
+        {/* Footer CTA — show on details, purchase-list, and committed admin tabs */}
+        {(activeTab === "details" || activeTab === "purchase-list" ||
           (isCommitted && (activeTab === "progress" || activeTab === "subtasks" || activeTab === "finances"))) &&
           renderFooter()}
       </div>
@@ -1031,7 +1289,7 @@ const JobDetail = () => {
         onOpenChange={setShowQuoteSheet}
         category={selectedQuoteCategory as "estimate" | "inspection"}
         jobTitle={job.title}
-        onSubmit={handleQuoteSubmit}
+        onSubmit={handleQuoteSubmitWorkflow}
       />
 
       <AssignSheet
@@ -1069,6 +1327,22 @@ const JobDetail = () => {
         confirmHelperText={(pendingQuote?.items?.length ?? 0) === 0
           ? "The job will be picked up and dispatched to the selected team instantly."
           : "The approved quote will be sent to the customer and the job dispatched to the selected team."}
+      />
+
+      <EstimateSheet
+        isOpen={showEstimateSheet}
+        onOpenChange={setShowEstimateSheet}
+        jobTitle={job.title}
+        onSubmit={handleEstimateSubmit}
+      />
+
+      <InvoiceSheet
+        isOpen={showInvoiceSheet}
+        onOpenChange={setShowInvoiceSheet}
+        jobTitle={workflow.estimateData?.title ?? job.title}
+        customerName={job.customer.name}
+        invoiceData={workflow.invoiceData ?? null}
+        onSend={() => { toast.success("Invoice sent to customer!"); setShowInvoiceSheet(false); }}
       />
     </MobileLayout>
   );

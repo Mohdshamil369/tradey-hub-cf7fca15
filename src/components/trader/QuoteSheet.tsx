@@ -25,6 +25,7 @@ export interface QuoteSheetData {
   notes: string;
   total: number;
   inspectionFee?: number;
+  advanceAmount?: number;
 }
 
 export interface QuoteTemplate {
@@ -77,6 +78,7 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
   const [items, setItems] = useState<QuoteItem[]>([]);
   const [inspectionFee, setInspectionFee] = useState("");
   const [notes, setNotes] = useState("");
+  const [advanceAmount, setAdvanceAmount] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -102,6 +104,7 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
       setItems([]);
       setInspectionFee("");
       setNotes("");
+      setAdvanceAmount("");
       setIsRecording(false);
       setEditingId(null);
       setNewName("");
@@ -499,6 +502,32 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
               </div>
             </div>
 
+            {/* Advance Payment (estimate category only) */}
+            {category === "estimate" && items.length > 0 && (
+              <div className="mb-6">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">
+                  Advance Payment
+                </label>
+                <div className="flex items-center gap-2 rounded-2xl border border-border bg-card p-3 focus-within:border-primary/50 transition-colors">
+                  <PoundSterling className="h-4 w-4 text-primary shrink-0" />
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    value={advanceAmount}
+                    onChange={(e) => setAdvanceAmount(e.target.value)}
+                    className="flex-1 bg-transparent text-[15px] font-bold text-foreground outline-none placeholder:text-muted-foreground/40"
+                  />
+                </div>
+                {parseFloat(advanceAmount) > 0 && (
+                  <div className="mt-2 rounded-xl bg-primary/5 border border-primary/10 p-2.5 flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground">Remaining after advance</span>
+                    <span className="text-[12px] font-extrabold text-primary">£{(total - (parseFloat(advanceAmount) || 0)).toFixed(2)}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Notes & Voice */}
             <div className="space-y-3 mb-6">
               <div>
@@ -558,7 +587,7 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
                 Cancel
               </button>
               <button
-                onClick={() => onSubmit({ items, total, notes, inspectionFee: category === "inspection" ? inspection : undefined })}
+                onClick={() => onSubmit({ items, total, notes, inspectionFee: category === "inspection" ? inspection : undefined, advanceAmount: category === "estimate" ? (parseFloat(advanceAmount) || 0) : undefined })}
                 disabled={!canSubmit}
                 className={`flex-[2.5] rounded-xl py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40 ${
                   category === "inspection" ? "bg-[hsl(25,90%,55%)] shadow-orange-500/20" : "bg-primary shadow-primary/20"
