@@ -339,36 +339,26 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
               />
             </div>
 
-            {/* Inspection Min-Max Range (Simplified for Inspection Offer) */}
+            {/* Inspection Fee (single fixed amount) */}
             {category === "inspection" && (
-              <div className="mb-6 space-y-4">
+              <div className="mb-6 space-y-3">
                 <label className="text-[10px] font-black uppercase tracking-[1.5px] text-muted-foreground block px-1">
-                  Inspection Price Range
+                  Inspection Fee
                 </label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 focus-within:border-[hsl(25,90%,55%)]/50 transition-colors">
-                    <span className="text-[14px] font-bold text-muted-foreground shrink-0">Min</span>
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      placeholder="£0.00"
-                      value={inspectionMin}
-                      onChange={(e) => setInspectionMin(e.target.value)}
-                      className="flex-1 bg-transparent text-[16px] font-black text-foreground outline-none placeholder:text-muted-foreground/30"
-                    />
-                  </div>
-                  <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 focus-within:border-[hsl(25,90%,55%)]/50 transition-colors">
-                    <span className="text-[14px] font-bold text-muted-foreground shrink-0">Max</span>
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      placeholder="£0.00"
-                      value={inspectionMax}
-                      onChange={(e) => setInspectionMax(e.target.value)}
-                      className="flex-1 bg-transparent text-[16px] font-black text-foreground outline-none placeholder:text-muted-foreground/30"
-                    />
-                  </div>
+                <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 focus-within:border-[hsl(25,90%,55%)]/50 transition-colors">
+                  <PoundSterling className="h-5 w-5 text-[hsl(25,90%,55%)] shrink-0" />
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    value={inspectionFee}
+                    onChange={(e) => setInspectionFee(e.target.value)}
+                    className="flex-1 bg-transparent text-[18px] font-black text-foreground outline-none placeholder:text-muted-foreground/30"
+                  />
                 </div>
+                <p className="text-[10px] text-muted-foreground px-1 leading-relaxed">
+                  Charged upfront so a worker can visit the site and quote accurately. Refundable or applied to the final quote at your discretion.
+                </p>
               </div>
             )}
 
