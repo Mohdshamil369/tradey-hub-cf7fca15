@@ -267,10 +267,10 @@ const initialJobs: Job[] = [
 /** Pre-seeded workflow stages for demo committed jobs — keyed by job id.
  *  Real flows persist via sessionStorage; these act as defaults when no override exists. */
 const demoWorkflowStages: Record<string, WorkflowStage> = {
-  j11: "inspected",         // Inspection done → CTA: Send Estimate
-  j12: "quote_sent",        // Quote sent + purchase list active → CTA: View Purchase List
-  j13: "unassigned",        // Picked up, not assigned → CTA: Assign Worker
-  j14: "work_in_progress",  // On-site work done → CTA: Raise Invoice
+  j11: "inspection_completed",  // Inspection done → CTA: Create Subtasks
+  j12: "quote_sent",             // Quote sent → CTA: Await Approval (informational)
+  j13: "assigned",               // Picked up + assigned → CTA: Start Work
+  j14: "completed",              // Work done → CTA: Create Invoice
 };
 
 /** Optional purchase-list progress for cards that show it inline. */
