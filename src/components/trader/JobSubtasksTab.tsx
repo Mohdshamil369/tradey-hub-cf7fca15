@@ -7,8 +7,9 @@ import { toast } from "sonner";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
   allMembers, subtasks as seedSubtasks, type Subtask, type SubtaskStatus,
-  type GroupMember, subtaskStatusLabel,
+  type GroupMember, subtaskStatusLabel, groupConversations,
 } from "@/data/messaging";
+import AssignSheet, { type AssignmentResult, type AssignGroup, type AssignIndividual } from "@/components/trader/AssignSheet";
 
 interface JobSubtasksTabProps {
   jobId: string;
@@ -112,18 +113,32 @@ const JobSubtasksTab = ({ jobId, jobTitle }: JobSubtasksTabProps) => {
     toast.success("Subtask created");
   };
 
-  const toggleAssignee = (subtaskId: string, memberId: string) => {
+  const handleAssignmentConfirm = (result: AssignmentResult) => {
+    if (!assignFor) return;
     setItems((prev) =>
-      prev.map((s) => {
-        if (s.id !== subtaskId) return s;
-        const has = s.assigneeIds.includes(memberId);
-        return {
-          ...s,
-          assigneeIds: has ? s.assigneeIds.filter((x) => x !== memberId) : [...s.assigneeIds, memberId],
-        };
-      })
+      prev.map((s) =>
+        s.id === assignFor ? { ...s, assigneeIds: result.memberIds } : s
+      )
     );
+    setAssignFor(null);
+    const who = result.type === "group" 
+      ? `${result.groupName} (${result.memberNames.length} members)` 
+      : result.memberNames.join(", ");
+    toast.success(`Assigned to ${who}`);
   };
+
+  // Map data for AssignSheet
+  const groups: AssignGroup[] = groupConversations.map(g => ({
+    id: g.id,
+    name: g.name,
+    members: g.members.map(m => ({ id: m.id, name: m.name, role: m.role }))
+  }));
+
+  const individuals: AssignIndividual[] = Object.values(allMembers).map(m => ({
+    id: m.id,
+    name: m.name,
+    role: m.role
+  }));
 
   // ── Render ────────────────────────────────────────────────
   return (
@@ -329,56 +344,22 @@ const JobSubtasksTab = ({ jobId, jobTitle }: JobSubtasksTabProps) => {
       <CreateSubtaskSheet
         open={createOpen}
         onOpenChange={setCreateOpen}
-        members={memberList}
+        groups={groups}
+        individuals={individuals}
         onCreate={createSubtask}
       />
 
-      {/* Assign Sheet */}
-      <Sheet open={!!assignFor} onOpenChange={(o) => !o && setAssignFor(null)}>
-        <SheetContent side="bottom" className="rounded-t-[28px] px-4 pb-6 pt-2 sm:max-w-[420px] sm:mx-auto">
-          <div className="mx-auto mb-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
-          <h3 className="mb-1 text-base font-bold text-foreground">Assign team members</h3>
-          <p className="mb-4 text-[11px] text-muted-foreground">
-            Select one or more people for this subtask.
-          </p>
-          <div className="flex max-h-[50vh] flex-col gap-1.5 overflow-y-auto">
-            {memberList.map((m) => {
-              const current = items.find((s) => s.id === assignFor);
-              const checked = current?.assigneeIds.includes(m.id) ?? false;
-              return (
-                <button
-                  key={m.id}
-                  onClick={() => assignFor && toggleAssignee(assignFor, m.id)}
-                  className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all ${
-                    checked ? "border-primary bg-primary/5" : "border-border bg-card"
-                  }`}
-                >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 text-[11px] font-bold text-primary">
-                    {m.initial}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-semibold text-foreground">{m.name}</p>
-                    <p className="text-[10px] text-muted-foreground capitalize">{m.role}</p>
-                  </div>
-                  <div
-                    className={`flex h-5 w-5 items-center justify-center rounded-md border ${
-                      checked ? "border-primary bg-primary text-primary-foreground" : "border-border"
-                    }`}
-                  >
-                    {checked && <CheckCircle2 className="h-3.5 w-3.5" />}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-          <button
-            onClick={() => setAssignFor(null)}
-            className="mt-4 w-full rounded-xl bg-primary py-3 text-[13px] font-bold text-primary-foreground"
-          >
-            Done
-          </button>
-        </SheetContent>
-      </Sheet>
+      <AssignSheet
+        isOpen={!!assignFor}
+        onOpenChange={(o) => !o && setAssignFor(null)}
+        jobTitle={items.find(s => s.id === assignFor)?.title ?? "Subtask"}
+        jobSubtitle="Select team for this subtask"
+        groups={groups}
+        individuals={individuals}
+        confirmLabel="Assign Subtask"
+        confirmHelperText="Selected members will be notified about this subtask."
+        onConfirm={handleAssignmentConfirm}
+      />
     </div>
   );
 };
@@ -387,24 +368,28 @@ const JobSubtasksTab = ({ jobId, jobTitle }: JobSubtasksTabProps) => {
 const CreateSubtaskSheet = ({
   open,
   onOpenChange,
-  members,
+  groups,
+  individuals,
   onCreate,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  members: GroupMember[];
+  groups: AssignGroup[];
+  individuals: AssignIndividual[];
   onCreate: (title: string, description: string, assigneeIds: string[]) => void;
 }) => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [picked, setPicked] = useState<string[]>([]);
-  const [showMembers, setShowMembers] = useState(false);
+  const [assignmentMode, setAssignmentMode] = useState<"group" | "individual">("group");
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
   const reset = () => {
     setTitle("");
     setDesc("");
     setPicked([]);
-    setShowMembers(false);
+    setAssignmentMode("group");
+    setSelectedGroupId(null);
   };
 
   const submit = () => {
@@ -414,6 +399,7 @@ const CreateSubtaskSheet = ({
     }
     onCreate(title.trim(), desc.trim(), picked);
     reset();
+    onOpenChange(false);
   };
 
   return (
@@ -458,48 +444,73 @@ const CreateSubtaskSheet = ({
             />
           </div>
 
-          {/* Assignees */}
+          {/* Assignees with Toggle */}
           <div>
-            <button
-              onClick={() => setShowMembers((v) => !v)}
-              className="flex w-full items-center justify-between rounded-xl border border-border bg-background px-3 py-2.5 text-left"
-            >
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Assign to</p>
-                <p className="mt-0.5 text-[12px] font-semibold text-foreground">
-                  {picked.length === 0 ? "Unassigned" : `${picked.length} member${picked.length > 1 ? "s" : ""}`}
-                </p>
+            <p className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              Assign to
+            </p>
+            <div className="flex p-1 bg-muted rounded-xl mb-3">
+              <button
+                onClick={() => { setAssignmentMode("group"); setPicked([]); setSelectedGroupId(null); }}
+                className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${
+                  assignmentMode === "group" ? "bg-background shadow-sm text-primary" : "text-muted-foreground"
+                }`}
+              >
+                Assign Group
+              </button>
+              <button
+                onClick={() => { setAssignmentMode("individual"); setPicked([]); setSelectedGroupId(null); }}
+                className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${
+                  assignmentMode === "individual" ? "bg-background shadow-sm text-primary" : "text-muted-foreground"
+                }`}
+              >
+                Assign Individuals
+              </button>
+            </div>
+
+            {assignmentMode === "group" ? (
+              <div className="flex flex-col gap-1.5 max-h-[150px] overflow-y-auto pr-1">
+                {groups.map(g => (
+                  <button
+                    key={g.id}
+                    onClick={() => {
+                      setSelectedGroupId(g.id);
+                      setPicked(g.members.map(m => m.id));
+                    }}
+                    className={`flex items-center justify-between rounded-xl border p-3 text-left transition-all ${
+                      selectedGroupId === g.id ? "border-primary bg-primary/5" : "border-border bg-card"
+                    }`}
+                  >
+                    <div>
+                      <p className="text-[12px] font-bold text-foreground">{g.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{g.members.length} members</p>
+                    </div>
+                    {selectedGroupId === g.id && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                  </button>
+                ))}
               </div>
-              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showMembers ? "rotate-180" : ""}`} />
-            </button>
-            {showMembers && (
-              <div className="mt-2 flex max-h-[180px] flex-col gap-1 overflow-y-auto rounded-xl border border-border bg-muted/20 p-1.5">
-                {members.map((m) => {
+            ) : (
+              <div className="flex flex-col gap-1 max-h-[150px] overflow-y-auto pr-1">
+                {individuals.map(m => {
                   const checked = picked.includes(m.id);
                   return (
                     <button
                       key={m.id}
-                      onClick={() =>
-                        setPicked((prev) =>
-                          checked ? prev.filter((id) => id !== m.id) : [...prev, m.id]
-                        )
-                      }
-                      className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left ${
-                        checked ? "bg-primary/10" : "active:bg-muted"
+                      onClick={() => setPicked(prev => checked ? prev.filter(id => id !== m.id) : [...prev, m.id])}
+                      className={`flex items-center gap-2.5 rounded-xl border px-3 py-2 text-left transition-all ${
+                        checked ? "border-primary bg-primary/5" : "border-border bg-card"
                       }`}
                     >
                       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-[10px] font-bold text-primary">
-                        {m.initial}
+                        {m.name.charAt(0)}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[12px] font-semibold text-foreground">{m.name}</p>
-                        <p className="text-[10px] capitalize text-muted-foreground">{m.role}</p>
+                        <p className="truncate text-[11px] font-semibold text-foreground">{m.name}</p>
+                        <p className="text-[9px] capitalize text-muted-foreground">{m.role}</p>
                       </div>
-                      <div
-                        className={`flex h-4 w-4 items-center justify-center rounded border ${
-                          checked ? "border-primary bg-primary text-primary-foreground" : "border-border"
-                        }`}
-                      >
+                      <div className={`flex h-4 w-4 items-center justify-center rounded border ${
+                        checked ? "border-primary bg-primary text-primary-foreground" : "border-border"
+                      }`}>
                         {checked && <CheckCircle2 className="h-3 w-3" />}
                       </div>
                     </button>

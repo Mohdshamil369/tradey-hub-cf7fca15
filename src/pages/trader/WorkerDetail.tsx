@@ -65,6 +65,63 @@ const mockWorkers: Record<string, {
       { role: "Emergency", rate: 45 },
     ],
   },
+  "u-mike": {
+    name: "Mike Reeves", email: "mike@tradeyhub.app", phone: "+44 7700 900001", joinedDate: "Jan 2024",
+    totalJobs: 28, totalHours: 84, totalEarned: 2520, avgRating: 4.9, completionRate: 96,
+    reviews: [
+      { id: "r1", customer: "Sarah M.", rating: 5, text: "Excellent work, very professional and tidy.", date: "2 days ago" },
+    ],
+    assignments: [
+      { id: "a1", title: "Tap Repair - 12 Oak Lane", date: "5 Mar 2026", status: "completed", amount: 65, hours: 1.5, address: "12 Oak Lane, SW1" },
+    ],
+    payouts: [
+      { id: "p1", date: "7 Mar 2026", amount: 435, hours: 14.5, period: "3 Mar – 7 Mar", mode: "scheduled", status: "paid" },
+    ],
+    basePays: [
+      { role: "Plumber", rate: 30 },
+      { role: "Assistant", rate: 20 },
+    ],
+  },
+  "u-alex": {
+    name: "Alex Turner", email: "alex@tradeyhub.app", phone: "+44 7700 900002", joinedDate: "Jan 2024",
+    totalJobs: 28, totalHours: 84, totalEarned: 2520, avgRating: 4.9, completionRate: 96,
+    reviews: [],
+    assignments: [],
+    payouts: [],
+    basePays: [
+      { role: "Plumber", rate: 35 },
+    ],
+  },
+  "u-sara": {
+    name: "Sara Wilkins", email: "sara@tradeyhub.app", phone: "+44 7700 900003", joinedDate: "Feb 2024",
+    totalJobs: 15, totalHours: 40, totalEarned: 1200, avgRating: 4.8, completionRate: 98,
+    reviews: [],
+    assignments: [],
+    payouts: [],
+    basePays: [
+      { role: "Maintenance", rate: 25 },
+    ],
+  },
+  "u-tom": {
+    name: "Tom Bates", email: "tom@tradeyhub.app", phone: "+44 7700 900004", joinedDate: "Mar 2024",
+    totalJobs: 22, totalHours: 66, totalEarned: 2310, avgRating: 4.7, completionRate: 94,
+    reviews: [],
+    assignments: [],
+    payouts: [],
+    basePays: [
+      { role: "Lead Fitter", rate: 35 },
+    ],
+  },
+  "u-kim": {
+    name: "Kim Lo", email: "kim@tradeyhub.app", phone: "+44 7700 900005", joinedDate: "Apr 2024",
+    totalJobs: 10, totalHours: 30, totalEarned: 1050, avgRating: 4.9, completionRate: 100,
+    reviews: [],
+    assignments: [],
+    payouts: [],
+    basePays: [
+      { role: "Admin Specialist", rate: 40 },
+    ],
+  },
   m2: {
     name: "James Cooper", email: "james@example.com", phone: "+44 7700 900002", joinedDate: "Mar 2024",
     totalJobs: 19, totalHours: 58, totalEarned: 1740, avgRating: 4.7, completionRate: 92,

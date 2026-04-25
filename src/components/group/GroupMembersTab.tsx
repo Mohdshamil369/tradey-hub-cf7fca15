@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Mail, Plus, Trash2, ShieldCheck, X, Send, Clock, CheckCircle2 } from "lucide-react";
 import { GroupConversation, GroupMember } from "@/data/messaging";
 import { GroupViewMode } from "@/pages/GroupConversation";
@@ -30,6 +31,7 @@ const GroupMembersTab = ({ group, viewMode }: { group: GroupConversation; viewMo
   const [members, setMembers] = useState<GroupMember[]>(group.members);
   const [showInvite, setShowInvite] = useState(false);
   const [email, setEmail] = useState("");
+  const navigate = useNavigate();
   const isAdmin = viewMode === "admin";
 
   const pendingCount = members.filter((m) => m.inviteStatus === "pending").length;
@@ -111,9 +113,10 @@ const GroupMembersTab = ({ group, viewMode }: { group: GroupConversation; viewMo
         {members.map((m) => {
           const isPending = m.inviteStatus === "pending";
           return (
-            <div
+            <button
               key={m.id}
-              className={`flex items-center gap-3 rounded-xl p-3 ${
+              onClick={() => navigate(`/trader/workers/${m.id}`)}
+              className={`flex w-full items-center gap-3 rounded-xl p-3 text-left transition-all active:scale-[0.99] ${
                 isPending
                   ? "border border-dashed border-primary/30 bg-primary/5"
                   : "bg-card card-shadow"
@@ -136,7 +139,7 @@ const GroupMembersTab = ({ group, viewMode }: { group: GroupConversation; viewMo
                 <InviteBadge status={m.inviteStatus} />
                 {isAdmin && isPending && (
                   <button
-                    onClick={() => handleResend(m)}
+                    onClick={(e) => { e.stopPropagation(); handleResend(m); }}
                     className="flex items-center gap-1 text-[10px] font-bold text-primary"
                   >
                     <Send className="h-2.5 w-2.5" /> Resend
@@ -144,11 +147,14 @@ const GroupMembersTab = ({ group, viewMode }: { group: GroupConversation; viewMo
                 )}
               </div>
               {isAdmin && m.id !== "u-self" && m.id !== "me" && (
-                <button onClick={() => handleRemove(m.id)} className="rounded-full bg-destructive/10 p-2 text-destructive">
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleRemove(m.id); }} 
+                  className="rounded-full bg-destructive/10 p-2 text-destructive"
+                >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
               )}
-            </div>
+            </button>
           );
         })}
       </div>
