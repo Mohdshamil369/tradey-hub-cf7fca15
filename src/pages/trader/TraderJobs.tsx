@@ -251,14 +251,26 @@ const initialJobs: Job[] = [
     customerData: { rating: 4.6, reviews: 9, isVerified: true, memberSince: "Jun 2024" },
     source: "org", orgName: "BuildRight Ltd.",
   },
+  // Scenario D — Work finished on site, ready to bill the customer
+  {
+    id: "j14", type: "catA", category: "estimate",
+    title: "Bathroom Tile Repair", icon: "🛁",
+    customer: "Olivia P.", location: "Jordaan", distance: "1.2 km",
+    price: 320,
+    timeWindow: "Today, 09:00 – 14:00",
+    description: "Re-grouted shower wall and replaced 6 cracked tiles. £80 advance already paid.",
+    postedAgo: "", status: "active", committedStatus: "in_progress",
+    customerData: { rating: 4.8, reviews: 15, isVerified: true, memberSince: "Mar 2024" },
+  },
 ];
 
 /** Pre-seeded workflow stages for demo committed jobs — keyed by job id.
  *  Real flows persist via sessionStorage; these act as defaults when no override exists. */
 const demoWorkflowStages: Record<string, WorkflowStage> = {
-  j11: "inspected",        // Inspection done → CTA: Send Estimate
-  j12: "quote_sent",       // Quote sent + purchase list active → CTA: View Purchase List
-  j13: "unassigned",       // Picked up, not assigned → CTA: Assign Worker
+  j11: "inspected",         // Inspection done → CTA: Send Estimate
+  j12: "quote_sent",        // Quote sent + purchase list active → CTA: View Purchase List
+  j13: "unassigned",        // Picked up, not assigned → CTA: Assign Worker
+  j14: "work_in_progress",  // On-site work done → CTA: Raise Invoice
 };
 
 /** Optional purchase-list progress for cards that show it inline. */
