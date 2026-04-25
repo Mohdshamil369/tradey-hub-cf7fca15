@@ -85,7 +85,7 @@ const stageMetaMap: Partial<Record<WorkflowStage, StageMeta>> = {
   quote_accepted: {
     label: "Quote Accepted",
     pillClass: "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]",
-    cta: "Track Purchases",
+    cta: "View Purchase List",
     ctaIcon: ShoppingCart,
     ctaTone: "primary",
     hint: "Items being purchased by the customer.",
