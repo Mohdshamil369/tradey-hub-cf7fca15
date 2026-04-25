@@ -92,6 +92,7 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
   const [isRecording, setIsRecording] = useState(false);
   const [hasVoiceNote, setHasVoiceNote] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   // New item form
   const [newName, setNewName] = useState("");
@@ -132,6 +133,7 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
       setNewUnit("pcs");
       setShowTemplates(false);
       setShowSaveTemplate(false);
+      setShowPreview(false);
       setTemplateName("");
     }
   }, [isOpen]);
@@ -168,6 +170,10 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
   const inspection = parseFloat(inspectionFee) || 0;
   const total = itemsTotal + (category === "inspection" ? inspection : 0);
   const canSubmit = category === "inspection" ? inspection > 0 : items.length > 0;
+  const previewAdvance = category === "estimate"
+    ? (advanceMode === "percent" ? +(total * advancePercent / 100).toFixed(2) : (parseFloat(advanceAmount) || 0))
+    : 0;
+  const previewRemaining = Math.max(0, total - previewAdvance);
 
   // Template actions
   const handleSaveTemplate = () => {
@@ -733,27 +739,165 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
                 Cancel
               </button>
               <button
-                onClick={() => onSubmit({ 
-                  items, 
-                  total, 
-                  notes, 
-                  quoteTitle, 
-                  hasVoiceNote,
-                  inspectionFee: category === "inspection" ? (parseFloat(inspectionFee) || 0) : undefined,
-                  advanceAmount: category === "estimate"
-                    ? (advanceMode === "percent" ? +(total * advancePercent / 100).toFixed(2) : (parseFloat(advanceAmount) || 0))
-                    : undefined
-                })}
+                onClick={() => {
+                  if (category === "inspection") {
+                    // Inspection sends immediately — no preview
+                    onSubmit({
+                      items, total, notes, quoteTitle, hasVoiceNote,
+                      inspectionFee: parseFloat(inspectionFee) || 0,
+                    });
+                  } else {
+                    setShowPreview(true);
+                  }
+                }}
                 disabled={category === "inspection" ? !(parseFloat(inspectionFee) > 0) : !canSubmit}
                 className={`flex-[2.5] rounded-xl py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40 ${
                   category === "inspection" ? "bg-[hsl(25,90%,55%)] shadow-orange-500/20" : "bg-primary shadow-primary/20"
                 }`}
               >
-                <Send className="h-4 w-4" />
-                {category === "inspection" ? "Send Inspection" : "Submit Quote"}
+                {category === "inspection" ? <Send className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
+                {category === "inspection" ? "Send Inspection" : "Preview Quote"}
               </button>
             </div>
           </div>
+
+          {/* PDF-style preview overlay (estimate flow only) */}
+          {showPreview && category === "estimate" && (
+            <div className="absolute inset-0 z-[10] flex flex-col bg-background animate-in fade-in slide-in-from-bottom-4 duration-200">
+              {/* Preview header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border/50 bg-card">
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className="flex items-center gap-1.5 text-[12px] font-bold text-muted-foreground active:scale-95"
+                >
+                  <ChevronDown className="h-4 w-4 rotate-90" />
+                  Back to Edit
+                </button>
+                <div className="flex items-center gap-1.5">
+                  <FileText className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-[11px] font-black uppercase tracking-wider text-primary">PDF Preview</span>
+                </div>
+              </div>
+
+              {/* PDF "page" */}
+              <ScrollArea className="flex-1 bg-muted/30 px-4 py-5">
+                <div className="mx-auto max-w-md rounded-lg bg-white shadow-xl border border-border/40 overflow-hidden">
+                  {/* Letterhead */}
+                  <div className="px-6 pt-6 pb-4 border-b-2 border-foreground">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-[9px] font-black uppercase tracking-[2px] text-muted-foreground">Quotation</p>
+                        <h3 className="mt-1 text-[18px] font-black text-foreground leading-tight">{quoteTitle || `${jobTitle} Quote`}</h3>
+                        <p className="mt-1 text-[10px] text-muted-foreground">For: {jobTitle}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">Date</p>
+                        <p className="text-[10px] font-bold text-foreground">{new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Items table */}
+                  <div className="px-6 py-4">
+                    <p className="text-[9px] font-black uppercase tracking-[1.5px] text-muted-foreground mb-3">Line Items</p>
+                    <div className="border border-border/60 rounded-md overflow-hidden">
+                      <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-muted/40 text-[9px] font-black uppercase tracking-wider text-muted-foreground">
+                        <div className="col-span-6">Description</div>
+                        <div className="col-span-2 text-right">Qty</div>
+                        <div className="col-span-2 text-right">Rate</div>
+                        <div className="col-span-2 text-right">Amount</div>
+                      </div>
+                      <div className="divide-y divide-border/40">
+                        {items.map((it) => (
+                          <div key={it.id} className="grid grid-cols-12 gap-2 px-3 py-2.5 text-[10px]">
+                            <div className="col-span-6">
+                              <p className="font-bold text-foreground leading-tight">{it.name}</p>
+                              {it.description && <p className="text-[9px] text-muted-foreground mt-0.5">{it.description}</p>}
+                              <p className="text-[8px] text-muted-foreground/70 mt-0.5 uppercase tracking-wider">{itemTypeConfig[it.type].label}</p>
+                            </div>
+                            <div className="col-span-2 text-right text-foreground tabular-nums">{it.quantity} {it.unit}</div>
+                            <div className="col-span-2 text-right text-foreground tabular-nums">£{it.cost.toFixed(2)}</div>
+                            <div className="col-span-2 text-right font-bold text-foreground tabular-nums">£{(it.cost * it.quantity).toFixed(2)}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Totals */}
+                    <div className="mt-4 space-y-1.5 text-[10px]">
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Subtotal</span>
+                        <span className="tabular-nums">£{itemsTotal.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between pt-2 border-t border-border/60">
+                        <span className="font-black text-foreground uppercase tracking-wider text-[10px]">Total</span>
+                        <span className="font-black text-foreground tabular-nums text-[14px]">£{total.toFixed(2)}</span>
+                      </div>
+                      {previewAdvance > 0 && (
+                        <>
+                          <div className="flex justify-between pt-2 mt-2 border-t border-dashed border-border/60 text-primary">
+                            <span className="font-bold">Advance due ({advanceMode === "percent" ? `${advancePercent}%` : "fixed"})</span>
+                            <span className="font-black tabular-nums">£{previewAdvance.toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between text-muted-foreground">
+                            <span>Remaining on completion</span>
+                            <span className="tabular-nums">£{previewRemaining.toFixed(2)}</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Notes */}
+                    {notes && (
+                      <div className="mt-5 pt-4 border-t border-border/60">
+                        <p className="text-[9px] font-black uppercase tracking-[1.5px] text-muted-foreground mb-1.5">Scope of Work</p>
+                        <p className="text-[10px] text-foreground leading-relaxed whitespace-pre-wrap">{notes}</p>
+                      </div>
+                    )}
+
+                    {hasVoiceNote && (
+                      <div className="mt-3 flex items-center gap-1.5 text-[9px] font-bold text-primary">
+                        <Mic className="h-3 w-3" />
+                        Voice note attached
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="px-6 py-3 bg-muted/30 border-t border-border/40">
+                    <p className="text-[8px] text-center text-muted-foreground/70 leading-relaxed">
+                      This quote is valid for 14 days. Acceptance triggers material purchasing per the agreed list.
+                    </p>
+                  </div>
+                </div>
+              </ScrollArea>
+
+              {/* Send / Back actions */}
+              <div className="px-6 py-4 bg-background border-t border-border/50">
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowPreview(false)}
+                    className="flex-1 rounded-xl border border-border py-3.5 text-[12px] font-bold text-muted-foreground active:bg-muted"
+                  >
+                    Back to Edit
+                  </button>
+                  <button
+                    onClick={() => {
+                      onSubmit({
+                        items, total, notes, quoteTitle, hasVoiceNote,
+                        advanceAmount: previewAdvance,
+                      });
+                      setShowPreview(false);
+                    }}
+                    className="flex-[2] rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                  >
+                    <Send className="h-4 w-4" />
+                    Send to Customer
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>
