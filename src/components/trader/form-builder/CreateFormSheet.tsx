@@ -1,5 +1,5 @@
 import { Drawer } from "vaul";
-import { X, ArrowLeft, FileText, LayoutGrid, Check } from "lucide-react";
+import { X, ArrowLeft, FileText, LayoutGrid, Check, Sparkles, Star } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { adminTemplates, FormTemplate } from "./schema";
@@ -9,6 +9,7 @@ interface CreateFormSheetProps {
   onOpenChange: (open: boolean) => void;
   onContinue: (formDraft: Partial<FormTemplate>, source: "blank" | "template") => void;
   templates?: FormTemplate[];
+  frequentForms?: FormTemplate[];
 }
 
 export const CreateFormSheet = ({
