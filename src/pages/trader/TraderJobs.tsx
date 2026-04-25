@@ -878,7 +878,7 @@ const TraderJobs = () => {
     toast.success("Job marked as complete! 🎉");
   };
 
-  const openJobDetail = (job: Job) => {
+  const openJobDetail = (job: Job, initialTab?: string) => {
     // Heuristic: any committed job whose schedule spans days/weeks counts as long-term
     const isLongTerm = job.id === "j5" || /week|–\s*\d+\s*(Apr|Mar|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i.test(job.timeWindow);
     // Store job data in sessionStorage for the detail page
