@@ -1,37 +1,54 @@
-/* ─── Job Workflow State ─── */
+/* ─── Job Workflow State (PRD-aligned) ─── */
+/* Source of truth: admin_job_workflow + PRD docs.
+ * One job = one flow. No skipping. No re-merging.
+ * All jobs start as "incoming". Selecting a Respond option moves them to Committed. */
 
-export type FixedStage = "incoming" | "unassigned" | "assigned" | "active" | "completed" | "cancelled";
+export type FixedStage =
+  | "incoming"
+  | "assigned"
+  | "in_progress"
+  | "completed"
+  | "invoice_sent"
+  | "paid";
 
 export type EstimateStage =
   | "incoming"
   | "estimate_sent"
   | "estimate_approved"
   | "subtasks_created"
+  | "assigned"               // worker assigned (post-subtasks)
   | "quote_sent"
-  | "quote_accepted"
-  | "purchasing"
-  | "work_in_progress"
+  | "quote_approved"
+  | "advance_paid"
+  | "purchases_ongoing"
+  | "ready_to_start"
+  | "in_progress"
+  | "completed"
   | "invoice_sent"
-  | "completed";
+  | "paid";
 
 export type InspectionStage =
   | "incoming"
-  | "fee_set"
-  | "fee_paid"
-  | "worker_assigned"
-  | "inspected"
-  // After inspection, merges into estimate flow
-  | "estimate_sent"
-  | "estimate_approved"
+  | "inspection_proposal_sent"
+  | "inspection_fee_paid"
+  | "inspection_assigned"
+  | "inspection_completed"
+  // After inspection completion, joins Estimate flow from "subtasks_created" onward
   | "subtasks_created"
+  | "assigned"
   | "quote_sent"
-  | "quote_accepted"
-  | "purchasing"
-  | "work_in_progress"
+  | "quote_approved"
+  | "advance_paid"
+  | "purchases_ongoing"
+  | "ready_to_start"
+  | "in_progress"
+  | "completed"
   | "invoice_sent"
-  | "completed";
+  | "paid";
 
 export type WorkflowStage = FixedStage | EstimateStage | InspectionStage;
+
+export type JobCategory = "fixed" | "estimate" | "inspection";
 
 export interface EstimateData {
   title: string;
@@ -42,13 +59,21 @@ export interface EstimateData {
   sentAt: string;
 }
 
+/** Purchase list item statuses per spec. */
+export type PurchaseItemStatus =
+  | "not_purchased"
+  | "purchased_by_customer"
+  | "requested_admin_purchase"
+  | "purchased_by_admin";
+
 export interface PurchaseItem {
   id: string;
   name: string;
   quantity: number;
   expectedPrice: number;
-  status: "pending" | "purchased";
-  buyer: "customer" | "admin";
+  status: PurchaseItemStatus;
+  /** Legacy buyer marker, kept for back-compat with PurchaseListTab UI. */
+  buyer?: "customer" | "admin";
 }
 
 export interface InvoiceData {
@@ -70,8 +95,6 @@ export interface JobWorkflowState {
   stage: WorkflowStage;
   estimateData?: EstimateData;
   inspectionFee?: number;
-  inspectionMin?: number;
-  inspectionMax?: number;
   inspectionFeePaid?: boolean;
   advanceAmount?: number;
   purchaseItems: PurchaseItem[];
@@ -80,51 +103,98 @@ export interface JobWorkflowState {
   pickedUpAt?: string;
 }
 
-/* ─── Stage Labels ─── */
-
+/* ─── Stage labels (status pill text) ─── */
 export const stageLabel: Record<string, string> = {
   incoming: "New Job",
-  unassigned: "Assignment Pending",
+  // Fixed
   assigned: "Assigned",
-  active: "Active",
+  in_progress: "In Progress",
   completed: "Completed",
+  invoice_sent: "Invoice Sent — Awaiting Payment",
+  paid: "Paid",
+  // Estimate
   estimate_sent: "Estimate Sent — Awaiting Approval",
   estimate_approved: "Estimate Approved",
   subtasks_created: "Subtasks Created",
-  quote_sent: "Quote Sent — Awaiting Customer",
-  quote_accepted: "Quote Accepted",
-  purchasing: "Purchasing Materials",
-  work_in_progress: "Work In Progress",
-  invoice_sent: "Invoice Sent — Awaiting Payment",
-  fee_set: "Inspection Fee Set — Awaiting Payment",
-  fee_paid: "Fee Paid — Assign Worker",
-  worker_assigned: "Worker Assigned — Inspection",
-  inspected: "Inspection Complete",
+  quote_sent: "Quote Sent — Awaiting Approval",
+  quote_approved: "Quote Approved — Awaiting Advance",
+  advance_paid: "Advance Paid",
+  purchases_ongoing: "Purchases Ongoing",
+  ready_to_start: "Ready to Start",
+  // Inspection
+  inspection_proposal_sent: "Inspection Proposal Sent — Awaiting Payment",
+  inspection_fee_paid: "Inspection Fee Paid",
+  inspection_assigned: "Inspection Assigned",
+  inspection_completed: "Inspection Completed",
 };
 
 export const stageColor: Record<string, { bg: string; text: string }> = {
   incoming: { bg: "bg-blue-500/10", text: "text-blue-600" },
   assigned: { bg: "bg-primary/10", text: "text-primary" },
-  active: { bg: "bg-primary/10", text: "text-primary" },
+  in_progress: { bg: "bg-primary/10", text: "text-primary" },
   completed: { bg: "bg-[hsl(142,70%,45%)]/10", text: "text-[hsl(142,70%,45%)]" },
+  invoice_sent: { bg: "bg-[hsl(25,90%,55%)]/10", text: "text-[hsl(25,90%,55%)]" },
+  paid: { bg: "bg-[hsl(142,70%,45%)]/10", text: "text-[hsl(142,70%,45%)]" },
   estimate_sent: { bg: "bg-[hsl(25,90%,55%)]/10", text: "text-[hsl(25,90%,55%)]" },
   estimate_approved: { bg: "bg-[hsl(142,70%,45%)]/10", text: "text-[hsl(142,70%,45%)]" },
   subtasks_created: { bg: "bg-blue-500/10", text: "text-blue-600" },
   quote_sent: { bg: "bg-[hsl(25,90%,55%)]/10", text: "text-[hsl(25,90%,55%)]" },
-  quote_accepted: { bg: "bg-[hsl(142,70%,45%)]/10", text: "text-[hsl(142,70%,45%)]" },
-  purchasing: { bg: "bg-blue-500/10", text: "text-blue-600" },
-  work_in_progress: { bg: "bg-primary/10", text: "text-primary" },
-  invoice_sent: { bg: "bg-[hsl(25,90%,55%)]/10", text: "text-[hsl(25,90%,55%)]" },
-  fee_set: { bg: "bg-[hsl(25,90%,55%)]/10", text: "text-[hsl(25,90%,55%)]" },
-  fee_paid: { bg: "bg-[hsl(142,70%,45%)]/10", text: "text-[hsl(142,70%,45%)]" },
-  worker_assigned: { bg: "bg-primary/10", text: "text-primary" },
-  inspected: { bg: "bg-[hsl(142,70%,45%)]/10", text: "text-[hsl(142,70%,45%)]" },
+  quote_approved: { bg: "bg-[hsl(142,70%,45%)]/10", text: "text-[hsl(142,70%,45%)]" },
+  advance_paid: { bg: "bg-[hsl(142,70%,45%)]/10", text: "text-[hsl(142,70%,45%)]" },
+  purchases_ongoing: { bg: "bg-blue-500/10", text: "text-blue-600" },
+  ready_to_start: { bg: "bg-primary/10", text: "text-primary" },
+  inspection_proposal_sent: { bg: "bg-[hsl(25,90%,55%)]/10", text: "text-[hsl(25,90%,55%)]" },
+  inspection_fee_paid: { bg: "bg-[hsl(142,70%,45%)]/10", text: "text-[hsl(142,70%,45%)]" },
+  inspection_assigned: { bg: "bg-primary/10", text: "text-primary" },
+  inspection_completed: { bg: "bg-[hsl(142,70%,45%)]/10", text: "text-[hsl(142,70%,45%)]" },
 };
 
-/* ─── Default states ─── */
-
-export const createDefaultWorkflowState = (category: "fixed" | "estimate" | "inspection"): JobWorkflowState => ({
+/* ─── Default state ─── */
+export const createDefaultWorkflowState = (_category: JobCategory): JobWorkflowState => ({
   stage: "incoming",
   purchaseItems: [],
-  inspectionFee: category === "inspection" ? undefined : undefined,
 });
+
+/* ─── Stages where Purchase List tab is visible ─── */
+export const purchaseListVisibleStages: WorkflowStage[] = [
+  "quote_sent",
+  "quote_approved",
+  "advance_paid",
+  "purchases_ongoing",
+  "ready_to_start",
+  "in_progress",
+  "completed",
+  "invoice_sent",
+  "paid",
+];
+
+/* ─── Stages where Quote tab is visible ─── */
+export const quoteTabVisibleStages: WorkflowStage[] = [
+  "subtasks_created",
+  "assigned",
+  "quote_sent",
+  "quote_approved",
+  "advance_paid",
+  "purchases_ongoing",
+  "ready_to_start",
+  "in_progress",
+  "completed",
+  "invoice_sent",
+  "paid",
+];
+
+/* ─── Stages where Subtasks tab is visible ─── */
+export const subtasksTabVisibleStages: WorkflowStage[] = [
+  "estimate_approved",
+  "subtasks_created",
+  "assigned",
+  "quote_sent",
+  "quote_approved",
+  "advance_paid",
+  "purchases_ongoing",
+  "ready_to_start",
+  "in_progress",
+  "completed",
+  "invoice_sent",
+  "paid",
+];
