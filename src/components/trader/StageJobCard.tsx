@@ -7,11 +7,13 @@ interface StageMeta {
   label: string;        // pill label (current stage)
   pillClass: string;    // pill colors (semantic-token friendly)
   cta: string;          // footer button text
-  ctaIcon: typeof Send; // footer icon
+  ctaIcon: typeof UserPlus; // footer icon
   ctaTone: "primary" | "warning" | "success" | "info";
   hint?: string;        // small subtitle under stage pill
 }
 
+/** Stage CTA labels MUST match the JobDetail page footer CTAs exactly so
+ *  the list card and the detail page feel like one continuous action. */
 const stageMetaMap: Partial<Record<WorkflowStage, StageMeta>> = {
   unassigned: {
     label: "Picked up · Awaiting Assignment",
@@ -24,7 +26,7 @@ const stageMetaMap: Partial<Record<WorkflowStage, StageMeta>> = {
   fee_set: {
     label: "Inspection Fee Sent",
     pillClass: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]",
-    cta: "Awaiting Payment",
+    cta: "Awaiting Customer Payment",
     ctaIcon: Clock,
     ctaTone: "info",
     hint: "Customer needs to pay the inspection fee.",
@@ -32,46 +34,46 @@ const stageMetaMap: Partial<Record<WorkflowStage, StageMeta>> = {
   fee_paid: {
     label: "Inspection Fee Paid",
     pillClass: "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]",
-    cta: "Assign Inspector",
-    ctaIcon: UserPlus,
+    cta: "Assign Worker for Inspection",
+    ctaIcon: Users,
     ctaTone: "primary",
     hint: "Assign a worker to inspect the site.",
   },
   worker_assigned: {
     label: "Inspector Assigned",
     pillClass: "bg-primary/10 text-primary",
-    cta: "Mark Inspected",
-    ctaIcon: Search,
+    cta: "Mark Inspection Complete",
+    ctaIcon: CheckCircle2,
     ctaTone: "primary",
   },
   inspected: {
     label: "Inspection Complete",
     pillClass: "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]",
-    cta: "Send Estimate",
-    ctaIcon: Send,
+    cta: "Create Estimate",
+    ctaIcon: FileText,
     ctaTone: "primary",
     hint: "Inspection done — share the estimate with the customer.",
   },
   estimate_sent: {
     label: "Estimate Sent",
     pillClass: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]",
-    cta: "Awaiting Approval",
+    cta: "Awaiting Customer Approval",
     ctaIcon: Clock,
     ctaTone: "info",
   },
   estimate_approved: {
     label: "Estimate Approved",
     pillClass: "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]",
-    cta: "Build Quote",
-    ctaIcon: FileText,
+    cta: "Break into Subtasks",
+    ctaIcon: ListChecks,
     ctaTone: "primary",
-    hint: "Estimate approved — create a detailed quote.",
+    hint: "Estimate approved — split the work into subtasks.",
   },
   subtasks_created: {
     label: "Subtasks Ready",
     pillClass: "bg-blue-500/10 text-blue-600",
-    cta: "Send Quote",
-    ctaIcon: Send,
+    cta: "Create Quote",
+    ctaIcon: FileText,
     ctaTone: "primary",
   },
   quote_sent: {
@@ -96,11 +98,12 @@ const stageMetaMap: Partial<Record<WorkflowStage, StageMeta>> = {
     cta: "View Purchase List",
     ctaIcon: ShoppingCart,
     ctaTone: "primary",
+    hint: "Track items as the customer purchases them.",
   },
   work_in_progress: {
     label: "Work In Progress",
     pillClass: "bg-primary/10 text-primary",
-    cta: "Raise Invoice",
+    cta: "Generate Invoice",
     ctaIcon: Receipt,
     ctaTone: "primary",
     hint: "Work complete — bill the customer for the remaining balance.",
@@ -119,12 +122,12 @@ const stageMetaMap: Partial<Record<WorkflowStage, StageMeta>> = {
     ctaIcon: CheckCircle2,
     ctaTone: "success",
   },
-  // Fallbacks for fixed-stage jobs in committed view
+  // Fixed-job committed stages
   assigned: {
     label: "Assigned",
     pillClass: "bg-primary/10 text-primary",
-    cta: "On the Way",
-    ctaIcon: Wrench,
+    cta: "Start Job",
+    ctaIcon: PlayCircle,
     ctaTone: "primary",
   },
   active: {
