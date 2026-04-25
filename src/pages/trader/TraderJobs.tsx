@@ -794,27 +794,6 @@ const TraderJobs = () => {
                 </button>
               </div>
 
-              {/* "From my organisation" toggle — only when worker has org-sourced jobs */}
-              {showOrgToggle && (
-                <button
-                  onClick={() => setShowOrgOnly((v) => !v)}
-                  className={`mb-2 flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-[11px] font-semibold transition-all ${
-                    showOrgOnly
-                      ? "border-primary/40 bg-primary/10 text-primary"
-                      : "border-border bg-card text-muted-foreground active:bg-muted"
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <Building2 className="h-3.5 w-3.5" />
-                    {showOrgOnly ? "Showing only org-forwarded jobs" : "Show only jobs from my organisation"}
-                  </span>
-                  <span className={`flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
-                    showOrgOnly ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
-                  }`}>
-                    {orgJobCount}
-                  </span>
-                </button>
-              )}
             </>
           )}
         </div>
