@@ -571,6 +571,7 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
                 </div>
               </div>
             </div>
+            )}
 
             {/* Advance Payment (estimate category only) */}
             {category === "estimate" && items.length > 0 && (
