@@ -647,6 +647,11 @@ const TraderJobs = () => {
       setPostInspectionJob(job);
       return;
     }
+    // Work finished → raise an invoice (with PDF preview before sending)
+    if (stage === "work_in_progress" || stage === "quote_accepted" || stage === "purchasing") {
+      setInvoiceJob(job);
+      return;
+    }
     // Default: open job detail — workflow tabs handle the rest.
     openJobDetail(job);
   };
@@ -684,6 +689,32 @@ const TraderJobs = () => {
     setJobs(prev => prev.map(j => j.id === job.id ? { ...j } : j));
     setPostInspectionJob(null);
     toast.success("Quote sent to customer 📄", { description: `Total £${data.total.toFixed(2)} — purchase list activated.` });
+  };
+
+  /** Persist the invoice and advance the workflow to invoice_sent. */
+  const handleInvoiceSend = (data: import("@/components/trader/InvoiceBuilderSheet").InvoiceSubmitData) => {
+    if (!invoiceJob) return;
+    const job = invoiceJob;
+    try {
+      const prev = JSON.parse(sessionStorage.getItem(`job_workflow_${job.id}`) || "{}");
+      sessionStorage.setItem(`job_workflow_${job.id}`, JSON.stringify({
+        ...prev,
+        stage: "invoice_sent",
+        invoiceData: {
+          id: data.id,
+          items: data.items.map(({ label, amount }) => ({ label, amount })),
+          subtotal: data.subtotal,
+          advancePaid: data.advancePaid,
+          remaining: data.remaining,
+          sentAt: new Date().toISOString(),
+        },
+      }));
+    } catch {}
+    setJobs(prev => prev.map(j => j.id === job.id ? { ...j } : j));
+    setInvoiceJob(null);
+    toast.success("Invoice sent 🧾", {
+      description: `£${data.remaining.toFixed(2)} due from ${job.customer.name}.`,
+    });
   };
 
 
