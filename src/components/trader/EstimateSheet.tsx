@@ -23,7 +23,7 @@ const EstimateSheet = ({ isOpen, onOpenChange, jobTitle, onSubmit }: EstimateShe
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
-        setTitle("");
+        
         setMinPrice("");
         setMaxPrice("");
         setDescription("");
