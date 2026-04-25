@@ -265,17 +265,27 @@ const initialJobs: Job[] = [
 ];
 
 /** Pre-seeded workflow stages for demo committed jobs — keyed by job id.
- *  Real flows persist via sessionStorage; these act as defaults when no override exists. */
+ *  Real flows persist via sessionStorage; these act as defaults when no override exists.
+ *  Covers every stage from the PRD so every use case is demonstrable. */
 const demoWorkflowStages: Record<string, WorkflowStage> = {
-  j11: "inspection_completed",  // Inspection done → CTA: Create Subtasks
-  j12: "quote_sent",             // Quote sent → CTA: Await Approval (informational)
-  j13: "assigned",               // Picked up + assigned → CTA: Start Work
-  j14: "completed",              // Work done → CTA: Create Invoice
+  // Live flows (existing)
+  j11: "inspection_completed",   // Inspection done → Create Subtasks
+  j12: "quote_sent",             // Quote sent → Await Approval
+  j13: "assigned",               // Picked up + assigned → Start Work (reassignable)
+  j14: "completed",              // Work done → Create Invoice
+  // Extra demo coverage (new)
+  j15: "in_progress",            // Fixed in-progress → Mark Completed (reassignable)
+  j16: "advance_paid",           // Estimate post-advance → View Purchase List
+  j17: "inspection_proposal_sent", // Inspection proposal sent → Await Payment
+  j18: "inspection_assigned",    // Inspection assigned → Start Inspection (reassignable)
+  j19: "invoice_sent",           // Invoice sent → Awaiting Payment
+  j20: "paid",                   // Paid → View Summary
 };
 
 /** Optional purchase-list progress for cards that show it inline. */
 const demoPurchaseProgress: Record<string, { purchased: number; total: number }> = {
   j12: { purchased: 2, total: 6 },
+  j16: { purchased: 0, total: 5 },
 };
 
 const companyJobs: CompanyJobData[] = [
