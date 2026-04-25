@@ -165,10 +165,11 @@ const JobDetail = () => {
   // Long-term committed jobs in admin mode get the full workspace
   const showAdminTabs = isCommitted && isLongTerm && adminMode && !isCompleted && !isCancelled;
 
-  // ── Workflow-aware tabs ──
-  const showQuotesTab = job.category !== "fixed" && (["estimate_approved", "subtasks_created", "quote_sent", "quote_accepted", "purchasing", "work_in_progress", "invoice_sent", "completed", "inspected"] as string[]).includes(workflow.stage);
-  const showSubtasksTab = job.category !== "fixed" && (["estimate_approved", "subtasks_created", "quote_sent", "quote_accepted", "purchasing", "work_in_progress", "invoice_sent", "completed", "inspected"] as string[]).includes(workflow.stage);
-  const showPurchaseListTab = job.category !== "fixed" && (["quote_sent", "quote_accepted", "purchasing", "work_in_progress", "invoice_sent", "completed"] as string[]).includes(workflow.stage);
+  // ── Workflow-aware tabs (single source of truth: jobWorkflowState constants) ──
+  const showQuotesTab = job.category !== "fixed" && quoteTabVisibleStages.includes(workflow.stage);
+  const showSubtasksTab = job.category !== "fixed" && subtasksTabVisibleStages.includes(workflow.stage);
+  // PRD: Purchase List is mandatory once a quote has been raised (quote_sent onwards).
+  const showPurchaseListTab = job.category !== "fixed" && purchaseListVisibleStages.includes(workflow.stage);
 
   const tabs: { key: TabKey; label: string; icon: any }[] = showAdminTabs
     ? [
