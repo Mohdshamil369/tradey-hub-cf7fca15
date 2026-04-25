@@ -267,10 +267,10 @@ const initialJobs: Job[] = [
 /** Pre-seeded workflow stages for demo committed jobs — keyed by job id.
  *  Real flows persist via sessionStorage; these act as defaults when no override exists. */
 const demoWorkflowStages: Record<string, WorkflowStage> = {
-  j11: "inspected",         // Inspection done → CTA: Send Estimate
-  j12: "quote_sent",        // Quote sent + purchase list active → CTA: View Purchase List
-  j13: "unassigned",        // Picked up, not assigned → CTA: Assign Worker
-  j14: "work_in_progress",  // On-site work done → CTA: Raise Invoice
+  j11: "inspection_completed",  // Inspection done → CTA: Create Subtasks
+  j12: "quote_sent",             // Quote sent → CTA: Await Approval (informational)
+  j13: "assigned",               // Picked up + assigned → CTA: Start Work
+  j14: "completed",              // Work done → CTA: Create Invoice
 };
 
 /** Optional purchase-list progress for cards that show it inline. */
@@ -459,31 +459,47 @@ const TraderJobs = () => {
   // Invoice builder (opened from work_in_progress CTA)
   const [invoiceJob, setInvoiceJob] = useState<Job | null>(null);
 
-  // Seed demo workflow state for committed jobs (one-shot per session)
+  // Seed demo workflow state for committed jobs (one-shot per session).
+  // Always re-seed if existing storage uses legacy stage names so older sessions get cleaned.
   useEffect(() => {
     try {
-      // j14 — work_in_progress with prior advance (used for the invoice flow demo)
+      const validStages = new Set([
+        "incoming","assigned","in_progress","completed","invoice_sent","paid",
+        "estimate_sent","estimate_approved","subtasks_created",
+        "quote_sent","quote_approved","advance_paid","purchases_ongoing","ready_to_start",
+        "inspection_proposal_sent","inspection_fee_paid","inspection_assigned","inspection_completed",
+      ]);
+      const cleanIfLegacy = (key: string) => {
+        const raw = sessionStorage.getItem(key);
+        if (!raw) return;
+        try {
+          const parsed = JSON.parse(raw);
+          if (!validStages.has(parsed?.stage)) sessionStorage.removeItem(key);
+        } catch { sessionStorage.removeItem(key); }
+      };
+      ["j11","j12","j13","j14"].forEach(id => cleanIfLegacy(`job_workflow_${id}`));
+
+      // j14 — completed with prior advance (Create Invoice CTA)
       if (!sessionStorage.getItem("job_workflow_j14")) {
         sessionStorage.setItem("job_workflow_j14", JSON.stringify({
-          stage: "work_in_progress",
+          stage: "completed",
           advanceAmount: 80,
           purchaseItems: [],
         }));
       }
-      // j12 — quote sent, purchase list active (2 of 6 items purchased)
-      // Re-seed when the stored entry is missing purchase items so older sessions get the demo list.
+      // j12 — quote sent, purchase list seeded (2 of 6 items purchased)
       const j12raw = sessionStorage.getItem("job_workflow_j12");
       const j12needsSeed = !j12raw || !(JSON.parse(j12raw)?.purchaseItems?.length);
       if (j12needsSeed) {
         sessionStorage.setItem("job_workflow_j12", JSON.stringify({
           stage: "quote_sent",
           purchaseItems: [
-            { id: "p1", name: "Pine planks (2.4m)", quantity: 4, expectedPrice: 28, status: "purchased", buyer: "customer" },
-            { id: "p2", name: "Wood screws (5×40mm, box)", quantity: 1, expectedPrice: 9, status: "purchased", buyer: "customer" },
-            { id: "p3", name: "Wall plugs (8mm, pack)", quantity: 2, expectedPrice: 6, status: "pending", buyer: "customer" },
-            { id: "p4", name: "Matt white emulsion (2.5L)", quantity: 1, expectedPrice: 22, status: "pending", buyer: "customer" },
-            { id: "p5", name: "Sandpaper (P120, pack)", quantity: 1, expectedPrice: 7, status: "pending", buyer: "customer" },
-            { id: "p6", name: "Wood filler (250g)", quantity: 1, expectedPrice: 8, status: "pending", buyer: "customer" },
+            { id: "p1", name: "Pine planks (2.4m)", quantity: 4, expectedPrice: 28, status: "purchased_by_customer", buyer: "customer" },
+            { id: "p2", name: "Wood screws (5×40mm, box)", quantity: 1, expectedPrice: 9, status: "purchased_by_customer", buyer: "customer" },
+            { id: "p3", name: "Wall plugs (8mm, pack)", quantity: 2, expectedPrice: 6, status: "not_purchased", buyer: "customer" },
+            { id: "p4", name: "Matt white emulsion (2.5L)", quantity: 1, expectedPrice: 22, status: "not_purchased", buyer: "customer" },
+            { id: "p5", name: "Sandpaper (P120, pack)", quantity: 1, expectedPrice: 7, status: "not_purchased", buyer: "customer" },
+            { id: "p6", name: "Wood filler (250g)", quantity: 1, expectedPrice: 8, status: "not_purchased", buyer: "customer" },
           ],
         }));
       }
@@ -673,36 +689,39 @@ const TraderJobs = () => {
     return demoWorkflowStages[jobId] ?? null;
   };
 
-  /** Footer CTA action — routes per stage. Most actions open the job detail sheet at the right context. */
+  /** Footer CTA action — routes per stage. Most actions open the job detail page at the right context. */
   const handleStageCta = (jobId: string, stage: WorkflowStage) => {
     const job = jobs.find((j) => j.id === jobId);
     if (!job) return;
-    if (stage === "unassigned") {
-      setDispatchJobId(jobId);
-      return;
-    }
-    if (stage === "fee_paid") {
+    // Inspection: fee paid → assign for inspection
+    if (stage === "inspection_fee_paid") {
       setDispatchJobId(jobId);
       toast("Pick an inspector to send on-site.");
       return;
     }
-    // Inspection done → open the quote builder (with PDF preview before sending)
-    if (stage === "inspected") {
-      setPostInspectionJob(job);
+    // Inspection completed → open detail (Create Subtasks)
+    if (stage === "inspection_completed") {
+      openJobDetail(job, "subtasks");
       return;
     }
-    // Estimate approved → detail page handles "Break into Subtasks" then "Create Quote"
+    // Estimate workflow stages that need detail page
     if (stage === "estimate_approved" || stage === "subtasks_created") {
       openJobDetail(job, "subtasks");
       return;
     }
-    // Quote shared / accepted / purchasing → open detail page on the Purchase List tab
-    if (stage === "quote_sent" || stage === "quote_accepted" || stage === "purchasing") {
+    // Estimate "assigned" stage means subtasks done, time to create the quote.
+    // Open quote builder via detail page so PDF preview flow runs.
+    if (stage === "assigned" && job.category !== "fixed") {
+      openJobDetail(job, "quotes");
+      return;
+    }
+    // Quote sent / approved / advance paid / purchases ongoing → Purchase List
+    if (stage === "quote_sent" || stage === "quote_approved" || stage === "advance_paid" || stage === "purchases_ongoing" || stage === "ready_to_start") {
       openJobDetail(job, "purchase-list");
       return;
     }
-    // Work finished → raise an invoice (with PDF preview before sending)
-    if (stage === "work_in_progress") {
+    // Work complete → invoice builder (with PDF preview)
+    if (stage === "completed") {
       setInvoiceJob(job);
       return;
     }
@@ -714,7 +733,6 @@ const TraderJobs = () => {
   const handlePostInspectionQuote = (data: QuoteSheetData) => {
     if (!postInspectionJob) return;
     const job = postInspectionJob;
-    // Persist new stage
     try {
       const prev = JSON.parse(sessionStorage.getItem(`job_workflow_${job.id}`) || "{}");
       sessionStorage.setItem(`job_workflow_${job.id}`, JSON.stringify({
@@ -722,11 +740,10 @@ const TraderJobs = () => {
         stage: "quote_sent",
         purchaseItems: data.items.filter(i => i.type === "material").map(i => ({
           id: i.id, name: i.name, quantity: i.quantity, expectedPrice: i.cost,
-          status: "pending", buyer: "customer",
+          status: "not_purchased", buyer: "customer",
         })),
       }));
     } catch {}
-    // Add to sent quotes list
     setSentQuotes(prev => [{
       id: crypto.randomUUID(),
       jobTitle: job.title,
@@ -739,7 +756,6 @@ const TraderJobs = () => {
       materialsCount: data.items.filter(i => i.type === "material").length,
       status: "pending" as const,
     }, ...prev]);
-    // Force re-render so StageJobCard picks up the new stage from sessionStorage
     setJobs(prev => prev.map(j => j.id === job.id ? { ...j } : j));
     setPostInspectionJob(null);
     toast.success("Quote sent to customer 📄", { description: `Total £${data.total.toFixed(2)} — purchase list activated.` });
@@ -790,6 +806,7 @@ const TraderJobs = () => {
         <StageJobCard
           key={job.id}
           stage={stage}
+          category={job.category}
           job={{
             id: job.id,
             title: job.title,
@@ -856,7 +873,7 @@ const TraderJobs = () => {
     if (isPickup) {
       if (isAgencyProfile) {
         const pickedUpAt = new Date().toISOString();
-        const next: JobWorkflowState = { stage: "unassigned", pickedUpAt, purchaseItems: [] };
+        const next: JobWorkflowState = { stage: "assigned", pickedUpAt, purchaseItems: [] };
         sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
         
         setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: "active" as JobStatus, committedStatus: "upcoming" } : j));
@@ -1145,31 +1162,8 @@ const TraderJobs = () => {
           })()}
           {/* Render jobs that aren't handled by grouped view above */}
           {(! (jobSection === "committed" && committedFilter.has("all"))) && filteredJobs.map((job) => {
-            // Admin-assigned incoming jobs are pre-accepted on the trader's behalf —
-            // render them with the committed-style StageJobCard so the visual & CTA
-            // match the committed flow (just sitting in Incoming until trader acts).
-            if (job.status === "incoming" && job.assignedByAdmin) {
-              const stage = getJobStage(job.id) ?? "assigned";
-              return (
-                <StageJobCard
-                  key={job.id}
-                  stage={stage}
-                  job={{
-                    id: job.id,
-                    title: job.title,
-                    customer: job.customer,
-                    timeWindow: job.timeWindow,
-                    location: `${job.location}${job.distance ? `, ${job.distance}` : ''}`,
-                    distance: job.distance,
-                    image: job.customerRequest?.photos?.[0],
-                    price: job.price,
-                    viaOrg: job.source === "org" ? job.orgName : undefined,
-                  }}
-                  onClick={() => openJobDetail(job)}
-                  onCta={handleStageCta}
-                />
-              );
-            }
+            // PRD rule: Incoming jobs ALWAYS render as IncomingJobCard until the
+            // trader Responds. No "pre-accepted" / committed-style cards in Incoming.
 
             // Use shared IncomingJobCard for regular incoming jobs
             if (job.status === "incoming") {

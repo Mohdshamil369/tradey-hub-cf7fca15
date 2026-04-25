@@ -238,11 +238,11 @@ const JobDetail = () => {
     let nextStage = workflow.stage;
     // Only advance stage if we're coming from a pre-assigned state
     if (job.category === "fixed") {
-      if (workflow.stage === "incoming" || workflow.stage === "unassigned") {
+      if (workflow.stage === "incoming") {
         nextStage = "assigned";
       }
     }
-    if (job.category === "inspection" && workflow.stage === "fee_paid") nextStage = "worker_assigned";
+    if (job.category === "inspection" && workflow.stage === "inspection_fee_paid") nextStage = "inspection_assigned";
 
     const next: JobWorkflowState = { 
       ...workflow, 
@@ -290,7 +290,7 @@ const JobDetail = () => {
     if (isInspection) {
       const next: JobWorkflowState = {
         ...workflow,
-        stage: "fee_set",
+        stage: "inspection_proposal_sent",
         inspectionFee: data.inspectionFee,
       };
       setWorkflow(next);
@@ -307,7 +307,7 @@ const JobDetail = () => {
         name: i.name,
         quantity: i.quantity,
         expectedPrice: i.cost,
-        status: "pending" as const,
+        status: "not_purchased" as const,
         buyer: "customer" as const,
       }));
     const next: JobWorkflowState = {
@@ -962,7 +962,7 @@ const JobDetail = () => {
           icon: Users,
           cta: "Start Job",
           ctaIcon: PlayCircle,
-          action: () => advanceStage("active"),
+          action: () => advanceStage("in_progress"),
         },
         {
           key: "active",
