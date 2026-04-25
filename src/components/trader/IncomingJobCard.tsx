@@ -186,20 +186,15 @@ const IncomingJobCard = ({ job, onViewDetail, viewMode = "individual", onRequest
 
         <p className="mt-0.5 text-[11px] text-muted-foreground truncate">{job.customer} · {job.location}</p>
 
-        {(job.assignedByAdmin || job.viaOrg) && (
+        {/* Incoming cards only show the forwarding org chip — never an "assigned" chip,
+            because the trader hasn't accepted the job yet. The "Assigned by admin" status
+            only appears in the Committed tab once the job has been accepted. */}
+        {job.viaOrg && (
           <div className="mt-1 flex flex-wrap items-center gap-1">
-            {job.assignedByAdmin && (
-              <div className="inline-flex items-center gap-1 rounded-md bg-[hsl(25,90%,55%)]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[hsl(25,90%,55%)]">
-                <ShieldCheck className="h-2.5 w-2.5 shrink-0" />
-                <span className="truncate">Assigned by admin</span>
-              </div>
-            )}
-            {job.viaOrg && (
-              <div className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary max-w-full truncate">
-                <Building2 className="h-2.5 w-2.5 shrink-0" />
-                <span className="truncate">via {job.viaOrg}</span>
-              </div>
-            )}
+            <div className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary max-w-full truncate">
+              <Building2 className="h-2.5 w-2.5 shrink-0" />
+              <span className="truncate">via {job.viaOrg}</span>
+            </div>
           </div>
         )}
 
