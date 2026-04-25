@@ -752,7 +752,9 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
                   inspectionFee: category === "inspection" ? (parseFloat(inspectionMin) || 0) : undefined,
                   inspectionMin: category === "inspection" ? (parseFloat(inspectionMin) || 0) : undefined,
                   inspectionMax: category === "inspection" ? (parseFloat(inspectionMax) || 0) : undefined,
-                  advanceAmount: category === "estimate" ? (parseFloat(advanceAmount) || 0) : undefined 
+                  advanceAmount: category === "estimate"
+                    ? (advanceMode === "percent" ? +(total * advancePercent / 100).toFixed(2) : (parseFloat(advanceAmount) || 0))
+                    : undefined
                 })}
                 disabled={category === "inspection" ? !inspectionMin || !inspectionMax : !canSubmit}
                 className={`flex-[2.5] rounded-xl py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40 ${
