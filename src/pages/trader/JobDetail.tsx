@@ -156,6 +156,12 @@ const JobDetail = () => {
   const handleAction = (action: string) => {
     switch (action) {
       case "accept":
+        if (isAgencyAdmin) {
+          // Agency admin: chain assign sheet to dispatch the picked-up job
+          setPendingQuote({ items: [], notes: "", total: job.price ?? 0 });
+          setShowAssignSheet(true);
+          return;
+        }
         toast.success("Job accepted!");
         navigate("/trader/jobs");
         break;
