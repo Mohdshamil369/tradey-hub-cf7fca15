@@ -94,6 +94,8 @@ type TabKey =
 const JobDetail = () => {
   const navigate = useNavigate();
   const { jobId } = useParams();
+  const { profile } = useAuth();
+  const isAgencyAdmin = profile?.trader_type === "agency";
   const [searchParams] = useSearchParams();
   const initialTab: TabKey = searchParams.get("tab") === "quotes" ? "quotes" : "details";
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
@@ -103,6 +105,8 @@ const JobDetail = () => {
   const [heroIndex, setHeroIndex] = useState(0);
   const [adminMode, setAdminMode] = useState(true);
   const [showMoreActions, setShowMoreActions] = useState(false);
+  const [showAssignSheet, setShowAssignSheet] = useState(false);
+  const [pendingQuote, setPendingQuote] = useState<QuoteSheetData | null>(null);
 
   const stored = sessionStorage.getItem(`job_detail_${jobId}`);
   const job: JobDetailPageData | null = stored ? JSON.parse(stored) : null;
