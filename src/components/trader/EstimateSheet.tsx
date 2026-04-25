@@ -182,6 +182,23 @@ const EstimateSheet = ({ isOpen, onOpenChange, jobTitle, onSubmit }: EstimateShe
                 </div>
               </button>
             </div>
+
+            {/* Optional Advance Hint — locked in fully during Quote, but admin can pre-signal */}
+            {midEstimate > 0 && (
+              <div className="mb-6">
+                <AdvancePaymentField
+                  total={midEstimate}
+                  mode={advanceMode}
+                  percent={advancePercent}
+                  amount={advanceAmount}
+                  onModeChange={setAdvanceMode}
+                  onPercentChange={setAdvancePercent}
+                  onAmountChange={setAdvanceAmount}
+                  label="Upfront Advance (optional)"
+                  hint="Set what the customer should expect to pay upfront. Confirmed for real during the Quote step."
+                />
+              </div>
+            )}
           </ScrollArea>
 
           {/* Footer */}
