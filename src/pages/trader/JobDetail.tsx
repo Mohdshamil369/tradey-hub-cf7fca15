@@ -1077,22 +1077,22 @@ const JobDetail = () => {
               <div className="rounded-xl bg-[hsl(25,90%,55%)]/10 py-3.5 text-center text-[12px] font-bold text-[hsl(25,90%,55%)]">
                 ⏳ Quote Sent — Awaiting Customer
               </div>
-              <button onClick={() => { advanceStage("quote_accepted"); setActiveTab("purchase-list"); toast.success("Customer accepted the quote!"); }} className="rounded-xl border border-dashed border-primary/30 py-2.5 text-[10px] font-bold text-primary active:bg-primary/5">
+              <button onClick={() => { advanceStage("quote_approved"); setActiveTab("purchase-list"); toast.success("Customer accepted the quote!"); }} className="rounded-xl border border-dashed border-primary/30 py-2.5 text-[10px] font-bold text-primary active:bg-primary/5">
                 ⚡ Simulate: Customer Accepts Quote
               </button>
             </>
           )}
-          {stage === "quote_accepted" && (
-            <button onClick={() => { advanceStage("purchasing"); setActiveTab("purchase-list"); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+          {stage === "quote_approved" && (
+            <button onClick={() => { advanceStage("purchases_ongoing"); setActiveTab("purchase-list"); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
               <ShoppingCart className="h-4 w-4" /> View Purchase List
             </button>
           )}
-          {stage === "purchasing" && (
-            <button onClick={() => { advanceStage("work_in_progress"); toast.success("All items purchased — work can begin!"); }} disabled={!workflow.purchaseItems.every(i => i.status === "purchased")} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40">
+          {stage === "purchases_ongoing" && (
+            <button onClick={() => { advanceStage("in_progress"); toast.success("All items purchased — work can begin!"); }} disabled={!workflow.purchaseItems.every(i => i.status === "purchased_by_admin" || i.status === "purchased_by_customer")} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40">
               <CheckCircle2 className="h-4 w-4" /> All Purchased — Continue
             </button>
           )}
-          {stage === "work_in_progress" && (
+          {stage === "in_progress" && (
             <button onClick={() => { advanceStage("invoice_sent"); const inv = generateInvoice(); const next = { ...workflow, stage: "invoice_sent" as const, invoiceData: inv }; setWorkflow(next); sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next)); setShowInvoiceSheet(true); }} className="w-full rounded-xl bg-primary py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
               <FileText className="h-4 w-4" /> Generate Invoice
             </button>
