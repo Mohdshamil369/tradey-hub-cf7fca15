@@ -585,86 +585,15 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
 
               return (
                 <div className="mb-6">
-                  <div className="flex items-center justify-between mb-2 px-1">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                      Advance Payment
-                    </label>
-                    <div className="flex items-center gap-0.5 rounded-full bg-muted p-0.5">
-                      <button
-                        type="button"
-                        onClick={() => setAdvanceMode("percent")}
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all ${
-                          advanceMode === "percent" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
-                        }`}
-                      >
-                        %
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setAdvanceMode("amount")}
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all ${
-                          advanceMode === "amount" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
-                        }`}
-                      >
-                        £
-                      </button>
-                    </div>
-                  </div>
-
-                  {advanceMode === "percent" ? (
-                    <>
-                      <div className="grid grid-cols-4 gap-1.5 mb-2">
-                        {presets.map((p) => (
-                          <button
-                            key={p}
-                            type="button"
-                            onClick={() => setAdvancePercent(p)}
-                            className={`py-2 rounded-xl text-[11px] font-bold transition-all border ${
-                              advancePercent === p
-                                ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                                : "bg-card border-border text-foreground active:bg-muted"
-                            }`}
-                          >
-                            {p === 0 ? "None" : `${p}%`}
-                          </button>
-                        ))}
-                      </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={100}
-                        step={5}
-                        value={advancePercent}
-                        onChange={(e) => setAdvancePercent(parseInt(e.target.value))}
-                        className="w-full accent-primary"
-                      />
-                    </>
-                  ) : (
-                    <div className="flex items-center gap-2 rounded-2xl border border-border bg-card p-3 focus-within:border-primary/50 transition-colors">
-                      <PoundSterling className="h-4 w-4 text-primary shrink-0" />
-                      <input
-                        type="number"
-                        inputMode="decimal"
-                        placeholder="0.00"
-                        value={advanceAmount}
-                        onChange={(e) => setAdvanceAmount(e.target.value)}
-                        className="flex-1 bg-transparent text-[15px] font-bold text-foreground outline-none placeholder:text-muted-foreground/40"
-                      />
-                    </div>
-                  )}
-
-                  {computedAdvance > 0 && (
-                    <div className="mt-2 rounded-xl bg-primary/5 border border-primary/10 p-2.5 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-muted-foreground">Advance{advanceMode === "percent" ? ` (${advancePercent}%)` : ""}</span>
-                        <span className="text-[12px] font-extrabold text-primary">£{computedAdvance.toFixed(2)}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-muted-foreground">Remaining on completion</span>
-                        <span className="text-[11px] font-bold text-foreground">£{remaining.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  )}
+                  <AdvancePaymentField
+                    total={total}
+                    mode={advanceMode}
+                    percent={advancePercent}
+                    amount={advanceAmount}
+                    onModeChange={setAdvanceMode}
+                    onPercentChange={setAdvancePercent}
+                    onAmountChange={setAdvanceAmount}
+                  />
                 </div>
               );
             })()}
