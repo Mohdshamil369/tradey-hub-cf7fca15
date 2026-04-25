@@ -259,4 +259,80 @@ export const CreateFormSheet = ({
   );
 };
 
+interface TemplateSectionProps {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  items: FormTemplate[];
+  selectedId: string | null;
+  onSelect: (t: FormTemplate) => void;
+  badgeFor?: (t: FormTemplate) => string | null;
+}
+
+const TemplateSection = ({
+  icon,
+  title,
+  subtitle,
+  items,
+  selectedId,
+  onSelect,
+  badgeFor,
+}: TemplateSectionProps) => (
+  <div className="space-y-2">
+    <div className="flex items-center gap-1.5">
+      <span className="flex h-5 w-5 items-center justify-center rounded-md bg-primary/10 text-primary">
+        {icon}
+      </span>
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] font-bold text-foreground">{title}</p>
+        {subtitle && (
+          <p className="text-[9px] text-muted-foreground leading-tight">{subtitle}</p>
+        )}
+      </div>
+      <span className="rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-bold text-muted-foreground">
+        {items.length}
+      </span>
+    </div>
+    <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 pb-1">
+      {items.map((tpl) => {
+        const selected = selectedId === tpl.id;
+        const badge = badgeFor?.(tpl) ?? null;
+        return (
+          <button
+            key={tpl.id}
+            onClick={() => onSelect(tpl)}
+            className={`relative shrink-0 w-[160px] rounded-xl border p-3 text-left transition-all ${
+              selected
+                ? "border-primary bg-primary/5"
+                : "border-border bg-card active:bg-muted/40"
+            }`}
+          >
+            {selected && (
+              <div className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <Check className="h-2.5 w-2.5" />
+              </div>
+            )}
+            <div
+              className={`mb-1.5 flex h-7 w-7 items-center justify-center rounded-lg ${
+                selected ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+              }`}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </div>
+            <p className="text-[12px] font-bold text-foreground truncate">{tpl.title}</p>
+            <p className="text-[10px] text-muted-foreground leading-tight">
+              {tpl.fields.length} field{tpl.fields.length === 1 ? "" : "s"}
+            </p>
+            {badge && (
+              <span className="mt-1 inline-block rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold text-muted-foreground">
+                {badge}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+);
+
 export default CreateFormSheet;
