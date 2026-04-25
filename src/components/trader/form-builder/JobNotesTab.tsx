@@ -84,25 +84,26 @@ export const JobNotesTab = ({ jobId, isInline = false }: JobNotesTabProps) => {
     source: "blank" | "template"
   ) => {
     setIsCreateSheetOpen(false);
-    if (source === "template") {
-      // Stash the draft so we can merge metadata when a template is picked
+    // Template is now picked dynamically inside the create sheet itself,
+    // so the draft already carries the chosen fields when source === "template".
+    if (source === "template" && (!draft.fields || draft.fields.length === 0)) {
       setPendingDraft(draft);
       setIsLibraryOpen(true);
-    } else {
-      setSelectedTemplate({
-        id: generateId(),
-        title: draft.title || "Untitled Form",
-        description: draft.description,
-        tags: draft.tags || [],
-        status: "draft",
-        responsesCount: 0,
-        stepsCount: 1,
-        category: "General",
-        isCustom: true,
-        fields: [],
-      });
-      setIsBuilderOpen(true);
+      return;
     }
+    setSelectedTemplate({
+      id: generateId(),
+      title: draft.title || "Untitled Form",
+      description: draft.description,
+      tags: draft.tags || [],
+      status: "draft",
+      responsesCount: 0,
+      stepsCount: draft.stepsCount ?? 1,
+      category: draft.category || "General",
+      isCustom: true,
+      fields: draft.fields || [],
+    });
+    setIsBuilderOpen(true);
   };
 
   const handleSelectTemplateFromLibrary = (template: FormTemplate) => {
