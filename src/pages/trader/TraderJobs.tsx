@@ -613,6 +613,35 @@ const TraderJobs = () => {
     cancelled: { label: "Cancelled", className: "bg-destructive/10 text-destructive" },
   };
 
+  /** Resolve current workflow stage for a committed job (sessionStorage override → demo seed). */
+  const getJobStage = (jobId: string): WorkflowStage | null => {
+    try {
+      const raw = sessionStorage.getItem(`job_workflow_${jobId}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.stage) return parsed.stage as WorkflowStage;
+      }
+    } catch {}
+    return demoWorkflowStages[jobId] ?? null;
+  };
+
+  /** Footer CTA action — routes per stage. Most actions open the job detail sheet at the right context. */
+  const handleStageCta = (jobId: string, stage: WorkflowStage) => {
+    const job = jobs.find((j) => j.id === jobId);
+    if (!job) return;
+    if (stage === "unassigned") {
+      setDispatchJobId(jobId);
+      return;
+    }
+    if (stage === "fee_paid") {
+      setDispatchJobId(jobId);
+      toast("Pick an inspector to send on-site.");
+      return;
+    }
+    // Default: open job detail — workflow tabs handle the rest.
+    openJobDetail(job);
+  };
+
   const renderCommittedJobCard = (job: Job) => {
     const statusTag = job.committedStatus ? committedStatusConfig[job.committedStatus] : null;
     const a = job.assignment;
@@ -623,9 +652,33 @@ const TraderJobs = () => {
       else { const shown = a.members.slice(0, 2).map((m) => m.name.split(" ")[0]); const extra = a.members.length - 2; assignLabel = extra > 0 ? `${shown.join(", ")} +${extra}` : shown.join(", "); }
     }
 
-    const workflow = JSON.parse(sessionStorage.getItem(`job_workflow_${job.id}`) || "{}");
-    const isUnassigned = workflow.stage === "unassigned";
-    const statusLabel = isUnassigned ? "Assignment Pending" : statusTag?.label;
+    // Stage-aware card for in-progress / upcoming committed jobs
+    const stage = getJobStage(job.id);
+    const isLiveCommitted = job.committedStatus === "in_progress" || job.committedStatus === "upcoming";
+    if (isLiveCommitted && stage) {
+      return (
+        <StageJobCard
+          key={job.id}
+          stage={stage}
+          job={{
+            id: job.id,
+            title: job.title,
+            customer: job.customer,
+            timeWindow: job.timeWindow,
+            location: `${job.location}${job.distance ? `, ${job.distance}` : ''}`,
+            distance: job.distance,
+            image: job.customerRequest?.photos?.[0],
+            price: job.price,
+            viaOrg: job.source === "org" ? job.orgName : undefined,
+            purchaseProgress: demoPurchaseProgress[job.id],
+          }}
+          onClick={() => openJobDetail(job)}
+          onCta={handleStageCta}
+        />
+      );
+    }
+
+    const statusLabel = statusTag?.label;
 
     return (
       <MinimalJobCard
