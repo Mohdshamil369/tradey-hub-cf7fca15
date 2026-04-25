@@ -31,6 +31,8 @@ export interface IncomingJobData {
   proposalsCount?: number;
   /** Org/agency that forwarded this job to me. Adds a "via {org}" chip on the card. */
   viaOrg?: string;
+  /** True if this job was directly assigned to me by my organisation's admin. */
+  assignedByAdmin?: boolean;
 }
 
 export type JobCardViewMode = "individual" | "agency" | "agency-worker";
