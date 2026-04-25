@@ -33,6 +33,10 @@ interface AssignSheetProps {
   groups: AssignGroup[];
   individuals: AssignIndividual[];
   onConfirm: (result: AssignmentResult) => void;
+  /** Label for the final confirm button. Defaults to "Send Quote & Assign". */
+  confirmLabel?: string;
+  /** Helper text shown above the Confirm Assignment header. */
+  confirmHelperText?: string;
 }
 
 type Step = "choose" | "select-members" | "confirm";
