@@ -696,6 +696,7 @@ const TraderJobs = () => {
   const [selectedIndividual, setSelectedIndividual] = useState<{ id: string; name: string } | null>(null);
   const [selectedIndividuals, setSelectedIndividuals] = useState<{ id: string; name: string; role: string }[]>([]);
   const [individualSearch, setIndividualSearch] = useState("");
+  const [assignTab, setAssignTab] = useState<"group" | "individual">("group");
   const [showSavedJobs, setShowSavedJobs] = useState(false);
   const [activeResponseJob, setActiveResponseJob] = useState<ResponseJobData | null>(null);
   const [showResponseWorkflow, setShowResponseWorkflow] = useState(false);
@@ -719,13 +720,21 @@ const TraderJobs = () => {
       { id: "m4", name: "Sophie Baker", role: "Electrician" },
       { id: "m5", name: "Liam Wright", role: "Electrician" },
     ]},
+    { id: "g3", name: "General Crew", members: [
+      { id: "m3", name: "Lena K.", role: "Tiler" },
+      { id: "m6", name: "Erik D.", role: "Helper" },
+      { id: "m7", name: "Jos V.", role: "Helper" },
+    ]},
   ];
 
   const mockIndividuals = [
     { id: "m1", name: "Alex Turner", role: "Plumber" },
     { id: "m2", name: "James Cooper", role: "Plumber" },
+    { id: "m3", name: "Lena K.", role: "Tiler" },
     { id: "m4", name: "Sophie Baker", role: "Electrician" },
     { id: "m5", name: "Liam Wright", role: "Electrician" },
+    { id: "m6", name: "Erik D.", role: "Helper" },
+    { id: "m7", name: "Jos V.", role: "Helper" },
   ];
 
   const resetAssignFlow = () => {
@@ -736,6 +745,7 @@ const TraderJobs = () => {
     setSelectedIndividual(null);
     setSelectedIndividuals([]);
     setIndividualSearch("");
+    setAssignTab("group");
   };
 
   const toggleMember = (memberId: string) => {
@@ -1360,7 +1370,7 @@ const TraderJobs = () => {
                           </button>
                         )}
                         <h2 className="text-lg font-bold text-foreground">
-                          {assignStep === "choose" ? "Quick Assign" : "Confirm Assignment"}
+                          {assignStep === "choose" ? "Assign to Team" : assignStep === "select-members" ? "Select Members" : "Confirm Assignment"}
                         </h2>
                       </div>
                       <button onClick={resetAssignFlow} className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-muted/80">
@@ -1377,71 +1387,135 @@ const TraderJobs = () => {
                     </div>
 
                     {assignStep === "choose" ? (
-                      <div className="space-y-3">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">Assign to a Group</p>
-                        {mockGroups.map((group) => (
-                          <button
-                            key={group.id}
-                            onClick={() => {
-                              setSelectedGroupId(group.id);
-                              setSelectedMemberIds(new Set(group.members.map(m => m.id)));
-                              setAssignStep("select-members");
-                            }}
-                            className="flex w-full items-center gap-4 rounded-2xl border-2 border-border bg-card p-4 text-left transition-all active:scale-[0.98] hover:border-primary/20"
-                          >
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                              <Users className="h-6 w-6 text-primary" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-bold text-foreground">{group.name}</p>
-                              <p className="text-xs text-muted-foreground">{group.members.length} members · pick all or some</p>
-                            </div>
-                            <ChevronRight className="h-5 w-5 text-muted-foreground/30" />
-                          </button>
-                        ))}
-
-                        <div className="pt-2">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-3">Or pick Individuals</p>
-                          <div className="grid grid-cols-2 gap-3">
-                            {mockIndividuals.map((member) => {
-                              const picked = selectedIndividuals.some(i => i.id === member.id);
-                              return (
-                                <button
-                                  key={member.id}
-                                  onClick={() => {
-                                    setSelectedIndividuals(prev =>
-                                      prev.some(i => i.id === member.id)
-                                        ? prev.filter(i => i.id !== member.id)
-                                        : [...prev, member]
-                                    );
-                                  }}
-                                  className={`relative flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all active:scale-[0.98] text-center ${
-                                    picked ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/20"
-                                  }`}
-                                >
-                                  {picked && (
-                                    <CheckCircle2 className="absolute top-2 right-2 h-4 w-4 text-primary" />
-                                  )}
-                                  <div className="h-12 w-12 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-foreground overflow-hidden">
-                                    {member.name.split(" ").map(n => n[0]).join("")}
-                                  </div>
-                                  <div>
-                                    <p className="text-xs font-bold text-foreground truncate max-w-full">{member.name.split(" ")[0]}</p>
-                                    <p className="text-[10px] text-muted-foreground">{member.role}</p>
-                                  </div>
-                                </button>
-                              );
-                            })}
+                      <div className="space-y-4">
+                        {/* Pick Up Myself — dashed self-assign card */}
+                        <button
+                          onClick={() => {
+                            toast.success("Picked up yourself — assign a team anytime later.");
+                            resetAssignFlow();
+                          }}
+                          className="flex w-full items-center gap-3 rounded-2xl border-2 border-dashed border-border bg-muted/30 p-4 text-left transition-all active:scale-[0.99] hover:border-primary/40"
+                        >
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-muted">
+                            <User className="h-6 w-6 text-foreground/70" />
                           </div>
-                          {selectedIndividuals.length > 0 && (
-                            <button
-                              onClick={() => { setSelectedGroupId(null); setAssignStep("confirm"); }}
-                              className="w-full mt-4 rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground active:scale-[0.98]"
-                            >
-                              Continue with {selectedIndividuals.length} {selectedIndividuals.length === 1 ? "person" : "people"}
-                            </button>
-                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-bold text-foreground">Pick Up Myself</p>
+                              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                                <Clock className="h-2.5 w-2.5" />
+                                Decide Later
+                              </span>
+                            </div>
+                            <p className="mt-0.5 text-[11px] text-muted-foreground leading-snug">
+                              Take this job yourself now — assign to a group or individual anytime later.
+                            </p>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-muted-foreground/40 shrink-0" />
+                        </button>
+
+                        {/* Tab toggle: group vs individual */}
+                        <div className="flex rounded-2xl bg-muted p-1">
+                          <button
+                            onClick={() => setAssignTab("group")}
+                            className={`flex-1 rounded-xl py-2.5 text-[12px] font-bold transition-all ${
+                              assignTab === "group" ? "bg-card text-foreground card-shadow" : "text-muted-foreground"
+                            }`}
+                          >
+                            Assign to a group
+                          </button>
+                          <button
+                            onClick={() => setAssignTab("individual")}
+                            className={`flex-1 rounded-xl py-2.5 text-[12px] font-bold transition-all ${
+                              assignTab === "individual" ? "bg-card text-foreground card-shadow" : "text-muted-foreground"
+                            }`}
+                          >
+                            Assign to individual
+                          </button>
                         </div>
+
+                        {assignTab === "group" ? (
+                          <div className="space-y-3">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">Available Groups</p>
+                            {mockGroups.map((group) => (
+                              <button
+                                key={group.id}
+                                onClick={() => {
+                                  setSelectedGroupId(group.id);
+                                  setSelectedMemberIds(new Set(group.members.map(m => m.id)));
+                                  setAssignStep("select-members");
+                                }}
+                                className="flex w-full items-center gap-4 rounded-2xl border border-border bg-card p-4 text-left transition-all active:scale-[0.98] hover:border-primary/30"
+                              >
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-muted">
+                                  <Users className="h-6 w-6 text-foreground/80" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-bold text-foreground">{group.name}</p>
+                                  <p className="text-xs text-muted-foreground">{group.members.length} members available</p>
+                                </div>
+                                <ChevronRight className="h-5 w-5 text-muted-foreground/40" />
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">Select Individuals</p>
+                            <div className="relative">
+                              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <input
+                                type="text"
+                                value={individualSearch}
+                                onChange={(e) => setIndividualSearch(e.target.value)}
+                                placeholder="Search individuals..."
+                                className="w-full rounded-2xl border border-border bg-card py-3 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              {mockIndividuals
+                                .filter(m => m.name.toLowerCase().includes(individualSearch.toLowerCase()) || m.role.toLowerCase().includes(individualSearch.toLowerCase()))
+                                .map((member) => {
+                                  const picked = selectedIndividuals.some(i => i.id === member.id);
+                                  return (
+                                    <button
+                                      key={member.id}
+                                      onClick={() => {
+                                        setSelectedIndividuals(prev =>
+                                          prev.some(i => i.id === member.id)
+                                            ? prev.filter(i => i.id !== member.id)
+                                            : [...prev, member]
+                                        );
+                                      }}
+                                      className={`flex w-full items-center gap-3 rounded-2xl border bg-card p-3 text-left transition-all active:scale-[0.99] ${
+                                        picked ? "border-primary" : "border-border"
+                                      }`}
+                                    >
+                                      <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-foreground">
+                                        {member.name.split(" ").map(n => n[0]).join("")}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-bold text-foreground truncate">{member.name}</p>
+                                        <p className="text-[11px] text-muted-foreground">{member.role}</p>
+                                      </div>
+                                      {picked ? (
+                                        <CheckCircle2 className="h-5 w-5 text-primary fill-primary/10" />
+                                      ) : (
+                                        <div className="h-5 w-5 rounded-full border-2 border-border" />
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                            </div>
+                            {selectedIndividuals.length > 0 && (
+                              <button
+                                onClick={() => { setSelectedGroupId(null); setAssignStep("confirm"); }}
+                                className="w-full mt-2 rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground active:scale-[0.98]"
+                              >
+                                Continue with {selectedIndividuals.length} {selectedIndividuals.length === 1 ? "person" : "people"}
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </div>
                     ) : assignStep === "select-members" ? (
                       (() => {
@@ -1451,7 +1525,7 @@ const TraderJobs = () => {
                         return (
                           <div className="space-y-3">
                             <div className="flex items-center justify-between px-1">
-                              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{group.name} · pick members</p>
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{group.name} · {selectedMemberIds.size}/{group.members.length} selected</p>
                               <button
                                 onClick={() => setSelectedMemberIds(allSelected ? new Set() : new Set(group.members.map(m => m.id)))}
                                 className="text-[10px] font-bold text-primary"
@@ -1491,7 +1565,7 @@ const TraderJobs = () => {
                               disabled={selectedMemberIds.size === 0}
                               className="w-full mt-2 rounded-2xl bg-primary py-3.5 text-sm font-bold text-primary-foreground active:scale-[0.98] disabled:opacity-40"
                             >
-                              Continue with {selectedMemberIds.size} {selectedMemberIds.size === 1 ? "member" : "members"}
+                              Continue
                             </button>
                           </div>
                         );
