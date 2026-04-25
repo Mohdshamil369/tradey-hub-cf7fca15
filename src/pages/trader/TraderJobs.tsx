@@ -1236,6 +1236,15 @@ const TraderJobs = () => {
                     hasValue: !filterJobType.has("any"),
                   },
                   {
+                    id: "assignmentSource",
+                    label: "Assignment Source",
+                    icon: "🏢",
+                    summary: !filterAssignmentSource.has("any")
+                      ? Array.from(filterAssignmentSource).map(s => s === "admin" ? "Assigned by admin" : s === "org" ? "From organisation" : "Direct").join(", ")
+                      : "Any",
+                    hasValue: !filterAssignmentSource.has("any"),
+                  },
+                  {
                     id: "status",
                     label: "Job Status",
                     icon: "📊",
