@@ -459,31 +459,47 @@ const TraderJobs = () => {
   // Invoice builder (opened from work_in_progress CTA)
   const [invoiceJob, setInvoiceJob] = useState<Job | null>(null);
 
-  // Seed demo workflow state for committed jobs (one-shot per session)
+  // Seed demo workflow state for committed jobs (one-shot per session).
+  // Always re-seed if existing storage uses legacy stage names so older sessions get cleaned.
   useEffect(() => {
     try {
-      // j14 — work_in_progress with prior advance (used for the invoice flow demo)
+      const validStages = new Set([
+        "incoming","assigned","in_progress","completed","invoice_sent","paid",
+        "estimate_sent","estimate_approved","subtasks_created",
+        "quote_sent","quote_approved","advance_paid","purchases_ongoing","ready_to_start",
+        "inspection_proposal_sent","inspection_fee_paid","inspection_assigned","inspection_completed",
+      ]);
+      const cleanIfLegacy = (key: string) => {
+        const raw = sessionStorage.getItem(key);
+        if (!raw) return;
+        try {
+          const parsed = JSON.parse(raw);
+          if (!validStages.has(parsed?.stage)) sessionStorage.removeItem(key);
+        } catch { sessionStorage.removeItem(key); }
+      };
+      ["j11","j12","j13","j14"].forEach(id => cleanIfLegacy(`job_workflow_${id}`));
+
+      // j14 — completed with prior advance (Create Invoice CTA)
       if (!sessionStorage.getItem("job_workflow_j14")) {
         sessionStorage.setItem("job_workflow_j14", JSON.stringify({
-          stage: "work_in_progress",
+          stage: "completed",
           advanceAmount: 80,
           purchaseItems: [],
         }));
       }
-      // j12 — quote sent, purchase list active (2 of 6 items purchased)
-      // Re-seed when the stored entry is missing purchase items so older sessions get the demo list.
+      // j12 — quote sent, purchase list seeded (2 of 6 items purchased)
       const j12raw = sessionStorage.getItem("job_workflow_j12");
       const j12needsSeed = !j12raw || !(JSON.parse(j12raw)?.purchaseItems?.length);
       if (j12needsSeed) {
         sessionStorage.setItem("job_workflow_j12", JSON.stringify({
           stage: "quote_sent",
           purchaseItems: [
-            { id: "p1", name: "Pine planks (2.4m)", quantity: 4, expectedPrice: 28, status: "purchased", buyer: "customer" },
-            { id: "p2", name: "Wood screws (5×40mm, box)", quantity: 1, expectedPrice: 9, status: "purchased", buyer: "customer" },
-            { id: "p3", name: "Wall plugs (8mm, pack)", quantity: 2, expectedPrice: 6, status: "pending", buyer: "customer" },
-            { id: "p4", name: "Matt white emulsion (2.5L)", quantity: 1, expectedPrice: 22, status: "pending", buyer: "customer" },
-            { id: "p5", name: "Sandpaper (P120, pack)", quantity: 1, expectedPrice: 7, status: "pending", buyer: "customer" },
-            { id: "p6", name: "Wood filler (250g)", quantity: 1, expectedPrice: 8, status: "pending", buyer: "customer" },
+            { id: "p1", name: "Pine planks (2.4m)", quantity: 4, expectedPrice: 28, status: "purchased_by_customer", buyer: "customer" },
+            { id: "p2", name: "Wood screws (5×40mm, box)", quantity: 1, expectedPrice: 9, status: "purchased_by_customer", buyer: "customer" },
+            { id: "p3", name: "Wall plugs (8mm, pack)", quantity: 2, expectedPrice: 6, status: "not_purchased", buyer: "customer" },
+            { id: "p4", name: "Matt white emulsion (2.5L)", quantity: 1, expectedPrice: 22, status: "not_purchased", buyer: "customer" },
+            { id: "p5", name: "Sandpaper (P120, pack)", quantity: 1, expectedPrice: 7, status: "not_purchased", buyer: "customer" },
+            { id: "p6", name: "Wood filler (250g)", quantity: 1, expectedPrice: 8, status: "not_purchased", buyer: "customer" },
           ],
         }));
       }
