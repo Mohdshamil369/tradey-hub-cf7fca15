@@ -15,6 +15,8 @@ import Avatar from "boring-avatars";
 import { toast } from "sonner";
 import noPhotoPlaceholder from "@/assets/no-photo-placeholder.png";
 import QuoteSheet, { type QuoteSheetData } from "@/components/trader/QuoteSheet";
+import AssignSheet, { type AssignmentResult } from "@/components/trader/AssignSheet";
+import { useAuth } from "@/contexts/AuthContext";
 import JobNotesTab from "@/components/trader/form-builder/JobNotesTab";
 import JobSubtasksTab from "@/components/trader/JobSubtasksTab";
 import JobFinancesTab from "@/components/trader/job-admin/JobFinancesTab";
