@@ -91,6 +91,7 @@ const GroupDetail = () => {
   const [savedEntries, setSavedEntries] = useState(defaultBasePay);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [expandedCat, setExpandedCat] = useState<string | null>(null);
 
   const hasChanges = JSON.stringify(entries) !== JSON.stringify(savedEntries);
 
@@ -332,10 +333,14 @@ const GroupDetail = () => {
                   const catEntries = entries.filter((e) => e.categoryId === cat.id);
                   if (catEntries.length === 0) return null;
                   const avgPay = Math.round(catEntries.reduce((s, e) => s + e.basePay, 0) / catEntries.length);
+                  const isExpanded = expandedCat === cat.id;
 
                   return (
                     <div key={cat.id} className="rounded-2xl bg-card card-shadow overflow-hidden">
-                      <div className="flex w-full items-center gap-3 p-4">
+                      <button
+                        onClick={() => setExpandedCat(isExpanded ? null : cat.id)}
+                        className="flex w-full items-center gap-3 p-4 text-left"
+                      >
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent text-lg">
                           {cat.emoji}
                         </div>
@@ -343,55 +348,58 @@ const GroupDetail = () => {
                           <h3 className="text-sm font-bold text-foreground">{cat.label}</h3>
                           <p className="text-[11px] text-muted-foreground">{catEntries.length} services · avg £{avgPay}/hr</p>
                         </div>
-                      </div>
+                        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                      </button>
 
-                      <div className="border-t border-border">
-                        <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-                          <span className="text-[10px] font-bold text-muted-foreground uppercase">Set all to:</span>
-                          {[20, 25, 30, 35].map((amt) => (
-                            <button
-                              key={amt}
-                              onClick={() => bulkUpdate(cat.id, amt)}
-                              className={`rounded-full px-2.5 py-1 text-[10px] font-bold transition-colors ${
-                                avgPay === amt ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
-                              }`}
-                            >
-                              £{amt}
-                            </button>
+                      {isExpanded && (
+                        <div className="border-t border-border">
+                          <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase">Set all to:</span>
+                            {[20, 25, 30, 35].map((amt) => (
+                              <button
+                                key={amt}
+                                onClick={() => bulkUpdate(cat.id, amt)}
+                                className={`rounded-full px-2.5 py-1 text-[10px] font-bold transition-colors ${
+                                  avgPay === amt ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                                }`}
+                              >
+                                £{amt}
+                              </button>
+                            ))}
+                          </div>
+
+                          {catEntries.map((entry) => (
+                            <div key={entry.serviceId} className="flex items-center gap-3 border-b border-border last:border-0 px-4 py-3">
+                              <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${getEmojiIconColors(entry.icon).bg} bg-opacity-40`}>
+                                <EmojiIcon emoji={entry.icon} size={16} weight="regular" colorize />
+                              </div>
+                              <span className="flex-1 text-xs font-semibold text-foreground truncate">{entry.name}</span>
+                              <div className="flex items-center gap-1 rounded-lg border border-border bg-background px-2 py-1">
+                                <span className="text-xs font-bold text-muted-foreground">£</span>
+                                <input
+                                  type="number"
+                                  value={editingId === entry.serviceId ? editValue : entry.basePay}
+                                  onFocus={() => { setEditingId(entry.serviceId); setEditValue(String(entry.basePay)); }}
+                                  onChange={(e) => setEditValue(e.target.value)}
+                                  onBlur={() => {
+                                    if (editingId === entry.serviceId) {
+                                      const val = parseFloat(editValue);
+                                      if (!isNaN(val) && val > 0) {
+                                        setEntries((prev) => prev.map((x) => (x.serviceId === entry.serviceId ? { ...x, basePay: val } : x)));
+                                      }
+                                      setEditingId(null);
+                                      setEditValue("");
+                                    }
+                                  }}
+                                  onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+                                  className="w-12 bg-transparent text-xs font-bold text-foreground outline-none"
+                                />
+                                <span className="text-[10px] text-muted-foreground">/hr</span>
+                              </div>
+                            </div>
                           ))}
                         </div>
-
-                        {catEntries.map((entry) => (
-                          <div key={entry.serviceId} className="flex items-center gap-3 border-b border-border last:border-0 px-4 py-3">
-                            <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${getEmojiIconColors(entry.icon).bg} bg-opacity-40`}>
-                              <EmojiIcon emoji={entry.icon} size={16} weight="regular" colorize />
-                            </div>
-                            <span className="flex-1 text-xs font-semibold text-foreground truncate">{entry.name}</span>
-                            <div className="flex items-center gap-1 rounded-lg border border-border bg-background px-2 py-1">
-                              <span className="text-xs font-bold text-muted-foreground">£</span>
-                              <input
-                                type="number"
-                                value={editingId === entry.serviceId ? editValue : entry.basePay}
-                                onFocus={() => { setEditingId(entry.serviceId); setEditValue(String(entry.basePay)); }}
-                                onChange={(e) => setEditValue(e.target.value)}
-                                onBlur={() => {
-                                  if (editingId === entry.serviceId) {
-                                    const val = parseFloat(editValue);
-                                    if (!isNaN(val) && val > 0) {
-                                      setEntries((prev) => prev.map((x) => (x.serviceId === entry.serviceId ? { ...x, basePay: val } : x)));
-                                    }
-                                    setEditingId(null);
-                                    setEditValue("");
-                                  }
-                                }}
-                                onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
-                                className="w-12 bg-transparent text-xs font-bold text-foreground outline-none"
-                              />
-                              <span className="text-[10px] text-muted-foreground">/hr</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                      )}
                     </div>
                   );
                 })}
