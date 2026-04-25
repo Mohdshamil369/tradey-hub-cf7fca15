@@ -281,18 +281,17 @@ const JobDetail = () => {
       setTimeout(() => setShowAssignSheet(true), 250);
       return;
     }
-    const isInspection = !!data.inspectionMin;
+    const isInspection = !!data.inspectionFee;
     
     if (isInspection) {
       const next: JobWorkflowState = {
         ...workflow,
         stage: "fee_set",
-        inspectionMin: data.inspectionMin,
-        inspectionMax: data.inspectionMax,
+        inspectionFee: data.inspectionFee,
       };
       setWorkflow(next);
       sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
-      toast.success("Inspection offer sent to customer!", { description: `Range: £${data.inspectionMin}–£${data.inspectionMax}` });
+      toast.success("Inspection offer sent to customer!", { description: `Fee: £${data.inspectionFee}` });
       return;
     }
 
