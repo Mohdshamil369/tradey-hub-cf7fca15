@@ -739,14 +739,12 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
                   notes, 
                   quoteTitle, 
                   hasVoiceNote,
-                  inspectionFee: category === "inspection" ? (parseFloat(inspectionMin) || 0) : undefined,
-                  inspectionMin: category === "inspection" ? (parseFloat(inspectionMin) || 0) : undefined,
-                  inspectionMax: category === "inspection" ? (parseFloat(inspectionMax) || 0) : undefined,
+                  inspectionFee: category === "inspection" ? (parseFloat(inspectionFee) || 0) : undefined,
                   advanceAmount: category === "estimate"
                     ? (advanceMode === "percent" ? +(total * advancePercent / 100).toFixed(2) : (parseFloat(advanceAmount) || 0))
                     : undefined
                 })}
-                disabled={category === "inspection" ? !inspectionMin || !inspectionMax : !canSubmit}
+                disabled={category === "inspection" ? !(parseFloat(inspectionFee) > 0) : !canSubmit}
                 className={`flex-[2.5] rounded-xl py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40 ${
                   category === "inspection" ? "bg-[hsl(25,90%,55%)] shadow-orange-500/20" : "bg-primary shadow-primary/20"
                 }`}
