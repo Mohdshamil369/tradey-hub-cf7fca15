@@ -132,7 +132,8 @@ const JobDetail = () => {
   const isCompleted = job.status === "completed" || job.committedStatus === "completed";
   const isCancelled = job.committedStatus === "cancelled";
   const isLongTerm = !!job.isLongTerm;
-  const hasAttachments = hasPhotos || hasVoice || isCommitted;
+  // Notes / form-builder are always available, so the Attachments tab is too
+  const hasAttachments = true;
 
   // Long-term committed jobs in admin mode get the full workspace
   const showAdminTabs = isCommitted && isLongTerm && adminMode && !isCompleted && !isCancelled;
@@ -614,18 +615,6 @@ const JobDetail = () => {
   };
 
   const renderAttachmentsTab = () => {
-    if (!hasPhotos && !hasVoice && !isCommitted) {
-      return (
-        <div className="flex flex-col items-center justify-center py-12 gap-3">
-          <div className="h-14 w-14 rounded-2xl bg-accent flex items-center justify-center">
-            <Image className="h-7 w-7 text-muted-foreground/50" />
-          </div>
-          <p className="text-sm font-semibold text-foreground">No attachments</p>
-          <p className="text-[11px] text-muted-foreground">No photos, voice notes, or internal notes available.</p>
-        </div>
-      );
-    }
-
     return (
       <div className="flex flex-col gap-4 pb-4">
         {/* Voice note */}
@@ -654,16 +643,22 @@ const JobDetail = () => {
           </div>
         )}
 
-        {/* Photos grid would go here if implemented in this component */}
-
-        {/* Internal Notes */}
-        {isCommitted && (
-          <div className="mt-2 border-t border-border/30 pt-4">
-             <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground mb-4 px-1">Notes [internal]</h3>
-             <JobNotesTab jobId={job.id} isInline={true} />
+        {/* Empty state when no media is attached */}
+        {!hasPhotos && !hasVoice && (
+          <div className="flex flex-col items-center justify-center py-8 gap-2 rounded-xl border border-dashed border-border/50 bg-muted/20">
+            <div className="h-12 w-12 rounded-2xl bg-accent flex items-center justify-center">
+              <Image className="h-6 w-6 text-muted-foreground/50" />
+            </div>
+            <p className="text-[12px] font-semibold text-foreground">No media attachments</p>
+            <p className="text-[10px] text-muted-foreground">No photos or voice notes from the customer.</p>
           </div>
         )}
 
+        {/* Internal Notes & Forms — available on every job */}
+        <div className="mt-2 border-t border-border/30 pt-4">
+          <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground mb-4 px-1">Notes [internal]</h3>
+          <JobNotesTab jobId={job.id} isInline={true} />
+        </div>
       </div>
     );
   };
