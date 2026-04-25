@@ -539,8 +539,13 @@ const TraderJobs = () => {
 
     // Job Type filter
     if (!filterJobType.has("any") && !filterJobType.has(j.category)) return false;
-    // Org-only filter (worker toggle)
-    if (showOrgOnly && j.source !== "org") return false;
+    // Assignment source filter
+    if (!filterAssignmentSource.has("any")) {
+      const matchesAdmin = filterAssignmentSource.has("admin") && j.assignedByAdmin;
+      const matchesOrg = filterAssignmentSource.has("org") && j.source === "org" && !j.assignedByAdmin;
+      const matchesDirect = filterAssignmentSource.has("direct") && j.source !== "org" && !j.assignedByAdmin;
+      if (!matchesAdmin && !matchesOrg && !matchesDirect) return false;
+    }
     // Search filter
     if (searchQuery && !j.title.toLowerCase().includes(searchLower) && !j.customer.toLowerCase().includes(searchLower) && !j.location.toLowerCase().includes(searchLower)) return false;
     return true;
