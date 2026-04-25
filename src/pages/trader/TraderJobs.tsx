@@ -25,6 +25,8 @@ import CalendarDayView from "@/components/home/CalendarDayView";
 
 import JobDetailSheet, { type JobDetailData, type JobCategory } from "@/components/trader/JobDetailSheet";
 import QuoteDetailSheet, { type SentQuoteData } from "@/components/trader/QuoteDetailSheet";
+import ResponseWorkflowSheet, { type ResponseJobData } from "@/components/trader/ResponseWorkflowSheet";
+import { type QuoteSheetData } from "@/components/trader/QuoteSheet";
 
 type JobStatus = "incoming" | "quotes" | "active" | "completed";
 
@@ -472,6 +474,8 @@ const TraderJobs = () => {
   const [selectedIndividuals, setSelectedIndividuals] = useState<{ id: string; name: string; role: string }[]>([]);
   const [individualSearch, setIndividualSearch] = useState("");
   const [showSavedJobs, setShowSavedJobs] = useState(false);
+  const [activeResponseJob, setActiveResponseJob] = useState<ResponseJobData | null>(null);
+  const [showResponseWorkflow, setShowResponseWorkflow] = useState(false);
   const [likedJobIds, setLikedJobIds] = useState<Set<string>>(new Set(["j1", "j3"]));
   const toggleLike = (id: string) => {
     setLikedJobIds(prev => {
@@ -586,6 +590,7 @@ const TraderJobs = () => {
           viaOrg: job.source === "org" ? job.orgName : undefined,
         }}
         onClick={() => openJobDetail(job)}
+        onReassign={isAgencyAdmin ? (id) => setDispatchJobId(id) : undefined}
       />
     );
   };
@@ -603,6 +608,24 @@ const TraderJobs = () => {
       toast.success("Job accepted!");
     }
     resetAssignFlow();
+  };
+  
+  const handleResponseSubmit = (jobId: string, data: QuoteSheetData) => {
+    // Determine action based on quote type
+    const isPickup = data.items.length === 0 && !data.inspectionMin;
+    const isInspection = !!data.inspectionMin;
+    
+    if (isPickup) {
+      acceptJob(jobId);
+    } else if (isInspection) {
+      toast.success("Inspection offer sent! 🔍");
+      // Advance stage logic here if needed
+    } else {
+      toast.success("Estimate sent successfully! 📝");
+    }
+    
+    setShowResponseWorkflow(false);
+    setActiveResponseJob(null);
   };
 
   const handleDispatch = (jobId: string, isCatB: boolean) => {
@@ -930,6 +953,10 @@ const TraderJobs = () => {
                       onShowSchedule={() => setScheduleJob(job)}
                       isSaved={likedJobIds.has(job.id)}
                       onToggleSave={toggleLike}
+                      onRespond={(j) => {
+                        setActiveResponseJob(j as any);
+                        setShowResponseWorkflow(true);
+                      }}
                     />
                   )}
                 </div>
@@ -1582,6 +1609,12 @@ const TraderJobs = () => {
           </Drawer.Content>
         </Drawer.Portal>
       </Drawer.Root>
+      <ResponseWorkflowSheet
+        job={activeResponseJob}
+        isOpen={showResponseWorkflow}
+        onOpenChange={setShowResponseWorkflow}
+        onSubmit={handleResponseSubmit}
+      />
     </MobileLayout>
   );
 };

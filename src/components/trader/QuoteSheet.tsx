@@ -26,7 +26,11 @@ export interface QuoteSheetData {
   notes: string;
   total: number;
   inspectionFee?: number;
+  inspectionMin?: number;
+  inspectionMax?: number;
   advanceAmount?: number;
+  quoteTitle?: string;
+  hasVoiceNote?: boolean;
 }
 
 export interface QuoteTemplate {
@@ -79,6 +83,8 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
   const [items, setItems] = useState<QuoteItem[]>([]);
   const [quoteTitle, setQuoteTitle] = useState("");
   const [inspectionFee, setInspectionFee] = useState("");
+  const [inspectionMin, setInspectionMin] = useState("");
+  const [inspectionMax, setInspectionMax] = useState("");
   const [notes, setNotes] = useState("");
   const [advanceAmount, setAdvanceAmount] = useState("");
   const [isRecording, setIsRecording] = useState(false);
@@ -109,6 +115,8 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
       setItems([]);
       setQuoteTitle("");
       setInspectionFee("");
+      setInspectionMin("");
+      setInspectionMax("");
       setNotes("");
       setAdvanceAmount("");
       setIsRecording(false);
@@ -218,7 +226,7 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
               </div>
               {/* Template actions */}
               <div className="flex items-center gap-1.5">
-                {filteredTemplates.length > 0 && (
+                {category !== "inspection" && filteredTemplates.length > 0 && (
                   <button
                     onClick={() => setShowTemplates(!showTemplates)}
                     className="flex items-center gap-1 rounded-lg bg-accent px-2.5 py-1.5 text-[10px] font-bold text-foreground active:scale-95 transition-all"
@@ -227,7 +235,7 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
                     Templates
                   </button>
                 )}
-                {items.length > 0 && (
+                {category !== "inspection" && items.length > 0 && (
                   <button
                     onClick={() => setShowSaveTemplate(true)}
                     className="flex items-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1.5 text-[10px] font-bold text-primary active:scale-95 transition-all"
@@ -316,42 +324,48 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
           )}
 
           <ScrollArea className="flex-1 w-full px-6 pb-2">
-            {/* Quote Title */}
-            <div className="mb-6">
-              <label className="text-[10px] font-black uppercase tracking-[1.5px] text-muted-foreground mb-2.5 block px-1">
-                Quote Title <span className="text-destructive">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Standard Plumbing Repair"
                 value={quoteTitle}
                 onChange={(e) => setQuoteTitle(e.target.value)}
                 className="w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-[14px] font-bold text-foreground outline-none placeholder:text-muted-foreground/40 focus:border-primary/40"
               />
             </div>
 
-            {/* Inspection Fee */}
+            {/* Inspection Min-Max Range (Simplified for Inspection Offer) */}
             {category === "inspection" && (
-              <div className="mb-6">
-                <label className="text-[10px] font-black uppercase tracking-[1.5px] text-muted-foreground mb-2.5 block px-1">
-                  Your Inspection Fee
+              <div className="mb-6 space-y-4">
+                <label className="text-[10px] font-black uppercase tracking-[1.5px] text-muted-foreground block px-1">
+                  Inspection Price Range
                 </label>
-                <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 focus-within:border-[hsl(25,90%,55%)]/50 transition-colors">
-                  <PoundSterling className="h-5 w-5 text-[hsl(25,90%,55%)] shrink-0" />
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    placeholder="0.00"
-                    value={inspectionFee}
-                    onChange={(e) => setInspectionFee(e.target.value)}
-                    className="flex-1 bg-transparent text-xl font-black text-foreground outline-none placeholder:text-muted-foreground/40"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 focus-within:border-[hsl(25,90%,55%)]/50 transition-colors">
+                    <span className="text-[14px] font-bold text-muted-foreground shrink-0">Min</span>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      placeholder="£0.00"
+                      value={inspectionMin}
+                      onChange={(e) => setInspectionMin(e.target.value)}
+                      className="flex-1 bg-transparent text-[16px] font-black text-foreground outline-none placeholder:text-muted-foreground/30"
+                    />
+                  </div>
+                  <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 focus-within:border-[hsl(25,90%,55%)]/50 transition-colors">
+                    <span className="text-[14px] font-bold text-muted-foreground shrink-0">Max</span>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      placeholder="£0.00"
+                      value={inspectionMax}
+                      onChange={(e) => setInspectionMax(e.target.value)}
+                      className="flex-1 bg-transparent text-[16px] font-black text-foreground outline-none placeholder:text-muted-foreground/30"
+                    />
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Quote Items (Screenshot 2) */}
-            <div className="mb-6">
+            {/* Quote Items (Only for Estimates) */}
+            {category === "estimate" && (
+              <div className="mb-6">
               <div className="flex items-center justify-between mb-4 px-1">
                 <label className="text-[10px] font-black uppercase tracking-[1.5px] text-muted-foreground">
                   Quote Items {items.length > 0 && `(${items.length})`}
@@ -647,8 +661,18 @@ const QuoteSheet = ({ isOpen, onOpenChange, category, jobTitle, onSubmit }: Quot
                 Cancel
               </button>
               <button
-                onClick={() => onSubmit({ items, total, notes, quoteTitle, inspectionFee: category === "inspection" ? inspection : undefined, advanceAmount: category === "estimate" ? (parseFloat(advanceAmount) || 0) : undefined })}
-                disabled={!canSubmit}
+                onClick={() => onSubmit({ 
+                  items, 
+                  total, 
+                  notes, 
+                  quoteTitle, 
+                  hasVoiceNote,
+                  inspectionFee: category === "inspection" ? (parseFloat(inspectionMin) || 0) : undefined,
+                  inspectionMin: category === "inspection" ? (parseFloat(inspectionMin) || 0) : undefined,
+                  inspectionMax: category === "inspection" ? (parseFloat(inspectionMax) || 0) : undefined,
+                  advanceAmount: category === "estimate" ? (parseFloat(advanceAmount) || 0) : undefined 
+                })}
+                disabled={category === "inspection" ? !inspectionMin || !inspectionMax : !canSubmit}
                 className={`flex-[2.5] rounded-xl py-3.5 text-[12px] font-bold text-primary-foreground shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40 ${
                   category === "inspection" ? "bg-[hsl(25,90%,55%)] shadow-orange-500/20" : "bg-primary shadow-primary/20"
                 }`}

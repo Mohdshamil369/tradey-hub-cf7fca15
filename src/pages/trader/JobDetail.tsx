@@ -229,7 +229,8 @@ const JobDetail = () => {
     };
 
     let nextStage = workflow.stage;
-    if (job.category === "fixed") nextStage = "assigned";
+    // Only advance stage if we're coming from a pre-assigned state
+    if (job.category === "fixed" && workflow.stage === "incoming") nextStage = "assigned";
     if (job.category === "inspection" && workflow.stage === "fee_paid") nextStage = "worker_assigned";
 
     const next: JobWorkflowState = { 
@@ -242,7 +243,7 @@ const JobDetail = () => {
     sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
 
     toast.success(
-      isPickup ? `Job picked up · £${total.toFixed(2)}` : `Quote approved · £${total.toFixed(2)}`,
+      isPickup ? `Job assigned · £${total.toFixed(2)}` : `Quote approved & assigned · £${total.toFixed(2)}`,
       { description: `Assigned to ${who}` }
     );
     setPendingQuote(null);
@@ -271,7 +272,21 @@ const JobDetail = () => {
       setTimeout(() => setShowAssignSheet(true), 250);
       return;
     }
-    setShowQuoteSheet(false);
+    const isInspection = !!data.inspectionMin;
+    
+    if (isInspection) {
+      const next: JobWorkflowState = {
+        ...workflow,
+        stage: "fee_set",
+        inspectionMin: data.inspectionMin,
+        inspectionMax: data.inspectionMax,
+      };
+      setWorkflow(next);
+      sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
+      toast.success("Inspection offer sent to customer!", { description: `Range: £${data.inspectionMin}–£${data.inspectionMax}` });
+      return;
+    }
+
     // Generate purchase items from quote materials
     const purchaseItems: PurchaseItem[] = data.items
       .filter((i) => i.type === "material")

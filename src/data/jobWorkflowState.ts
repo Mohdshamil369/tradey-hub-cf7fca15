@@ -70,6 +70,8 @@ export interface JobWorkflowState {
   stage: WorkflowStage;
   estimateData?: EstimateData;
   inspectionFee?: number;
+  inspectionMin?: number;
+  inspectionMax?: number;
   inspectionFeePaid?: boolean;
   advanceAmount?: number;
   purchaseItems: PurchaseItem[];

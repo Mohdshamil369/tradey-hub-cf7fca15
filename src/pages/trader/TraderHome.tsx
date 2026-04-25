@@ -19,6 +19,8 @@ import ActiveJobCard from "@/components/trader/ActiveJobCard";
 import WorkerQuoteRequest from "@/components/trader/WorkerQuoteRequest";
 import QuoteBreakdown from "@/components/trader/QuoteBreakdown";
 import CalendarDayView from "@/components/home/CalendarDayView";
+import ResponseWorkflowSheet, { type ResponseJobData } from "@/components/trader/ResponseWorkflowSheet";
+import { type QuoteSheetData } from "@/components/trader/QuoteSheet";
 
 const earningsData = {
   thisWeek: 845,
@@ -216,6 +218,8 @@ const TraderHome = () => {
   const [quoteJobId, setQuoteJobId] = useState<string | null>(null);
   const [quoteAmount, setQuoteAmount] = useState("");
   const [scheduleJob, setScheduleJob] = useState<IncomingJob | null>(null);
+  const [activeResponseJob, setActiveResponseJob] = useState<ResponseJobData | null>(null);
+  const [showResponseWorkflow, setShowResponseWorkflow] = useState(false);
 
   const mockGroups = [
     { id: "g1", name: "Plumbing Squad", members: [
@@ -253,14 +257,24 @@ const TraderHome = () => {
     });
   };
 
-  const acceptJob = (id: string, assignTo?: { type: "group" | "individual"; name: string; memberNames?: string[] }) => {
-    setJobs((prev) => prev.filter((j) => j.id !== id));
-    if (assignTo?.memberNames) {
-      toast.success(`Assigned to ${assignTo.name} (${assignTo.memberNames.join(", ")})! ✅`);
-    } else {
-      toast.success("Job accepted! ✅");
-    }
     resetAssignFlow();
+  };
+  
+  const handleResponseSubmit = (jobId: string, data: QuoteSheetData) => {
+    // Determine action based on quote type
+    const isPickup = data.items.length === 0 && !data.inspectionMin;
+    const isInspection = !!data.inspectionMin;
+    
+    if (isPickup) {
+      acceptJob(jobId);
+    } else if (isInspection) {
+      toast.success("Inspection offer sent! 🔍");
+    } else {
+      toast.success("Estimate sent successfully! 📝");
+    }
+    
+    setShowResponseWorkflow(false);
+    setActiveResponseJob(null);
   };
 
   const handleDispatch = (jobId: string, isCatB: boolean) => {
@@ -447,6 +461,10 @@ const TraderHome = () => {
                   onShowSchedule={() => setScheduleJob(job as any)}
                   isSaved={likedJobIds.has(job.id)}
                   onToggleSave={toggleLike}
+                  onRespond={(j) => {
+                    setActiveResponseJob(j as any);
+                    setShowResponseWorkflow(true);
+                  }}
                 />
               ))}
             </div>
@@ -510,6 +528,7 @@ const TraderHome = () => {
                         statusLabel: job.status,
                       }}
                       onClick={() => navigate(`/trader/jobs/${job.id}`)}
+                      onReassign={isAgencyProfile ? (id) => setDispatchJobId(id) : undefined}
                     />
                   ))}
               </div>
@@ -764,6 +783,12 @@ const TraderHome = () => {
           </Drawer.Portal>
         </Drawer.Root>
       </div>
+      <ResponseWorkflowSheet
+        job={activeResponseJob}
+        isOpen={showResponseWorkflow}
+        onOpenChange={setShowResponseWorkflow}
+        onSubmit={handleResponseSubmit}
+      />
     </MobileLayout>
   );
 };

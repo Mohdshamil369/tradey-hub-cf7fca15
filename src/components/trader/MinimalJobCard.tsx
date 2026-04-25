@@ -17,10 +17,10 @@ type MinimalJobCardProps = {
     /** Org/agency that forwarded this job to me. When set, a small "via {org}" badge is shown. */
     viaOrg?: string;
   };
-  onClick?: () => void;
+  onReassign?: (jobId: string) => void;
 };
 
-export const MinimalJobCard = ({ job, onClick }: MinimalJobCardProps) => {
+export const MinimalJobCard = ({ job, onClick, onReassign }: MinimalJobCardProps) => {
   return (
     <button
       onClick={onClick}
@@ -90,9 +90,22 @@ export const MinimalJobCard = ({ job, onClick }: MinimalJobCardProps) => {
 
           {/* Assign label (optional) */}
           {job.assignLabel && (
-            <div className="flex items-center gap-1 mt-0.5 text-[10px] text-muted-foreground/60">
-              <Users className="h-2.5 w-2.5 shrink-0" />
-              <span className="truncate font-medium">{job.assignLabel}</span>
+            <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60 min-w-0">
+                <Users className="h-2.5 w-2.5 shrink-0" />
+                <span className="truncate font-medium">{job.assignLabel}</span>
+              </div>
+              {onReassign && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onReassign(job.id);
+                  }}
+                  className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[9px] font-black text-primary active:scale-95 transition-all"
+                >
+                  Reassign
+                </button>
+              )}
             </div>
           )}
         </div>
