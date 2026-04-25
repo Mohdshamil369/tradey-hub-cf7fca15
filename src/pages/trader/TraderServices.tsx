@@ -2,10 +2,12 @@ import MobileLayout from "@/components/layout/MobileLayout";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, X, Clock, PoundSterling, ToggleLeft, ToggleRight, ChevronRight } from "lucide-react";
+import { Plus, X, Clock, PoundSterling, ToggleLeft, ToggleRight, ChevronRight, Pencil } from "lucide-react";
 import { catAServices, catBServices } from "@/data/services";
 import { EmojiIcon, getEmojiIconColors } from "@/lib/icons";
 import { useAuth } from "@/contexts/AuthContext";
+
+const UNIVERSAL_BASE_PAY = 30; // £/hr default universal rate
 
 interface TraderService {
   id: string;
@@ -16,14 +18,16 @@ interface TraderService {
   priceLabel: string;
   duration: string;
   active: boolean;
+  useUniversalPay: boolean;
+  customBasePay: number | null;
 }
 
 const initialServices: TraderService[] = [
-  { id: "ts1", name: "Tap Repair", icon: "🔧", category: "plumbing", price: 65, priceLabel: "£65", duration: "1-2 hours", active: true },
-  { id: "ts2", name: "Drain Unblocking", icon: "🚿", category: "plumbing", price: 75, priceLabel: "£75", duration: "1-2 hours", active: true },
-  { id: "ts3", name: "Toilet Repair", icon: "🔧", category: "plumbing", price: 55, priceLabel: "£55", duration: "1-2 hours", active: true },
-  { id: "ts4", name: "Full Bathroom Renovation", icon: "🛁", category: "plumbing", price: null, priceLabel: "Custom Quote", duration: "1-3 weeks", active: true },
-  { id: "ts5", name: "Boiler Service", icon: "🔥", category: "hvac", price: 85, priceLabel: "£85", duration: "1-2 hours", active: false },
+  { id: "ts1", name: "Tap Repair", icon: "🔧", category: "plumbing", price: 65, priceLabel: "£65", duration: "1-2 hours", active: true, useUniversalPay: true, customBasePay: null },
+  { id: "ts2", name: "Drain Unblocking", icon: "🚿", category: "plumbing", price: 75, priceLabel: "£75", duration: "1-2 hours", active: true, useUniversalPay: true, customBasePay: null },
+  { id: "ts3", name: "Toilet Repair", icon: "🔧", category: "plumbing", price: 55, priceLabel: "£55", duration: "1-2 hours", active: true, useUniversalPay: true, customBasePay: null },
+  { id: "ts4", name: "Full Bathroom Renovation", icon: "🛁", category: "plumbing", price: null, priceLabel: "Custom Quote", duration: "1-3 weeks", active: true, useUniversalPay: false, customBasePay: 40 },
+  { id: "ts5", name: "Boiler Service", icon: "🔥", category: "hvac", price: 85, priceLabel: "£85", duration: "1-2 hours", active: false, useUniversalPay: true, customBasePay: null },
 ];
 
 const TraderServicesPage = () => {
@@ -35,6 +39,59 @@ const TraderServicesPage = () => {
   const [selectedServiceToAdd, setSelectedServiceToAdd] = useState<string | null>(null);
   const [customPrice, setCustomPrice] = useState("");
   const [customDuration, setCustomDuration] = useState("");
+
+  // Edit state
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+  const [editPrice, setEditPrice] = useState("");
+  const [editDuration, setEditDuration] = useState("");
+  const [editUseUniversal, setEditUseUniversal] = useState(true);
+  const [editCustomPay, setEditCustomPay] = useState("");
+
+  const editingService = services.find((s) => s.id === editingServiceId) || null;
+
+  const openEdit = (s: TraderService) => {
+    setEditingServiceId(s.id);
+    setEditPrice(s.price !== null ? String(s.price) : "");
+    setEditDuration(s.duration);
+    setEditUseUniversal(s.useUniversalPay);
+    setEditCustomPay(s.customBasePay !== null ? String(s.customBasePay) : "");
+  };
+
+  const closeEdit = () => {
+    setEditingServiceId(null);
+    setEditPrice("");
+    setEditDuration("");
+    setEditUseUniversal(true);
+    setEditCustomPay("");
+  };
+
+  const saveEdit = () => {
+    if (!editingService) return;
+    const priceNum = editPrice ? parseFloat(editPrice) : null;
+    const customPayNum = editCustomPay ? parseFloat(editCustomPay) : null;
+
+    if (!editUseUniversal && (!customPayNum || customPayNum <= 0)) {
+      toast.error("Enter a valid custom base pay");
+      return;
+    }
+
+    setServices((prev) =>
+      prev.map((s) =>
+        s.id === editingService.id
+          ? {
+              ...s,
+              price: priceNum,
+              priceLabel: priceNum ? `£${priceNum}` : "Custom Quote",
+              duration: editDuration || s.duration,
+              useUniversalPay: editUseUniversal,
+              customBasePay: editUseUniversal ? null : customPayNum,
+            }
+          : s
+      )
+    );
+    toast.success("Service updated");
+    closeEdit();
+  };
 
   const activeCount = services.filter((s) => s.active).length;
 
@@ -60,6 +117,8 @@ const TraderServicesPage = () => {
       priceLabel: customPrice ? `£${customPrice}` : source.price ? `£${source.price}` : "Custom Quote",
       duration: customDuration || source.duration || "TBD",
       active: true,
+      useUniversalPay: true,
+      customBasePay: null,
     };
     setServices((prev) => [...prev, newService]);
     setShowAddModal(false);
@@ -86,23 +145,21 @@ const TraderServicesPage = () => {
             </button>
           </div>
 
-          {/* Base Pay Rates Link — Agency only */}
-          {isAgency && (
-            <button
-              onClick={() => navigate("/trader/base-pay")}
-              className="group relative mt-4 flex w-full items-center gap-3 rounded-2xl border-2 border-primary/30 bg-card p-4 overflow-hidden transition-all active:scale-[0.98] hover:border-primary/60"
-            >
-              <div className="pointer-events-none absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_ease-in-out] bg-gradient-to-r from-transparent via-primary/10 to-transparent" />
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
-                <PoundSterling className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="text-sm font-bold text-foreground">Base Pay Rates</p>
-                <p className="text-[11px] text-muted-foreground">Set hourly rates per service for your workers</p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-            </button>
-          )}
+          {/* Base Pay Rates Link */}
+          <button
+            onClick={() => navigate("/trader/base-pay")}
+            className="group relative mt-4 flex w-full items-center gap-3 rounded-2xl border-2 border-primary/30 bg-card p-4 overflow-hidden transition-all active:scale-[0.98] hover:border-primary/60"
+          >
+            <div className="pointer-events-none absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_ease-in-out] bg-gradient-to-r from-transparent via-primary/10 to-transparent" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
+              <PoundSterling className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-bold text-foreground">Base Pay Rates</p>
+              <p className="text-[11px] text-muted-foreground">Set hourly rates per service for your workers</p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+          </button>
         </div>
       </div>
 
@@ -130,17 +187,33 @@ const TraderServicesPage = () => {
                       {service.duration}
                     </span>
                   </div>
+                  <div className="mt-1.5 flex items-center gap-1.5">
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                      service.useUniversalPay ? "bg-primary/10 text-primary" : "bg-blaze/10 text-blaze"
+                    }`}>
+                      {service.useUniversalPay ? `Universal £${UNIVERSAL_BASE_PAY}/hr` : `Custom £${service.customBasePay}/hr`}
+                    </span>
+                  </div>
                 </div>
-                <button
-                  onClick={() => toggleService(service.id)}
-                  className="shrink-0"
-                >
-                  {service.active ? (
-                    <ToggleRight className="h-7 w-7 text-primary" />
-                  ) : (
-                    <ToggleLeft className="h-7 w-7 text-muted-foreground" />
-                  )}
-                </button>
+                <div className="flex shrink-0 items-center gap-1">
+                  <button
+                    onClick={() => openEdit(service)}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary transition-colors active:bg-muted"
+                    aria-label="Edit service"
+                  >
+                    <Pencil className="h-3.5 w-3.5 text-foreground" />
+                  </button>
+                  <button
+                    onClick={() => toggleService(service.id)}
+                    aria-label="Toggle service"
+                  >
+                    {service.active ? (
+                      <ToggleRight className="h-7 w-7 text-primary" />
+                    ) : (
+                      <ToggleLeft className="h-7 w-7 text-muted-foreground" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -245,6 +318,114 @@ const TraderServicesPage = () => {
                 })()}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Service Modal */}
+      {editingService && (
+        <div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
+          <div className="w-full max-h-[90%] overflow-y-auto rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-extrabold text-foreground font-heading">Edit Service</h2>
+              <button onClick={closeEdit} className="rounded-full bg-muted p-2">
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              {/* Service header */}
+              <div className="flex items-center gap-3 rounded-2xl bg-card p-3 card-shadow">
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${getEmojiIconColors(editingService.icon).bg} bg-opacity-40`}>
+                  <EmojiIcon emoji={editingService.icon} size={22} weight="regular" colorize />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-foreground">{editingService.name}</h4>
+                  <p className="text-[11px] text-muted-foreground capitalize">{editingService.category}</p>
+                </div>
+              </div>
+
+              {/* Price */}
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Customer Price (£)</label>
+                <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
+                  <PoundSterling className="h-5 w-5 text-muted-foreground" />
+                  <input
+                    type="number"
+                    placeholder="Leave empty for Custom Quote"
+                    value={editPrice}
+                    onChange={(e) => setEditPrice(e.target.value)}
+                    className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                  />
+                </div>
+              </div>
+
+              {/* Duration */}
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Duration</label>
+                <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
+                  <Clock className="h-5 w-5 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="e.g. 1-2 hours"
+                    value={editDuration}
+                    onChange={(e) => setEditDuration(e.target.value)}
+                    className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                  />
+                </div>
+              </div>
+
+              {/* Base Pay — Universal vs Custom */}
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Worker Base Pay</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setEditUseUniversal(true)}
+                    className={`rounded-xl border-2 px-3 py-3 text-left transition-all ${
+                      editUseUniversal
+                        ? "border-primary bg-primary/5"
+                        : "border-border bg-card"
+                    }`}
+                  >
+                    <p className="text-xs font-bold text-foreground">Universal</p>
+                    <p className="text-[10px] text-muted-foreground">£{UNIVERSAL_BASE_PAY}/hr (default)</p>
+                  </button>
+                  <button
+                    onClick={() => setEditUseUniversal(false)}
+                    className={`rounded-xl border-2 px-3 py-3 text-left transition-all ${
+                      !editUseUniversal
+                        ? "border-primary bg-primary/5"
+                        : "border-border bg-card"
+                    }`}
+                  >
+                    <p className="text-xs font-bold text-foreground">Custom</p>
+                    <p className="text-[10px] text-muted-foreground">Set your own rate</p>
+                  </button>
+                </div>
+
+                {!editUseUniversal && (
+                  <div className="mt-2 flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
+                    <PoundSterling className="h-5 w-5 text-muted-foreground" />
+                    <input
+                      type="number"
+                      placeholder="Custom hourly rate"
+                      value={editCustomPay}
+                      onChange={(e) => setEditCustomPay(e.target.value)}
+                      className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                      autoFocus
+                    />
+                    <span className="text-xs font-semibold text-muted-foreground">/hr</span>
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={saveEdit}
+                className="w-full rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-transform active:scale-95"
+              >
+                Save Changes
+              </button>
+            </div>
           </div>
         </div>
       )}
