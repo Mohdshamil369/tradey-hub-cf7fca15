@@ -104,7 +104,11 @@ const JobDetail = () => {
   const { profile } = useAuth();
   const isAgencyAdmin = profile?.trader_type === "agency";
   const [searchParams] = useSearchParams();
-  const initialTab: TabKey = searchParams.get("tab") === "quotes" ? "quotes" : "details";
+  const initialTab: TabKey = (() => {
+    const t = searchParams.get("tab");
+    if (t === "quotes" || t === "subtasks" || t === "purchase-list" || t === "attachments" || t === "progress" || t === "finances" || t === "chat" || t === "docs") return t as TabKey;
+    return "details";
+  })();
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
   const [showQuoteSheet, setShowQuoteSheet] = useState(false);
   const [showQuoteOptions, setShowQuoteOptions] = useState(false);
