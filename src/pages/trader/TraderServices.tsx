@@ -321,6 +321,114 @@ const TraderServicesPage = () => {
           </div>
         </div>
       )}
+
+      {/* Edit Service Modal */}
+      {editingService && (
+        <div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
+          <div className="w-full max-h-[90%] overflow-y-auto rounded-t-3xl bg-background p-5 pb-8 animate-in slide-in-from-bottom">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-extrabold text-foreground font-heading">Edit Service</h2>
+              <button onClick={closeEdit} className="rounded-full bg-muted p-2">
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              {/* Service header */}
+              <div className="flex items-center gap-3 rounded-2xl bg-card p-3 card-shadow">
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${getEmojiIconColors(editingService.icon).bg} bg-opacity-40`}>
+                  <EmojiIcon emoji={editingService.icon} size={22} weight="regular" colorize />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-foreground">{editingService.name}</h4>
+                  <p className="text-[11px] text-muted-foreground capitalize">{editingService.category}</p>
+                </div>
+              </div>
+
+              {/* Price */}
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Customer Price (£)</label>
+                <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
+                  <PoundSterling className="h-5 w-5 text-muted-foreground" />
+                  <input
+                    type="number"
+                    placeholder="Leave empty for Custom Quote"
+                    value={editPrice}
+                    onChange={(e) => setEditPrice(e.target.value)}
+                    className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                  />
+                </div>
+              </div>
+
+              {/* Duration */}
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Duration</label>
+                <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
+                  <Clock className="h-5 w-5 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="e.g. 1-2 hours"
+                    value={editDuration}
+                    onChange={(e) => setEditDuration(e.target.value)}
+                    className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                  />
+                </div>
+              </div>
+
+              {/* Base Pay — Universal vs Custom */}
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Worker Base Pay</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setEditUseUniversal(true)}
+                    className={`rounded-xl border-2 px-3 py-3 text-left transition-all ${
+                      editUseUniversal
+                        ? "border-primary bg-primary/5"
+                        : "border-border bg-card"
+                    }`}
+                  >
+                    <p className="text-xs font-bold text-foreground">Universal</p>
+                    <p className="text-[10px] text-muted-foreground">£{UNIVERSAL_BASE_PAY}/hr (default)</p>
+                  </button>
+                  <button
+                    onClick={() => setEditUseUniversal(false)}
+                    className={`rounded-xl border-2 px-3 py-3 text-left transition-all ${
+                      !editUseUniversal
+                        ? "border-primary bg-primary/5"
+                        : "border-border bg-card"
+                    }`}
+                  >
+                    <p className="text-xs font-bold text-foreground">Custom</p>
+                    <p className="text-[10px] text-muted-foreground">Set your own rate</p>
+                  </button>
+                </div>
+
+                {!editUseUniversal && (
+                  <div className="mt-2 flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5">
+                    <PoundSterling className="h-5 w-5 text-muted-foreground" />
+                    <input
+                      type="number"
+                      placeholder="Custom hourly rate"
+                      value={editCustomPay}
+                      onChange={(e) => setEditCustomPay(e.target.value)}
+                      className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                      autoFocus
+                    />
+                    <span className="text-xs font-semibold text-muted-foreground">/hr</span>
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={saveEdit}
+                className="w-full rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-transform active:scale-95"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </MobileLayout>
   );
 };
