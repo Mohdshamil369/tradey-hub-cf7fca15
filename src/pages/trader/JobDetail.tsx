@@ -889,7 +889,8 @@ const JobDetail = () => {
       );
     };
 
-    if (isCompleted || workflow.stage === "completed") {
+    // Truly historic / cancelled completion (committedStatus=completed without an active workflow)
+    if (isCompleted && workflow.stage === "incoming") {
       return (
         <div className="p-4 bg-background border-t border-border/40">
            <button
