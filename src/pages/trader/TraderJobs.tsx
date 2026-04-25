@@ -597,6 +597,19 @@ const TraderJobs = () => {
           ],
         }));
       }
+      // j16 — advance paid, all items not yet purchased
+      if (!sessionStorage.getItem("job_workflow_j16")) {
+        sessionStorage.setItem("job_workflow_j16", JSON.stringify({
+          stage: "advance_paid",
+          advanceAmount: 150,
+          purchaseItems: [
+            { id: "p1", name: "Insulation rolls (200mm, 8.3m²)", quantity: 5, expectedPrice: 32, status: "not_purchased", buyer: "customer" },
+            { id: "p2", name: "Vapour barrier sheet (10m)", quantity: 2, expectedPrice: 18, status: "not_purchased", buyer: "customer" },
+            { id: "p3", name: "Loft boards (1200×320mm)", quantity: 6, expectedPrice: 12, status: "not_purchased", buyer: "customer" },
+            { id: "p4", name: "Tape (foil, 50m)", quantity: 1, expectedPrice: 9, status: "not_purchased", buyer: "customer" },
+            { id: "p5", name: "Safety masks (pack of 5)", quantity: 1, expectedPrice: 11, status: "not_purchased", buyer: "customer" },
+          ],
+        }));
     } catch { /* sessionStorage unavailable */ }
   }, []);
   
