@@ -262,7 +262,91 @@ const initialJobs: Job[] = [
     postedAgo: "", status: "active", committedStatus: "in_progress",
     customerData: { rating: 4.8, reviews: 15, isVerified: true, memberSince: "Mar 2024" },
   },
+  // j15 — Fixed, work in progress, assigned to a team (reassignable)
+  {
+    id: "j15", type: "catA", category: "fixed",
+    title: "Garage Door Repair", icon: "🚪",
+    customer: "Tom H.", location: "Noord", distance: "5.6 km",
+    price: 140,
+    timeWindow: "Today, 13:00 – 15:00",
+    description: "Garage door spring snapped — full replacement underway.",
+    postedAgo: "", status: "active", committedStatus: "in_progress",
+    customerData: { rating: 4.7, reviews: 11, isVerified: true, memberSince: "Aug 2024" },
+    assignment: { type: "individuals", members: [
+      { id: "m1", name: "Alex Turner", role: "Technician" },
+      { id: "m2", name: "James Cooper", role: "Helper" },
+    ] },
+  },
+  // j16 — Estimate, advance paid, purchases pending (reassignable later)
+  {
+    id: "j16", type: "catB", category: "estimate",
+    title: "Loft Insulation", icon: "🏠",
+    customer: "Sophie R.", location: "Zuid", distance: "4.3 km",
+    price: 680,
+    timeWindow: "Mon – Tue, 09:00 – 17:00",
+    description: "Quote approved, advance £150 received. Awaiting material purchases.",
+    postedAgo: "", status: "active", committedStatus: "upcoming",
+    customerData: { rating: 4.9, reviews: 22, isVerified: true, memberSince: "Feb 2023" },
+    assignment: { type: "group", groupName: "Insulation Crew", members: [
+      { id: "m3", name: "Lena K.", role: "Lead" },
+      { id: "m4", name: "Tom B.", role: "Installer" },
+    ] },
+  },
+  // j17 — Inspection proposal sent, awaiting payment
+  {
+    id: "j17", type: "catB", category: "inspection",
+    title: "Boiler Noise Inspection", icon: "🔥",
+    customer: "Hans K.", location: "Oost", distance: "2.9 km",
+    price: null, inspectionFee: 50,
+    timeWindow: "Sat, 10:00 – 11:00",
+    description: "Inspection proposal of £50 sent — waiting on customer to pay before assigning inspector.",
+    postedAgo: "", status: "active", committedStatus: "upcoming",
+    customerData: { rating: 4.5, reviews: 6, isVerified: true, memberSince: "Jul 2024" },
+  },
+  // j18 — Inspection assigned to an inspector (reassignable)
+  {
+    id: "j18", type: "catB", category: "inspection",
+    title: "Damp Basement Inspection", icon: "💧",
+    customer: "Marie L.", location: "Westerpark", distance: "3.4 km",
+    price: null, inspectionFee: 65,
+    timeWindow: "Tomorrow, 14:00 – 15:00",
+    description: "Inspector dispatched. Awaiting on-site report.",
+    postedAgo: "", status: "active", committedStatus: "in_progress",
+    customerData: { rating: 4.6, reviews: 14, isVerified: true, memberSince: "Oct 2023" },
+    assignment: { type: "individual", members: [
+      { id: "m5", name: "Liam Wright", role: "Inspector" },
+    ] },
+  },
+  // j19 — Invoice sent, awaiting payment
+  {
+    id: "j19", type: "catA", category: "fixed",
+    title: "Window Lock Replacement", icon: "🪟",
+    customer: "Eva D.", location: "Centrum", distance: "1.1 km",
+    price: 95,
+    timeWindow: "12 Mar, 10:00 – 11:30",
+    description: "Work complete, invoice sent for £95 — awaiting customer payment.",
+    postedAgo: "", status: "active", committedStatus: "in_progress",
+    completedDate: "12 Mar 2025", duration: "1h 15m",
+    customerData: { rating: 4.8, reviews: 19, isVerified: true, memberSince: "Jan 2023" },
+  },
+  // j20 — Paid (fully closed) with rating
+  {
+    id: "j20", type: "catA", category: "fixed",
+    title: "Smoke Alarm Install", icon: "🚨",
+    customer: "Chris W.", location: "De Pijp", distance: "2.7 km",
+    price: 80,
+    timeWindow: "9 Mar, 11:00 – 12:00",
+    description: "Two smoke alarms installed and tested. Payment received.",
+    postedAgo: "", status: "completed", committedStatus: "completed",
+    completedDate: "9 Mar 2025", duration: "55m",
+    jobRating: 5.0,
+    jobReview: "Quick, clean and professional — would book again!",
+    assignment: { type: "individual", members: [
+      { id: "m4", name: "Sophie Baker", role: "Electrician", hours: 0.92, earnings: 13.80 },
+    ] },
+  },
 ];
+
 
 /** Pre-seeded workflow stages for demo committed jobs — keyed by job id.
  *  Real flows persist via sessionStorage; these act as defaults when no override exists.
