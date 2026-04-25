@@ -145,23 +145,21 @@ const TraderServicesPage = () => {
             </button>
           </div>
 
-          {/* Base Pay Rates Link — Agency only */}
-          {isAgency && (
-            <button
-              onClick={() => navigate("/trader/base-pay")}
-              className="group relative mt-4 flex w-full items-center gap-3 rounded-2xl border-2 border-primary/30 bg-card p-4 overflow-hidden transition-all active:scale-[0.98] hover:border-primary/60"
-            >
-              <div className="pointer-events-none absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_ease-in-out] bg-gradient-to-r from-transparent via-primary/10 to-transparent" />
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
-                <PoundSterling className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="text-sm font-bold text-foreground">Base Pay Rates</p>
-                <p className="text-[11px] text-muted-foreground">Set hourly rates per service for your workers</p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-            </button>
-          )}
+          {/* Base Pay Rates Link */}
+          <button
+            onClick={() => navigate("/trader/base-pay")}
+            className="group relative mt-4 flex w-full items-center gap-3 rounded-2xl border-2 border-primary/30 bg-card p-4 overflow-hidden transition-all active:scale-[0.98] hover:border-primary/60"
+          >
+            <div className="pointer-events-none absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_ease-in-out] bg-gradient-to-r from-transparent via-primary/10 to-transparent" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
+              <PoundSterling className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-bold text-foreground">Base Pay Rates</p>
+              <p className="text-[11px] text-muted-foreground">Set hourly rates per service for your workers</p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+          </button>
         </div>
       </div>
 
@@ -189,17 +187,33 @@ const TraderServicesPage = () => {
                       {service.duration}
                     </span>
                   </div>
+                  <div className="mt-1.5 flex items-center gap-1.5">
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                      service.useUniversalPay ? "bg-primary/10 text-primary" : "bg-blaze/10 text-blaze"
+                    }`}>
+                      {service.useUniversalPay ? `Universal £${UNIVERSAL_BASE_PAY}/hr` : `Custom £${service.customBasePay}/hr`}
+                    </span>
+                  </div>
                 </div>
-                <button
-                  onClick={() => toggleService(service.id)}
-                  className="shrink-0"
-                >
-                  {service.active ? (
-                    <ToggleRight className="h-7 w-7 text-primary" />
-                  ) : (
-                    <ToggleLeft className="h-7 w-7 text-muted-foreground" />
-                  )}
-                </button>
+                <div className="flex shrink-0 items-center gap-1">
+                  <button
+                    onClick={() => openEdit(service)}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary transition-colors active:bg-muted"
+                    aria-label="Edit service"
+                  >
+                    <Pencil className="h-3.5 w-3.5 text-foreground" />
+                  </button>
+                  <button
+                    onClick={() => toggleService(service.id)}
+                    aria-label="Toggle service"
+                  >
+                    {service.active ? (
+                      <ToggleRight className="h-7 w-7 text-primary" />
+                    ) : (
+                      <ToggleLeft className="h-7 w-7 text-muted-foreground" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           ))}
