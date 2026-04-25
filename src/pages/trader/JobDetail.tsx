@@ -697,7 +697,10 @@ const JobDetail = () => {
   const handleQuoteOptionSelect = (key: "fixed" | "estimate" | "inspection") => {
     setShowQuoteOptions(false);
     if (key === "fixed") {
-      handleAction("accept");
+      // Always chain into AssignSheet on Pick Up so the trader/admin can
+      // confirm assignment (self for solo traders, group/individuals for admins).
+      setPendingQuote({ items: [], notes: "", total: job.price ?? 0 });
+      setTimeout(() => setShowAssignSheet(true), 250);
     } else {
       setSelectedQuoteCategory(key);
       setActiveTab("quotes");
