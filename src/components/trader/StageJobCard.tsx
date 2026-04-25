@@ -52,13 +52,17 @@ interface StageJobCardProps {
 }
 
 const StageJobCard = ({ job, stage, category, onClick, onCta, onReassign, onAssign }: StageJobCardProps) => {
-  const meta = getStageCta(stage, category);
+  const baseMeta = getStageCta(stage, category);
+  // Picked-up-not-assigned overrides the CTA so the card visibly invites assignment.
+  const meta = job.pickedNotAssigned
+    ? { ...baseMeta, label: "Picked Up", pillClass: "bg-primary/10 text-primary", cta: "Assign Worker", ctaIcon: Users, tone: "primary" as const, awaiting: false, hint: "You picked this up — assign a worker to start." }
+    : baseMeta;
   const Icon = meta.ctaIcon;
   const showProgress = !!job.purchaseProgress && job.purchaseProgress.total > 0;
   const pct = showProgress
     ? Math.round((job.purchaseProgress!.purchased / job.purchaseProgress!.total) * 100)
     : 0;
-  const canReassign = !!onReassign && REASSIGNABLE_STAGES.includes(stage) && !job.cancelled;
+  const canReassign = !!onReassign && REASSIGNABLE_STAGES.includes(stage) && !job.cancelled && !job.pickedNotAssigned;
 
   return (
     <div className={`rounded-2xl bg-card border border-border card-shadow overflow-hidden ${job.cancelled ? "opacity-75" : ""}`}>
