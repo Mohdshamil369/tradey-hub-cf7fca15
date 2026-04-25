@@ -83,6 +83,8 @@ interface Job {
   /** Where this job came to me from. "direct" = customer found me; "org" = forwarded by an organisation I work with. */
   source?: "direct" | "org";
   orgName?: string;
+  /** True if this job was directly assigned to me by my organisation's admin. */
+  assignedByAdmin?: boolean;
 }
 
 const initialJobs: Job[] = [
@@ -104,7 +106,8 @@ const initialJobs: Job[] = [
     voiceDuration: "0:23", 
     proposalsCount: 2,
     customerRequest: { expectedDuration: "1–2 hours", expectedBudget: 80, photos: [jobTapImg, jobTapImg] },
-    customerData: { rating: 4.8, reviews: 12, isVerified: true, memberSince: "Jan 2024" }
+    customerData: { rating: 4.8, reviews: 12, isVerified: true, memberSince: "Jan 2024" },
+    source: "org", orgName: "BuildRight Ltd.", assignedByAdmin: true
   },
   { 
     id: "j3", 
@@ -147,7 +150,7 @@ const initialJobs: Job[] = [
     customerRequest: { expectedDuration: "1 hour" },
     customerData: { rating: 4.5, reviews: 8, isVerified: false, memberSince: "Feb 2025" }
   },
-  { id: "j2", type: "catA", category: "fixed", title: "Light Switch Replacement", icon: "💡", customer: "Mark T.", location: "De Pijp", distance: "4.1 km", price: 55, timeWindow: "Tomorrow, 09:00 – 11:00", description: "2 light switches need replacing in the hallway. Standard switches.", postedAgo: "12 min ago", status: "incoming", hasVoiceNote: false, proposalsCount: 8, customerRequest: { expectedDuration: "30 min – 1 hour" }, customerData: { rating: 4.2, reviews: 5, isVerified: true, memberSince: "Nov 2024" }, source: "org", orgName: "BuildRight Ltd." },
+  { id: "j2", type: "catA", category: "fixed", title: "Light Switch Replacement", icon: "💡", customer: "Mark T.", location: "De Pijp", distance: "4.1 km", price: 55, timeWindow: "Tomorrow, 09:00 – 11:00", description: "2 light switches need replacing in the hallway. Standard switches.", postedAgo: "12 min ago", status: "incoming", hasVoiceNote: false, proposalsCount: 8, customerRequest: { expectedDuration: "30 min – 1 hour" }, customerData: { rating: 4.2, reviews: 5, isVerified: true, memberSince: "Nov 2024" }, source: "org", orgName: "BuildRight Ltd.", assignedByAdmin: true },
   { id: "j4", type: "catA", category: "fixed", title: "Drain Unblocking", icon: "🚿", customer: "David K.", location: "Oud-West", distance: "3.0 km", price: 75, timeWindow: "Today, 10:00 – 12:00", description: "Kitchen sink is completely blocked. Tried plunger, no luck.", postedAgo: "", status: "active", committedStatus: "in_progress", crew: [
     { id: "m1", name: "Jan V.", avatar: "JV", status: "arrived", updatedAt: "2 min ago" },
     { id: "m2", name: "Pieter D.", avatar: "PD", status: "en_route", updatedAt: "8 min ago" },
@@ -409,6 +412,7 @@ const TraderJobs = () => {
   const [filterCategories, setFilterCategories] = useState<Set<string>>(new Set());
   const [filterTimeWindows, setFilterTimeWindows] = useState<Set<string>>(new Set());
   const [filterJobType, setFilterJobType] = useState<Set<string>>(new Set(["any"]));
+  const [filterAssignmentSource, setFilterAssignmentSource] = useState<Set<string>>(new Set(["any"]));
 
   const toggleCommittedFilter = (status: string) => {
     setCommittedFilter(prev => {
@@ -440,12 +444,24 @@ const TraderJobs = () => {
     setFilterTimeWindows(prev => { const n = new Set(prev); if (n.has(tw)) n.delete(tw); else n.add(tw); return n; });
   };
 
-  const activeFilterCount = (filterDistanceKm < 50 ? 1 : 0) + (filterPriceMin > 0 || filterPriceMax < 500 ? 1 : 0) + (filterCategories.size > 0 ? 1 : 0) + (filterTimeWindows.size > 0 ? 1 : 0) + (!filterJobType.has("any") ? 1 : 0) + (!committedFilter.has("all") ? 1 : 0);
+  const activeFilterCount = (filterDistanceKm < 50 ? 1 : 0) + (filterPriceMin > 0 || filterPriceMax < 500 ? 1 : 0) + (filterCategories.size > 0 ? 1 : 0) + (filterTimeWindows.size > 0 ? 1 : 0) + (!filterJobType.has("any") ? 1 : 0) + (!filterAssignmentSource.has("any") ? 1 : 0) + (!committedFilter.has("all") ? 1 : 0);
 
   const resetAllFilters = () => {
     setFilterDistanceKm(50); setFilterDistanceInput("");
     setFilterPriceMin(0); setFilterPriceMax(500); setFilterPriceMinInput(""); setFilterPriceMaxInput("");
-    setFilterCategories(new Set()); setFilterTimeWindows(new Set()); setFilterJobType(new Set(["any"])); setCommittedFilter(new Set(["all"]));
+    setFilterCategories(new Set()); setFilterTimeWindows(new Set()); setFilterJobType(new Set(["any"])); setFilterAssignmentSource(new Set(["any"])); setCommittedFilter(new Set(["all"]));
+  };
+
+  const toggleAssignmentSource = (src: string) => {
+    setFilterAssignmentSource(prev => {
+      const next = new Set(prev);
+      if (src === "any") return new Set(["any"]);
+      if (next.has("any")) next.delete("any");
+      if (next.has(src)) next.delete(src);
+      else next.add(src);
+      if (next.size === 0) return new Set(["any"]);
+      return next;
+    });
   };
 
   const [dispatchJobId, setDispatchJobId] = useState<string | null>(null);
@@ -456,11 +472,7 @@ const TraderJobs = () => {
   const [selectedIndividuals, setSelectedIndividuals] = useState<{ id: string; name: string; role: string }[]>([]);
   const [individualSearch, setIndividualSearch] = useState("");
   const [showSavedJobs, setShowSavedJobs] = useState(false);
-  const [showOrgOnly, setShowOrgOnly] = useState(false);
   const [likedJobIds, setLikedJobIds] = useState<Set<string>>(new Set(["j1", "j3"]));
-  // Worker is "part of an org" — for the demo, individual traders see this toggle since they may also receive jobs forwarded by orgs they collaborate with.
-  const orgJobCount = jobs.filter(j => j.source === "org").length;
-  const showOrgToggle = isIndividual && orgJobCount > 0;
   const toggleLike = (id: string) => {
     setLikedJobIds(prev => {
       const next = new Set(prev);
@@ -527,8 +539,13 @@ const TraderJobs = () => {
 
     // Job Type filter
     if (!filterJobType.has("any") && !filterJobType.has(j.category)) return false;
-    // Org-only filter (worker toggle)
-    if (showOrgOnly && j.source !== "org") return false;
+    // Assignment source filter
+    if (!filterAssignmentSource.has("any")) {
+      const matchesAdmin = filterAssignmentSource.has("admin") && j.assignedByAdmin;
+      const matchesOrg = filterAssignmentSource.has("org") && j.source === "org" && !j.assignedByAdmin;
+      const matchesDirect = filterAssignmentSource.has("direct") && j.source !== "org" && !j.assignedByAdmin;
+      if (!matchesAdmin && !matchesOrg && !matchesDirect) return false;
+    }
     // Search filter
     if (searchQuery && !j.title.toLowerCase().includes(searchLower) && !j.customer.toLowerCase().includes(searchLower) && !j.location.toLowerCase().includes(searchLower)) return false;
     return true;
@@ -777,27 +794,6 @@ const TraderJobs = () => {
                 </button>
               </div>
 
-              {/* "From my organisation" toggle — only when worker has org-sourced jobs */}
-              {showOrgToggle && (
-                <button
-                  onClick={() => setShowOrgOnly((v) => !v)}
-                  className={`mb-2 flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-[11px] font-semibold transition-all ${
-                    showOrgOnly
-                      ? "border-primary/40 bg-primary/10 text-primary"
-                      : "border-border bg-card text-muted-foreground active:bg-muted"
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <Building2 className="h-3.5 w-3.5" />
-                    {showOrgOnly ? "Showing only org-forwarded jobs" : "Show only jobs from my organisation"}
-                  </span>
-                  <span className={`flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
-                    showOrgOnly ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
-                  }`}>
-                    {orgJobCount}
-                  </span>
-                </button>
-              )}
             </>
           )}
         </div>
@@ -1240,6 +1236,15 @@ const TraderJobs = () => {
                     hasValue: !filterJobType.has("any"),
                   },
                   {
+                    id: "assignmentSource",
+                    label: "Assignment Source",
+                    icon: "🏢",
+                    summary: !filterAssignmentSource.has("any")
+                      ? Array.from(filterAssignmentSource).map(s => s === "admin" ? "Assigned by admin" : s === "org" ? "From organisation" : "Direct").join(", ")
+                      : "Any",
+                    hasValue: !filterAssignmentSource.has("any"),
+                  },
+                  {
                     id: "status",
                     label: "Job Status",
                     icon: "📊",
@@ -1489,6 +1494,36 @@ const TraderJobs = () => {
                                   </div>
                                   <span className={`text-[11px] font-semibold truncate ${selected ? "text-primary" : "text-foreground"}`}>
                                     {type}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {/* Assignment Source */}
+                        {section.id === "assignmentSource" && (
+                          <div className="grid grid-cols-2 gap-2">
+                            {[
+                              { key: "any", label: "Any" },
+                              { key: "direct", label: "Direct" },
+                              { key: "org", label: "From organisation" },
+                              { key: "admin", label: "Assigned by admin" },
+                            ].map((opt) => {
+                              const selected = filterAssignmentSource.has(opt.key);
+                              return (
+                                <button
+                                  key={opt.key}
+                                  onClick={() => toggleAssignmentSource(opt.key)}
+                                  className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-left border transition-all ${
+                                    selected ? "bg-primary/10 border-primary" : "bg-card border-border/60"
+                                  }`}
+                                >
+                                  <div className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 ${selected ? "border-primary bg-primary" : "border-muted-foreground/30"}`}>
+                                    {selected && <CheckCircle2 className="h-2.5 w-2.5 text-primary-foreground" />}
+                                  </div>
+                                  <span className={`text-[11px] font-semibold truncate ${selected ? "text-primary" : "text-foreground"}`}>
+                                    {opt.label}
                                   </span>
                                 </button>
                               );
