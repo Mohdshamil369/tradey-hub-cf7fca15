@@ -916,7 +916,7 @@ const TraderJobs = () => {
       jobReview: job.jobReview,
     };
     sessionStorage.setItem(`job_detail_${job.id}`, JSON.stringify(detailData));
-    navigate(`/trader/jobs/${job.id}`);
+    navigate(initialTab ? `/trader/jobs/${job.id}?tab=${initialTab}` : `/trader/jobs/${job.id}`);
   };
 
   const handleDetailAction = (jobId: string, action: string, data?: any) => {
