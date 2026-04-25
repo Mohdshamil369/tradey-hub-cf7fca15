@@ -217,13 +217,16 @@ const JobDetail = () => {
     setShowAssignSheet(false);
     const total = pendingQuote?.total ?? 0;
     const isPickup = (pendingQuote?.items?.length ?? 0) === 0;
-    
-    const who = result.type === "group"
-      ? `${result.groupName} (${result.memberNames.length} ${result.memberNames.length === 1 ? "member" : "members"})`
-      : result.memberNames.join(", ");
+    const isSelf = result.type === "self";
+
+    const who = isSelf
+      ? "yourself"
+      : result.type === "group"
+        ? `${result.groupName} (${result.memberNames.length} ${result.memberNames.length === 1 ? "member" : "members"})`
+        : result.memberNames.join(", ");
 
     const assignment: JobAssignment = {
-      type: result.type === "individuals" ? "individual" : result.type,
+      type: isSelf ? "self" : (result.type === "individuals" ? "individual" : "group"),
       groupName: result.groupName,
       memberNames: result.memberNames,
     };
@@ -247,8 +250,10 @@ const JobDetail = () => {
     sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
 
     toast.success(
-      isPickup ? `Job assigned · £${total.toFixed(2)}` : `Quote approved & assigned · £${total.toFixed(2)}`,
-      { description: `Assigned to ${who}` }
+      isSelf
+        ? `Job picked up · £${total.toFixed(2)}`
+        : isPickup ? `Job assigned · £${total.toFixed(2)}` : `Quote approved & assigned · £${total.toFixed(2)}`,
+      { description: isSelf ? "You can reassign anytime from the job page." : `Assigned to ${who}` }
     );
     setPendingQuote(null);
 
