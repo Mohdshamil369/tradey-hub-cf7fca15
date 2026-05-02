@@ -185,6 +185,7 @@ const JobDetail = () => {
         ...(showQuotesTab ? [{ key: "quotes" as const, label: "Quote", icon: FileText }] : []),
         ...(showSubtasksTab ? [{ key: "subtasks" as const, label: "Subtasks", icon: ListChecks }] : []),
         ...(showPurchaseListTab ? [{ key: "purchase-list" as const, label: "Purchase List", icon: ShoppingCart }] : []),
+        ...(isCommitted && !isCancelled ? [{ key: "progress" as const, label: "Milestones", icon: PlayCircle }] : []),
         ...(hasAttachments ? [{ key: "attachments" as const, label: "Attachments", icon: Image }] : []),
       ];
 
