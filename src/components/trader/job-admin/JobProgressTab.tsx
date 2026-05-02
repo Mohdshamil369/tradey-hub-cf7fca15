@@ -30,7 +30,7 @@ interface JobProgressTabProps {
 }
 
 const JobProgressTab = ({ jobId }: JobProgressTabProps) => {
-  const [items, setItems] = useState<Milestone[]>(seed[jobId] ?? []);
+  const [items, setItems] = useState<Milestone[]>(seed[jobId] ?? defaultMilestones);
 
   const done = items.filter((m) => m.status === "done").length;
   const total = items.length;
