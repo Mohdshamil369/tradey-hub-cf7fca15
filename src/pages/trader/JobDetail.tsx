@@ -174,7 +174,7 @@ const JobDetail = () => {
   const tabs: { key: TabKey; label: string; icon: any }[] = showAdminTabs
     ? [
         { key: "details",  label: "Details",   icon: ClipboardList },
-        { key: "progress", label: "Progress",  icon: PlayCircle },
+        { key: "progress", label: "Milestones",  icon: PlayCircle },
         { key: "subtasks", label: "Subtasks",  icon: ListChecks },
         { key: "finances", label: "Finances",  icon: PoundSterling },
         { key: "chat",     label: "Customer",  icon: MessageCircle },
