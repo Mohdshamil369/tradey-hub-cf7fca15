@@ -1,99 +1,43 @@
-I’ll stop patching symptoms and align the implementation to the two uploaded docs as the source of truth.
+## Restore the Milestones tab on committed job details
 
-## What the docs require
+### Context
+The `JobProgressTab` component (the milestone timeline with done / current / upcoming items, overall progress %, and "Add milestone" CTA) still exists at `src/components/trader/job-admin/JobProgressTab.tsx` and is still wired in `JobDetail.tsx` at line 1304 (`activeTab === "progress"`).
+
+However, the tab is currently **only rendered in the trigger list when `showAdminTabs` is true** — i.e. only for long-term, agency-admin, committed, non-completed jobs (line 166). For a normal committed card (like committed item 1 / `j2`), the tabs array on lines 183–189 doesn't include `progress`, so the trigger never appears even though the rendering branch is alive.
+
+The user wants this tab visible on standard committed job detail pages too, without deleting any existing tabs or logic.
+
+### Change
+
+In `src/pages/trader/JobDetail.tsx`, in the non-admin `tabs` array (lines 183–189), add a Milestones entry that is shown whenever the job is committed. Nothing else is removed.
 
 ```text
-All jobs start as INCOMING.
-Incoming CTA/action: Respond to Job only from detail page.
-Respond choices: Pick Up Job / Create Estimate / Create Inspection Quote.
-Selecting any choice moves the job to COMMITTED.
-
-Committed then follows exactly one flow:
-
-Fixed:
-Assigned -> In Progress -> Completed -> Invoice Sent -> Paid
-
-Estimate:
-Estimate Sent -> Estimate Approved -> Subtasks Created -> Assigned -> Quote Sent -> Quote Approved -> Advance Paid -> Purchases Ongoing -> Ready to Start -> In Progress -> Completed -> Invoice Sent -> Paid
-
-Inspection:
-Inspection Proposal Sent -> Inspection Fee Paid -> Inspection Assigned -> Inspection Completed -> Subtasks Created -> then same as Estimate from Subtasks onward
+tabs (non-admin branch) becomes:
+  Details
+  Quote            (if showQuotesTab)
+  Subtasks         (if showSubtasksTab)
+  Purchase List    (if showPurchaseListTab)
+  Milestones       ← NEW, shown when isCommitted
+  Attachments      (if hasAttachments)
 ```
 
-## Plan
+- Label: **"Milestones"** (clearer than "Progress" and matches what the user originally called it).
+- Key: reuse existing `"progress"` TabKey so the render branch on line 1304 (`<JobProgressTab />`) and the footer-visibility check on line 1311 keep working untouched.
+- Icon: keep `PlayCircle` (already imported).
+- Visibility rule: `isCommitted && !isCancelled` — so it never appears on Incoming cards (PRD: incoming is neutral, response-only) and is hidden on cancelled jobs. It appears on every committed flow (Fixed / Estimate / Inspection) at every stage from Assigned onward.
+- The admin (`showAdminTabs`) branch already has Progress and is left exactly as-is.
 
-1. **Replace the current loose workflow stages with PRD-aligned stages**
-   - Update `src/data/jobWorkflowState.ts` so the stage names match the required Fixed / Estimate / Inspection flows.
-   - Remove ambiguous/merged states like `quote_accepted`, `purchasing`, and `work_in_progress` where they conflict with the docs, replacing them with `quote_approved`, `advance_paid`, `purchases_ongoing`, `ready_to_start`, `in_progress`, `paid`, etc.
-   - Keep one flow per job; no stage skipping.
+### Seed data
+`JobProgressTab` only seeds milestones for `j5`. For `j2` (committed item 1) and other committed jobs, the timeline currently renders empty with just the "Add milestone" CTA — that empty state is fine and the user didn't ask for seeded data. No changes to the component.
 
-2. **Fix Incoming vs Committed behavior properly**
-   - Incoming tab will only contain jobs with `status: "incoming"`.
-   - Incoming cards will not show committed state, assigned state, accepted state, workflow pills, or committed-style CTAs.
-   - The list card remains a neutral incoming card with schedule/context only.
-   - The only place to respond is the incoming job detail page footer: `Respond to Job`.
-   - Once the user selects Pick Up / Estimate / Inspection, the job moves to Committed immediately.
+### Files touched
+- `src/pages/trader/JobDetail.tsx` — single edit to the non-admin `tabs` array to conditionally include the Milestones trigger.
 
-3. **Restore Pick Up Job correctly**
-   - `Pick Up Job` will reuse the existing assignment sheet only.
-   - The assignment options will be: assign to self, individual, or team/group.
-   - After pickup/assignment, fixed jobs enter Committed at `Assigned`.
-   - This preserves the fixed-job pickup flow instead of replacing it with quote/estimate behavior.
+### Memory
+Update `mem://features/trader/job-details` to record: "Milestones tab (key `progress`, component `JobProgressTab`) is visible on all committed job detail pages, hidden on incoming and cancelled jobs."
 
-4. **Make card CTA and detail-page CTA come from the same source**
-   - Create one shared CTA mapping for every workflow stage.
-   - `StageJobCard` and `JobDetail` footer will both use that same mapping, so labels and actions cannot drift apart again.
-   - Examples:
-     - Fixed `Assigned`: `Start Work`
-     - Fixed `In Progress`: `Mark Completed`
-     - Fixed `Completed`: `Create Invoice`
-     - Estimate `Estimate Sent`: `Await Approval`
-     - Estimate `Subtasks Created`: `Assign Work`
-     - Estimate `Assigned`: `Create Quote`
-     - Estimate `Quote Sent`: `Await Approval`
-     - Estimate `Quote Approved`: `Await Advance Payment`
-     - Estimate `Advance Paid`: `View Purchase List`
-     - Inspection `Inspection Fee Paid`: `Assign for Inspection`
-     - Inspection `Inspection Assigned`: `Start Inspection`
-     - Inspection `Inspection Completed`: `Create Subtasks`
-
-5. **Repair Estimate, Quote, Purchase List, and Invoice sequencing**
-   - Estimate flow:
-     - Create Estimate with min/max/note/voice.
-     - Customer approval simulated moves to `Estimate Approved`.
-     - Subtasks created before assignment/quote.
-   - Quote flow:
-     - Quote is only created after subtasks and assignment.
-     - Quote includes title, line items, notes, and advance amount.
-     - Quote must show PDF-style preview before `Send to Customer`.
-     - Purchase list is generated only from quote material items, after quote is sent.
-   - Purchase tab:
-     - Visible only after quote is sent/approved and later stages.
-     - Uses statuses from the docs: not purchased, purchased by customer, requested admin purchase, purchased by admin.
-   - Invoice flow:
-     - Invoice appears only after work is completed.
-     - Invoice has a preview before `Send to Customer`.
-     - Sending invoice moves to `Invoice Sent`; customer payment simulation moves to `Paid`.
-
-6. **Fix inspection flow according to the spec**
-   - Incoming inspection response creates an inspection proposal, not a normal quote.
-   - Inspection proposal sent -> customer pays inspection fee -> assign inspector -> start inspection -> inspection completed.
-   - After inspection completion, the next CTA is `Create Subtasks`, then it joins the Estimate flow from `Subtasks Created` onward.
-   - Quote preview remains only for quote, not for inspection proposal.
-
-7. **Clean up demo seed data so it demonstrates the correct flow**
-   - Remove/adjust seeded cases that currently make incoming jobs look accepted.
-   - Seed committed examples at valid states only.
-   - Ensure the first Incoming item is not pretending to be assigned/committed unless it has actually moved to Committed.
-
-## Technical notes
-
-- Main files to update:
-  - `src/data/jobWorkflowState.ts`
-  - `src/components/trader/StageJobCard.tsx`
-  - `src/pages/trader/TraderJobs.tsx`
-  - `src/pages/trader/JobDetail.tsx`
-  - `src/components/trader/PurchaseListTab.tsx` if purchase statuses need renaming
-  - Existing quote/invoice/assignment sheets will be reused; no redesign of assignment.
-- No database changes are required for this pass because the current prototype stores the demo workflow in local/session state.
-- I’ll also update the project memory after implementation so this PRD state machine is not contradicted again.
+### Out of scope
+- No changes to `JobProgressTab` itself.
+- No changes to the admin-mode tab list.
+- No deletions of any existing tab, route, CTA, or workflow logic.
+- No seed data added.
