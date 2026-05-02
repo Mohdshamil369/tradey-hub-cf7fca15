@@ -11,15 +11,18 @@ interface Milestone {
   pct?: number;
 }
 
+const defaultMilestones: Milestone[] = [
+  { id: "ms1", title: "Site survey & colour confirmation", description: "Walk-through with customer, finalise palette.", date: "13 Mar", status: "done" },
+  { id: "ms2", title: "Prep & masking", description: "Cover floors, mask trims and outlets.", date: "14 Mar", status: "done" },
+  { id: "ms3", title: "First coat — all rooms", description: "Roller and cut-in across 4 bedrooms + hallway.", date: "16 – 19 Mar", status: "current", pct: 60 },
+  { id: "ms4", title: "Second coat & touch-ups", date: "21 – 25 Mar", status: "upcoming" },
+  { id: "ms5", title: "Trim, doors & skirting", date: "28 Mar – 1 Apr", status: "upcoming" },
+  { id: "ms6", title: "Final walk-through & sign-off", date: "4 Apr", status: "upcoming" },
+];
+
 const seed: Record<string, Milestone[]> = {
-  j5: [
-    { id: "ms1", title: "Site survey & colour confirmation", description: "Walk-through with customer, finalise palette.", date: "13 Mar", status: "done" },
-    { id: "ms2", title: "Prep & masking", description: "Cover floors, mask trims and outlets.", date: "14 Mar", status: "done" },
-    { id: "ms3", title: "First coat — all rooms", description: "Roller and cut-in across 4 bedrooms + hallway.", date: "16 – 19 Mar", status: "current", pct: 60 },
-    { id: "ms4", title: "Second coat & touch-ups", date: "21 – 25 Mar", status: "upcoming" },
-    { id: "ms5", title: "Trim, doors & skirting", date: "28 Mar – 1 Apr", status: "upcoming" },
-    { id: "ms6", title: "Final walk-through & sign-off", date: "4 Apr", status: "upcoming" },
-  ],
+  j5: defaultMilestones,
+  j4: defaultMilestones,
 };
 
 interface JobProgressTabProps {
@@ -27,7 +30,7 @@ interface JobProgressTabProps {
 }
 
 const JobProgressTab = ({ jobId }: JobProgressTabProps) => {
-  const [items, setItems] = useState<Milestone[]>(seed[jobId] ?? []);
+  const [items, setItems] = useState<Milestone[]>(seed[jobId] ?? defaultMilestones);
 
   const done = items.filter((m) => m.status === "done").length;
   const total = items.length;
