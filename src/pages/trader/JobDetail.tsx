@@ -303,8 +303,14 @@ const JobDetail = () => {
       return;
     }
 
-    // Generate purchase items from quote materials
-    const purchaseItems: PurchaseItem[] = data.items
+    // Build a new purchase batch from this quote's materials and APPEND
+    // — never replace existing items (the trader can raise multiple quote
+    // rounds, each adding more materials to the master purchase list).
+    const existingBatches = workflow.purchaseBatches ?? [];
+    const batchId = crypto.randomUUID();
+    const batchNumber = existingBatches.length + 1;
+    const batchLabel = batchNumber === 1 ? "Initial Quote" : `Quote #${batchNumber}`;
+    const newItems: PurchaseItem[] = data.items
       .filter((i) => i.type === "material")
       .map((i) => ({
         id: crypto.randomUUID(),
@@ -313,16 +319,36 @@ const JobDetail = () => {
         expectedPrice: i.cost,
         status: "not_purchased" as const,
         buyer: "customer" as const,
+        batchId,
       }));
+    const newBatch = {
+      id: batchId,
+      label: batchLabel,
+      createdAt: new Date().toISOString(),
+      total: newItems.reduce((s, i) => s + i.expectedPrice * i.quantity, 0),
+    };
+
+    // Stage handling: only regress to "quote_sent" if we haven't yet had an
+    // approved quote; otherwise keep current stage (additional quote rounds
+    // top up the list without resetting progress).
+    const preApprovalStages: typeof workflow.stage[] = [
+      "incoming", "estimate_sent", "estimate_approved", "subtasks_created", "quote_sent",
+    ];
+    const nextStage = preApprovalStages.includes(workflow.stage) ? "quote_sent" : workflow.stage;
+
     const next: JobWorkflowState = {
       ...workflow,
-      stage: "quote_sent",
-      advanceAmount: data.advanceAmount ?? 0,
-      purchaseItems,
+      stage: nextStage,
+      advanceAmount: data.advanceAmount ?? workflow.advanceAmount ?? 0,
+      purchaseItems: [...workflow.purchaseItems, ...newItems],
+      purchaseBatches: [...existingBatches, newBatch],
     };
     setWorkflow(next);
     sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
-    toast.success("Quote sent to customer!", { description: `Total: £${data.total.toFixed(2)}` });
+    toast.success(
+      batchNumber === 1 ? "Quote sent to customer!" : `Additional quote sent — ${batchLabel}`,
+      { description: `Total: £${data.total.toFixed(2)} · ${newItems.length} item${newItems.length === 1 ? "" : "s"} added` }
+    );
   };
 
   // ── Invoice generation ──
