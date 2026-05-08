@@ -1,11 +1,16 @@
-import { CheckCircle2, ShoppingCart, User, UserCog, AlertCircle, Clock, ArrowRightLeft } from "lucide-react";
+import { useMemo } from "react";
+import { CheckCircle2, ShoppingCart, User, UserCog, AlertCircle, Clock, ArrowRightLeft, Plus, FileText } from "lucide-react";
 import { toast } from "sonner";
-import type { PurchaseItem, PurchaseItemStatus } from "@/data/jobWorkflowState";
+import type { PurchaseItem, PurchaseItemStatus, PurchaseBatch } from "@/data/jobWorkflowState";
 
 interface PurchaseListTabProps {
   items: PurchaseItem[];
+  /** Ordered list of purchase batches (quote rounds). Optional for back-compat. */
+  batches?: PurchaseBatch[];
   onUpdateItems: (items: PurchaseItem[]) => void;
   onAllPurchased?: () => void;
+  /** Admin-only: open the Quote sheet to send another quote/add items. */
+  onAddItemsClick?: () => void;
   /**
    * Who is viewing this list. Drives permissions:
    *   - admin → can tick admin-owned items, can request items back from customer, can NOT tick customer items.
@@ -25,13 +30,45 @@ const buyerOf = (item: PurchaseItem): "admin" | "customer" => {
   return "customer";
 };
 
-const PurchaseListTab = ({ items, onUpdateItems, onAllPurchased, viewerRole = "admin" }: PurchaseListTabProps) => {
+const LEGACY_BATCH_ID = "__legacy__";
+
+const PurchaseListTab = ({
+  items,
+  batches = [],
+  onUpdateItems,
+  onAllPurchased,
+  onAddItemsClick,
+  viewerRole = "admin",
+}: PurchaseListTabProps) => {
   const purchased = items.filter((i) => isPurchased(i.status)).length;
   const total = items.length;
   const progress = total === 0 ? 0 : Math.round((purchased / total) * 100);
   const totalCost = items.reduce((s, i) => s + i.expectedPrice * i.quantity, 0);
   const purchasedCost = items.filter((i) => isPurchased(i.status)).reduce((s, i) => s + i.expectedPrice * i.quantity, 0);
   const allDone = total > 0 && purchased === total;
+
+  // ── Group items by batch ────────────────────────────────
+  // Items without a batchId are bucketed into a synthesized "Initial Quote"
+  // batch so legacy data still renders correctly.
+  const grouped = useMemo(() => {
+    const hasLegacyItems = items.some((i) => !i.batchId);
+    const allBatches: PurchaseBatch[] = [...batches];
+    if (hasLegacyItems && !allBatches.some((b) => b.id === LEGACY_BATCH_ID)) {
+      allBatches.unshift({
+        id: LEGACY_BATCH_ID,
+        label: batches.length === 0 ? "Initial Quote" : "Earlier items",
+        createdAt: new Date(0).toISOString(),
+      });
+    }
+    return allBatches.map((b) => {
+      const batchItems = items.filter((i) =>
+        b.id === LEGACY_BATCH_ID ? !i.batchId : i.batchId === b.id
+      );
+      const bDone = batchItems.filter((i) => isPurchased(i.status)).length;
+      const bTotal = batchItems.reduce((s, i) => s + i.expectedPrice * i.quantity, 0);
+      return { batch: b, items: batchItems, done: bDone, totalCost: bTotal };
+    }).filter((g) => g.items.length > 0);
+  }, [items, batches]);
 
   /** Toggle the purchased state — only allowed when viewer matches buyer. */
   const toggleStatus = (id: string) => {
@@ -65,12 +102,10 @@ const PurchaseListTab = ({ items, onUpdateItems, onAllPurchased, viewerRole = "a
       if (it.id !== id) return it;
       const currentBuyer = buyerOf(it);
       const nextBuyer: "admin" | "customer" = currentBuyer === "customer" ? "admin" : "customer";
-      // If item already purchased, swap into the matching purchased bucket.
       let nextStatus: PurchaseItemStatus = it.status;
       if (isPurchased(it.status)) {
         nextStatus = nextBuyer === "admin" ? "purchased_by_admin" : "purchased_by_customer";
       } else if (nextBuyer === "admin") {
-        // Customer is asking admin to take care of this item.
         nextStatus = "requested_admin_purchase";
       } else {
         nextStatus = "not_purchased";
@@ -85,14 +120,127 @@ const PurchaseListTab = ({ items, onUpdateItems, onAllPurchased, viewerRole = "a
       : viewerRole === "admin" ? "Handed back to customer" : "You'll purchase this item");
   };
 
+  const fmtDate = (iso: string) => {
+    try {
+      const d = new Date(iso);
+      if (d.getTime() === 0) return "";
+      return d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+    } catch { return ""; }
+  };
+
+  // Pick a colour token per batch index so sections are visually distinct.
+  const batchAccent = (idx: number) => {
+    const palette = [
+      { ring: "border-primary/40", chip: "bg-primary/10 text-primary", bar: "bg-primary" },
+      { ring: "border-[hsl(25,90%,55%)]/40", chip: "bg-[hsl(25,90%,55%)]/10 text-[hsl(25,90%,55%)]", bar: "bg-[hsl(25,90%,55%)]" },
+      { ring: "border-blue-500/40", chip: "bg-blue-500/10 text-blue-600", bar: "bg-blue-500" },
+      { ring: "border-purple-500/40", chip: "bg-purple-500/10 text-purple-600", bar: "bg-purple-500" },
+    ];
+    return palette[idx % palette.length];
+  };
+
+  const renderItem = (item: PurchaseItem) => {
+    const buyer = buyerOf(item);
+    const done = isPurchased(item.status);
+    const canTick = buyer === viewerRole;
+    const requested = item.status === "requested_admin_purchase";
+
+    return (
+      <div
+        key={item.id}
+        className={`rounded-xl border p-3 transition-colors ${
+          done
+            ? "border-[hsl(142,70%,45%)]/30 bg-[hsl(142,70%,45%)]/5"
+            : requested
+              ? "border-[hsl(25,90%,55%)]/30 bg-[hsl(25,90%,55%)]/5"
+              : "border-border/40 bg-card"
+        }`}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <button
+            onClick={() => toggleStatus(item.id)}
+            disabled={!canTick}
+            className={`flex items-start gap-2.5 flex-1 min-w-0 text-left transition-transform ${canTick ? "active:scale-[0.99]" : "cursor-not-allowed"}`}
+          >
+            <div
+              className={`mt-0.5 h-5 w-5 shrink-0 rounded-md border-2 flex items-center justify-center ${
+                done
+                  ? "bg-[hsl(142,70%,45%)] border-[hsl(142,70%,45%)]"
+                  : canTick
+                    ? "border-muted-foreground/30"
+                    : "border-muted-foreground/15 bg-muted/40"
+              }`}
+            >
+              {done && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={`text-[12px] font-bold ${done ? "line-through text-muted-foreground" : "text-foreground"}`}>{item.name}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Qty {item.quantity} · £{item.expectedPrice} each · £{(item.expectedPrice * item.quantity).toLocaleString()}
+              </p>
+
+              <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                {requested && (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-[hsl(25,90%,55%)]/10 px-1.5 py-0.5 text-[9px] font-bold text-[hsl(25,90%,55%)]">
+                    <AlertCircle className="h-2.5 w-2.5" />
+                    Customer requested admin to buy
+                  </span>
+                )}
+                {!done && !canTick && !requested && (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 text-[9px] font-bold text-muted-foreground">
+                    <Clock className="h-2.5 w-2.5" />
+                    Awaiting {buyer === "customer" ? "customer" : "admin"}
+                  </span>
+                )}
+                {done && (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-[hsl(142,70%,45%)]/10 px-1.5 py-0.5 text-[9px] font-bold text-[hsl(142,70%,45%)]">
+                    <CheckCircle2 className="h-2.5 w-2.5" />
+                    Purchased by {item.status === "purchased_by_admin" ? "admin" : "customer"}
+                  </span>
+                )}
+              </div>
+            </div>
+          </button>
+
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <span
+              className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold ${
+                buyer === "admin"
+                  ? "bg-primary/10 text-primary"
+                  : "bg-secondary text-muted-foreground"
+              }`}
+            >
+              {buyer === "admin" ? <UserCog className="h-3 w-3" /> : <User className="h-3 w-3" />}
+              {buyer === "admin" ? "Admin" : "Customer"}
+            </span>
+            {!done && (
+              <button
+                onClick={() => transferBuyer(item.id)}
+                className="flex items-center gap-1 text-[9px] font-semibold text-muted-foreground hover:text-foreground active:scale-95"
+              >
+                <ArrowRightLeft className="h-2.5 w-2.5" />
+                {buyer === "admin"
+                  ? viewerRole === "admin" ? "Hand back" : "Take back"
+                  : viewerRole === "admin" ? "Take over" : "Ask admin"}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col gap-4 pb-6">
-      {/* Progress */}
+      {/* Overall progress */}
       <div className="rounded-2xl border border-border/40 bg-card p-4">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Purchase Progress</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Overall Progress</p>
             <p className="text-[13px] font-bold text-foreground mt-0.5">{purchased}/{total} items</p>
+            {grouped.length > 1 && (
+              <p className="text-[10px] text-muted-foreground mt-0.5">{grouped.length} quote rounds</p>
+            )}
           </div>
           <div className="text-right">
             <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total Cost</p>
@@ -120,116 +268,66 @@ const PurchaseListTab = ({ items, onUpdateItems, onAllPurchased, viewerRole = "a
         </div>
       )}
 
+      {/* Admin-only: send another quote (creates a new batch) */}
+      {viewerRole === "admin" && onAddItemsClick && (
+        <button
+          onClick={onAddItemsClick}
+          className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 py-2.5 text-[11px] font-bold text-primary active:bg-primary/10"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          {items.length === 0 ? "Send first quote" : "Send another quote — add items"}
+        </button>
+      )}
+
       {items.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border/40 bg-muted/20 p-8 text-center">
           <ShoppingCart className="mx-auto h-8 w-8 text-muted-foreground/40 mb-2" />
           <p className="text-[12px] font-bold text-foreground">No items yet</p>
-          <p className="text-[10px] text-muted-foreground mt-1">Materials added to the quote will appear here.</p>
+          <p className="text-[10px] text-muted-foreground mt-1">Materials added to a quote will appear here, grouped by quote round.</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-2">
-          {items.map((item) => {
-            const buyer = buyerOf(item);
-            const done = isPurchased(item.status);
-            const canTick = buyer === viewerRole;
-            const requested = item.status === "requested_admin_purchase";
-
+        <div className="flex flex-col gap-4">
+          {grouped.map(({ batch, items: bItems, done, totalCost: bTotal }, idx) => {
+            const accent = batchAccent(idx);
+            const bProgress = bItems.length === 0 ? 0 : Math.round((done / bItems.length) * 100);
+            const dateLabel = fmtDate(batch.createdAt);
             return (
-              <div
-                key={item.id}
-                className={`rounded-xl border p-3 transition-colors ${
-                  done
-                    ? "border-[hsl(142,70%,45%)]/30 bg-[hsl(142,70%,45%)]/5"
-                    : requested
-                      ? "border-[hsl(25,90%,55%)]/30 bg-[hsl(25,90%,55%)]/5"
-                      : "border-border/40 bg-card"
-                }`}
+              <section
+                key={batch.id}
+                className={`rounded-2xl border ${accent.ring} bg-background/40 p-2.5`}
               >
-                <div className="flex items-start justify-between gap-3">
-                  {/* Tick area — disabled when viewer is not the buyer */}
-                  <button
-                    onClick={() => toggleStatus(item.id)}
-                    disabled={!canTick}
-                    className={`flex items-start gap-2.5 flex-1 min-w-0 text-left transition-transform ${canTick ? "active:scale-[0.99]" : "cursor-not-allowed"}`}
-                  >
-                    <div
-                      className={`mt-0.5 h-5 w-5 shrink-0 rounded-md border-2 flex items-center justify-center ${
-                        done
-                          ? "bg-[hsl(142,70%,45%)] border-[hsl(142,70%,45%)]"
-                          : canTick
-                            ? "border-muted-foreground/30"
-                            : "border-muted-foreground/15 bg-muted/40"
-                      }`}
-                    >
-                      {done && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-[12px] font-bold ${done ? "line-through text-muted-foreground" : "text-foreground"}`}>{item.name}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        Qty {item.quantity} · £{item.expectedPrice} each · £{(item.expectedPrice * item.quantity).toLocaleString()}
-                      </p>
-
-                      {/* Status chip */}
-                      <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                        {requested && (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-[hsl(25,90%,55%)]/10 px-1.5 py-0.5 text-[9px] font-bold text-[hsl(25,90%,55%)]">
-                            <AlertCircle className="h-2.5 w-2.5" />
-                            Customer requested admin to buy
-                          </span>
-                        )}
-                        {!done && !canTick && !requested && (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 text-[9px] font-bold text-muted-foreground">
-                            <Clock className="h-2.5 w-2.5" />
-                            Awaiting {buyer === "customer" ? "customer" : "admin"}
-                          </span>
-                        )}
-                        {done && (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-[hsl(142,70%,45%)]/10 px-1.5 py-0.5 text-[9px] font-bold text-[hsl(142,70%,45%)]">
-                            <CheckCircle2 className="h-2.5 w-2.5" />
-                            Purchased by {item.status === "purchased_by_admin" ? "admin" : "customer"}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-
-                  {/* Right column: buyer chip + transfer */}
-                  <div className="flex flex-col items-end gap-1 shrink-0">
-                    <span
-                      className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold ${
-                        buyer === "admin"
-                          ? "bg-primary/10 text-primary"
-                          : "bg-secondary text-muted-foreground"
-                      }`}
-                    >
-                      {buyer === "admin" ? <UserCog className="h-3 w-3" /> : <User className="h-3 w-3" />}
-                      {buyer === "admin" ? "Admin" : "Customer"}
+                {/* Batch header */}
+                <header className="flex items-center justify-between gap-2 px-1 pb-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${accent.chip}`}>
+                      <FileText className="h-3 w-3" />
+                      {batch.label}
                     </span>
-                    {!done && (
-                      <button
-                        onClick={() => transferBuyer(item.id)}
-                        className="flex items-center gap-1 text-[9px] font-semibold text-muted-foreground hover:text-foreground active:scale-95"
-                      >
-                        <ArrowRightLeft className="h-2.5 w-2.5" />
-                        {buyer === "admin"
-                          ? viewerRole === "admin" ? "Hand back" : "Take back"
-                          : viewerRole === "admin" ? "Take over" : "Ask admin"}
-                      </button>
+                    {dateLabel && (
+                      <span className="text-[9px] text-muted-foreground">· {dateLabel}</span>
                     )}
                   </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-[10px] font-bold text-foreground">{done}/{bItems.length} · £{bTotal.toLocaleString()}</p>
+                    <div className="mt-1 h-1 w-20 overflow-hidden rounded-full bg-muted">
+                      <div className={`h-full rounded-full transition-all ${accent.bar}`} style={{ width: `${bProgress}%` }} />
+                    </div>
+                  </div>
+                </header>
+                <div className="flex flex-col gap-2">
+                  {bItems.map(renderItem)}
                 </div>
-              </div>
+              </section>
             );
           })}
         </div>
       )}
 
-      {/* Legend — clarifies the per-buyer ownership rule */}
       {items.length > 0 && (
         <div className="rounded-xl bg-muted/30 border border-border/30 px-3 py-2.5 text-[9.5px] leading-relaxed text-muted-foreground">
           <p>
             <span className="font-bold text-foreground">Note:</span> only the assigned buyer can tick an item off.
-            Admin handles items marked <span className="font-bold text-primary">Admin</span>; the rest are completed by the customer.
+            Each quote round adds its own batch — items are tracked separately so it's clear which quote they came from.
           </p>
         </div>
       )}

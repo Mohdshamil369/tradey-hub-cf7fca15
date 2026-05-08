@@ -84,6 +84,21 @@ export interface PurchaseItem {
   status: PurchaseItemStatus;
   /** Legacy buyer marker, kept for back-compat with PurchaseListTab UI. */
   buyer?: "customer" | "admin";
+  /** Which purchase batch (quote round) this item belongs to. Undefined = legacy / initial. */
+  batchId?: string;
+}
+
+/** A purchase batch represents one quote-round of items the trader sent to the customer. */
+export interface PurchaseBatch {
+  id: string;
+  /** Human label shown in UI, e.g. "Initial Quote", "Quote #2". */
+  label: string;
+  /** ISO timestamp when the batch was created (quote sent). */
+  createdAt: string;
+  /** Optional total of materials in this batch at the time of sending. */
+  total?: number;
+  /** Optional note from the trader about why the new quote was raised. */
+  note?: string;
 }
 
 export interface InvoiceData {
@@ -108,6 +123,8 @@ export interface JobWorkflowState {
   inspectionFeePaid?: boolean;
   advanceAmount?: number;
   purchaseItems: PurchaseItem[];
+  /** Ordered list of purchase batches; first entry is the initial quote. */
+  purchaseBatches?: PurchaseBatch[];
   invoiceData?: InvoiceData;
   assignment?: JobAssignment;
   pickedUpAt?: string;
