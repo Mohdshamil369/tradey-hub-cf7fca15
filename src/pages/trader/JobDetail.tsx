@@ -1318,11 +1318,13 @@ const JobDetail = () => {
           {activeTab === "purchase-list" && (
             <PurchaseListTab
               items={workflow.purchaseItems}
+              batches={workflow.purchaseBatches ?? []}
               onUpdateItems={(items) => {
                 const next = { ...workflow, purchaseItems: items };
                 setWorkflow(next);
                 sessionStorage.setItem(`job_workflow_${jobId}`, JSON.stringify(next));
               }}
+              onAddItemsClick={() => setShowQuoteSheet(true)}
               onAllPurchased={() => toast.success("All materials purchased! You can now proceed.")}
             />
           )}
