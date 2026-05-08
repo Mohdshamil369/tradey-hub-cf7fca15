@@ -214,6 +214,34 @@ const JobSubtasksTab = ({ jobId, jobTitle }: JobSubtasksTabProps) => {
                       </p>
                     )}
 
+                    {/* Milestone link */}
+                    <div className="mt-2">
+                      {(() => {
+                        const ms = milestoneById(s.milestoneId);
+                        if (ms) {
+                          return (
+                            <button
+                              onClick={() => isAdminView && setMilestoneFor(s.id)}
+                              disabled={!isAdminView}
+                              className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary"
+                            >
+                              <Flag className="h-2.5 w-2.5" /> {ms.title}
+                            </button>
+                          );
+                        }
+                        return isAdminView ? (
+                          <button
+                            onClick={() => setMilestoneFor(s.id)}
+                            className="inline-flex items-center gap-1 rounded-full border border-dashed border-border px-2 py-0.5 text-[9px] font-bold text-muted-foreground"
+                          >
+                            <Flag className="h-2.5 w-2.5" /> Link to milestone
+                          </button>
+                        ) : (
+                          <span className="text-[9px] italic text-muted-foreground">No milestone</span>
+                        );
+                      })()}
+                    </div>
+
                     {/* Assignees */}
                     <div className="mt-2 flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 min-w-0">
