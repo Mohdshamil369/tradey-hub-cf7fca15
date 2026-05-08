@@ -12,6 +12,7 @@ import AssignmentCard from "@/components/trader/AssignmentCard";
 import Avatar from "boring-avatars";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { allMembers } from "@/data/messaging";
 import { serviceCategories, catAServices, catBServices } from "@/data/services";
 import { EmojiIcon, getEmojiIconColors } from "@/lib/icons";
 
@@ -92,6 +93,7 @@ const GroupDetail = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [expandedCat, setExpandedCat] = useState<string | null>(null);
+  const [searchExisting, setSearchExisting] = useState("");
 
   const hasChanges = JSON.stringify(entries) !== JSON.stringify(savedEntries);
 
@@ -127,6 +129,28 @@ const GroupDetail = () => {
     setMembers((prev) => prev.filter((m) => m.id !== memberId));
     toast.success(`${member?.name || "Member"} removed from group`);
   };
+
+  const addExistingMember = (member: any) => {
+    const newMember = {
+      id: member.id,
+      name: member.name,
+      email: member.email,
+      status: "active" as const,
+      totalJobs: 0,
+      totalHours: 0,
+      totalEarned: 0,
+      avgRating: 0,
+      completionRate: 0
+    };
+    setMembers((prev) => [...prev, newMember]);
+    toast.success(`${member.name} added to group`);
+  };
+
+  const availableTeammates = Object.values(allMembers).filter(
+    (m) => !members.some((existing) => existing.id === m.id) &&
+           (m.name.toLowerCase().includes(searchExisting.toLowerCase()) || 
+            m.email.toLowerCase().includes(searchExisting.toLowerCase()))
+  );
 
   return (
     <MobileLayout role="trader">
@@ -303,11 +327,52 @@ const GroupDetail = () => {
                 onClick={() => setShowInvite(true)}
                 className="flex w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed border-border py-3.5 text-xs font-semibold text-primary transition-colors active:bg-accent"
               >
-                <UserPlus className="h-4 w-4" /> Invite Worker
+                <UserPlus className="h-4 w-4" /> Invite Worker by Email
               </button>
             )}
+
+            <div className="mt-4">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Add Existing Teammate</p>
+              <div className="relative mb-3">
+                <input
+                  type="text"
+                  value={searchExisting}
+                  onChange={(e) => setSearchExisting(e.target.value)}
+                  placeholder="Search by name or email..."
+                  className="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary"
+                />
+              </div>
+              
+              <div className="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
+                {availableTeammates.length > 0 ? (
+                  availableTeammates.map((m) => (
+                    <div key={m.id} className="flex items-center justify-between rounded-2xl bg-card border border-border p-3 card-shadow">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                          {m.initial}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-foreground">{m.name}</span>
+                          <span className="text-[10px] text-muted-foreground">{m.email}</span>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => addExistingMember(m)}
+                        className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground active:scale-95 transition-transform"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-muted-foreground text-center py-4 bg-muted/30 rounded-xl border border-dashed border-border">
+                    {searchExisting ? "No matches found." : "All teammates are already in this group."}
+                  </p>
+                )}
+            </div>
           </div>
-        </TabsContent>
+        </div>
+      </TabsContent>
 
         {/* ── Base Pay Tab ── */}
         <TabsContent value="basepay" className="pb-6">
