@@ -1,15 +1,16 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Plus, Users, CheckCircle2, Clock, Play, Circle, Trash2, Edit3,
-  ShieldCheck, User as UserIcon, X, ChevronDown,
+  ShieldCheck, User as UserIcon, X, Flag,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
-  allMembers, subtasks as seedSubtasks, type Subtask, type SubtaskStatus,
+  allMembers, type SubtaskStatus,
   type GroupMember, subtaskStatusLabel, groupConversations,
 } from "@/data/messaging";
 import AssignSheet, { type AssignmentResult, type AssignGroup, type AssignIndividual } from "@/components/trader/AssignSheet";
+import { useJobMilestonesStore, type MMilestone, type MSubtask } from "@/stores/jobMilestonesStore";
 
 interface JobSubtasksTabProps {
   jobId: string;
@@ -29,44 +30,28 @@ const statusStyles: Record<SubtaskStatus, { bg: string; text: string; icon: any 
 const SELF_ID = "u-self";
 
 const JobSubtasksTab = ({ jobId, jobTitle }: JobSubtasksTabProps) => {
-  // Local in-memory list seeded from mock for this job. New subtasks created here
-  // also feel "connected" to groups since we use the same shape.
-  const initial = useMemo(
-    () => seedSubtasks.filter((s) => s.jobId === jobId),
-    [jobId]
-  );
-  const [items, setItems] = useState<Subtask[]>(
-    initial.length > 0
-      ? initial
-      : [
-          // Provide a couple of placeholder subtasks for jobs that have none yet
-          {
-            id: `${jobId}-s1`,
-            jobId,
-            title: "Site walk-through & measurements",
-            description: "Capture room dimensions and pain points before quoting.",
-            assigneeIds: [SELF_ID],
-            status: "pending",
-          },
-          {
-            id: `${jobId}-s2`,
-            jobId,
-            title: "Photograph existing setup",
-            assigneeIds: [],
-            status: "pending",
-          },
-        ]
-  );
+  const ensureJob = useJobMilestonesStore((s) => s.ensureJob);
+  const items = useJobMilestonesStore((s) => s.subtasksByJob[jobId] ?? []);
+  const milestones = useJobMilestonesStore((s) => s.milestonesByJob[jobId] ?? []);
+  const setSubtaskStatus = useJobMilestonesStore((s) => s.setSubtaskStatus);
+  const setSubtaskMilestone = useJobMilestonesStore((s) => s.setSubtaskMilestone);
+  const setSubtaskAssignees = useJobMilestonesStore((s) => s.setSubtaskAssignees);
+  const addSubtask = useJobMilestonesStore((s) => s.addSubtask);
+  const removeSubtask = useJobMilestonesStore((s) => s.deleteSubtask);
+
+  useEffect(() => { ensureJob(jobId); }, [jobId, ensureJob]);
 
   const [isAdminView, setIsAdminView] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [assignFor, setAssignFor] = useState<string | null>(null); // subtask id
+  const [milestoneFor, setMilestoneFor] = useState<string | null>(null); // subtask id
 
   // Visible list — user view shows only subtasks assigned to current user
   const visible = isAdminView ? items : items.filter((s) => s.assigneeIds.includes(SELF_ID));
 
   const memberList: GroupMember[] = Object.values(allMembers);
   const memberById = (id: string) => memberList.find((m) => m.id === id);
+  const milestoneById = (id?: string) => milestones.find((m) => m.id === id);
 
   const total = items.length;
   const done = items.filter((s) => s.status === "completed").length;
@@ -74,55 +59,45 @@ const JobSubtasksTab = ({ jobId, jobTitle }: JobSubtasksTabProps) => {
 
   // ── Mutations ─────────────────────────────────────────────
   const advanceStatus = (id: string) => {
-    setItems((prev) =>
-      prev.map((s) => {
-        if (s.id !== id) return s;
-        const i = statusOrder.indexOf(s.status);
-        const next = statusOrder[Math.min(i + 1, statusOrder.length - 1)];
-        return { ...s, status: next };
-      })
-    );
+    const s = items.find((x) => x.id === id);
+    if (!s) return;
+    const i = statusOrder.indexOf(s.status);
+    const next = statusOrder[Math.min(i + 1, statusOrder.length - 1)];
+    setSubtaskStatus(jobId, id, next);
+    if (next === "completed") {
+      const ms = milestoneById(s.milestoneId);
+      if (ms) toast.success(`Subtask completed · ${ms.title}`);
+    }
   };
 
   const acceptSubtask = (id: string) => {
-    setItems((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, status: "accepted" } : s))
-    );
+    setSubtaskStatus(jobId, id, "accepted");
     toast.success("Subtask accepted");
   };
 
   const completeSubtask = (id: string) => {
-    setItems((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, status: "completed" } : s))
-    );
+    setSubtaskStatus(jobId, id, "completed");
     toast.success("Subtask completed");
   };
 
   const deleteSubtask = (id: string) => {
-    setItems((prev) => prev.filter((s) => s.id !== id));
+    removeSubtask(jobId, id);
     toast("Subtask deleted");
   };
 
-  const createSubtask = (title: string, description: string, assigneeIds: string[]) => {
+  const createSubtask = (title: string, description: string, assigneeIds: string[], milestoneId?: string) => {
     const id = `${jobId}-s${Date.now()}`;
-    setItems((prev) => [
-      ...prev,
-      { id, jobId, title, description, assigneeIds, status: "pending" },
-    ]);
+    addSubtask(jobId, { id, title, description, assigneeIds, status: "pending", milestoneId });
     setCreateOpen(false);
     toast.success("Subtask created");
   };
 
   const handleAssignmentConfirm = (result: AssignmentResult) => {
     if (!assignFor) return;
-    setItems((prev) =>
-      prev.map((s) =>
-        s.id === assignFor ? { ...s, assigneeIds: result.memberIds } : s
-      )
-    );
+    setSubtaskAssignees(jobId, assignFor, result.memberIds);
     setAssignFor(null);
-    const who = result.type === "group" 
-      ? `${result.groupName} (${result.memberNames.length} members)` 
+    const who = result.type === "group"
+      ? `${result.groupName} (${result.memberNames.length} members)`
       : result.memberNames.join(", ");
     toast.success(`Assigned to ${who}`);
   };
