@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail, Plus, Trash2, ShieldCheck, X, Send, Clock, CheckCircle2 } from "lucide-react";
-import { GroupConversation, GroupMember } from "@/data/messaging";
+import { GroupConversation, GroupMember, allMembers } from "@/data/messaging";
 import { GroupViewMode } from "@/pages/GroupConversation";
 import { toast } from "sonner";
 
@@ -70,6 +70,15 @@ const GroupMembersTab = ({ group, viewMode }: { group: GroupConversation; viewMo
     toast.success(`Invite resent to ${m.email}`);
   };
 
+  const handleAddExisting = (member: GroupMember) => {
+    setMembers((prev) => [...prev, { ...member, inviteStatus: "accepted" }]);
+    toast.success(`Added ${member.name}`);
+  };
+
+  const availableMembers = Object.values(allMembers).filter(
+    (m) => !members.some((existing) => existing.id === m.id)
+  );
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
@@ -89,22 +98,53 @@ const GroupMembersTab = ({ group, viewMode }: { group: GroupConversation; viewMo
       </div>
 
       {showInvite && (
-        <div className="rounded-2xl bg-card card-shadow p-3">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-foreground">Invite by email</span>
-            <button onClick={() => setShowInvite(false)} className="text-muted-foreground"><X className="h-4 w-4" /></button>
+        <div className="rounded-2xl bg-card card-shadow p-3 flex flex-col gap-3">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-foreground">Invite by email</span>
+              <button onClick={() => setShowInvite(false)} className="text-muted-foreground"><X className="h-4 w-4" /></button>
+            </div>
+            <div className="flex gap-2">
+              <input
+                autoFocus
+                type="email"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleInvite()}
+                className="flex-1 rounded-xl bg-muted px-3 py-2 text-sm outline-none"
+              />
+              <button onClick={handleInvite} className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground">Send</button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <input
-              autoFocus
-              type="email"
-              placeholder="name@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleInvite()}
-              className="flex-1 rounded-xl bg-muted px-3 py-2 text-sm outline-none"
-            />
-            <button onClick={handleInvite} className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground">Send</button>
+          
+          <div>
+            <span className="text-xs font-bold text-foreground mb-2 block">Or add existing members</span>
+            <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1">
+              {availableMembers.length > 0 ? (
+                availableMembers.map((m) => (
+                  <div key={m.id} className="flex items-center justify-between rounded-xl bg-muted/50 p-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                        {m.initial}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-foreground">{m.name}</span>
+                        <span className="text-[10px] text-muted-foreground">{m.email}</span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => handleAddExisting(m)}
+                      className="rounded-lg bg-primary/10 px-3 py-1.5 text-[11px] font-bold text-primary hover:bg-primary/20"
+                    >
+                      Add
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-muted-foreground text-center py-2">All members are already in this group.</p>
+              )}
+            </div>
           </div>
         </div>
       )}

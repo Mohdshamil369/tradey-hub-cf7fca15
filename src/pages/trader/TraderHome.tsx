@@ -257,7 +257,6 @@ const TraderHome = () => {
       return next;
     });
   };
-
   const acceptJob = (id: string, assignTo?: { type: "group" | "individual"; name: string; memberNames?: string[] }) => {
     setJobs((prev) => prev.filter((j) => j.id !== id));
     if (assignTo) {
@@ -271,7 +270,6 @@ const TraderHome = () => {
     }
     resetAssignFlow();
   };
-
   const handleResponseSubmit = (jobId: string, data: QuoteSheetData) => {
     // Determine action based on quote type
     const isPickup = data.items.length === 0 && !data.inspectionMin;
