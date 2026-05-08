@@ -349,6 +349,7 @@ const JobSubtasksTab = ({ jobId, jobTitle }: JobSubtasksTabProps) => {
         onOpenChange={setCreateOpen}
         groups={groups}
         individuals={individuals}
+        milestones={milestones}
         onCreate={createSubtask}
       />
 
@@ -363,7 +364,80 @@ const JobSubtasksTab = ({ jobId, jobTitle }: JobSubtasksTabProps) => {
         confirmHelperText="Selected members will be notified about this subtask."
         onConfirm={handleAssignmentConfirm}
       />
+
+      {/* Milestone picker */}
+      <MilestonePickerSheet
+        open={!!milestoneFor}
+        onOpenChange={(o) => !o && setMilestoneFor(null)}
+        milestones={milestones}
+        currentId={items.find((s) => s.id === milestoneFor)?.milestoneId}
+        onPick={(id) => {
+          if (milestoneFor) {
+            setSubtaskMilestone(jobId, milestoneFor, id);
+            const ms = milestones.find((m) => m.id === id);
+            toast.success(ms ? `Linked to "${ms.title}"` : "Milestone unlinked");
+          }
+          setMilestoneFor(null);
+        }}
+      />
     </div>
+  );
+};
+
+// ── Milestone Picker Sheet ─────────────────────────────────
+const MilestonePickerSheet = ({
+  open, onOpenChange, milestones, currentId, onPick,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  milestones: MMilestone[];
+  currentId?: string;
+  onPick: (id: string | undefined) => void;
+}) => {
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="bottom" className="rounded-t-[28px] px-4 pb-6 pt-2 sm:max-w-[420px] sm:mx-auto">
+        <div className="mx-auto mb-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-base font-bold text-foreground">Link to milestone</h3>
+          <button onClick={() => onOpenChange(false)} className="rounded-full p-1 active:bg-muted">
+            <X className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+        <p className="mb-3 text-[10px] text-muted-foreground">
+          When all subtasks linked to a milestone are completed, the milestone is auto-marked done.
+        </p>
+        <div className="flex flex-col gap-1.5 max-h-[280px] overflow-y-auto pr-1">
+          <button
+            onClick={() => onPick(undefined)}
+            className={`flex items-center justify-between rounded-xl border px-3 py-2.5 text-left transition-all ${
+              !currentId ? "border-primary bg-primary/5" : "border-border bg-card"
+            }`}
+          >
+            <span className="text-[12px] font-bold text-foreground">No milestone</span>
+            {!currentId && <CheckCircle2 className="h-4 w-4 text-primary" />}
+          </button>
+          {milestones.map((m) => {
+            const sel = currentId === m.id;
+            return (
+              <button
+                key={m.id}
+                onClick={() => onPick(m.id)}
+                className={`flex items-center justify-between rounded-xl border px-3 py-2.5 text-left transition-all ${
+                  sel ? "border-primary bg-primary/5" : "border-border bg-card"
+                }`}
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-[12px] font-bold text-foreground">{m.title}</p>
+                  <p className="text-[10px] text-muted-foreground">{m.date} · {m.status}</p>
+                </div>
+                {sel && <CheckCircle2 className="h-4 w-4 text-primary" />}
+              </button>
+            );
+          })}
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 
