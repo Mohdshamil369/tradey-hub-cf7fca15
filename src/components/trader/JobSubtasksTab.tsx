@@ -447,19 +447,22 @@ const CreateSubtaskSheet = ({
   onOpenChange,
   groups,
   individuals,
+  milestones,
   onCreate,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   groups: AssignGroup[];
   individuals: AssignIndividual[];
-  onCreate: (title: string, description: string, assigneeIds: string[]) => void;
+  milestones: MMilestone[];
+  onCreate: (title: string, description: string, assigneeIds: string[], milestoneId?: string) => void;
 }) => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [picked, setPicked] = useState<string[]>([]);
   const [assignmentMode, setAssignmentMode] = useState<"group" | "individual">("group");
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [milestoneId, setMilestoneId] = useState<string | undefined>(undefined);
 
   const reset = () => {
     setTitle("");
@@ -467,6 +470,7 @@ const CreateSubtaskSheet = ({
     setPicked([]);
     setAssignmentMode("group");
     setSelectedGroupId(null);
+    setMilestoneId(undefined);
   };
 
   const submit = () => {
@@ -474,7 +478,7 @@ const CreateSubtaskSheet = ({
       toast.error("Title is required");
       return;
     }
-    onCreate(title.trim(), desc.trim(), picked);
+    onCreate(title.trim(), desc.trim(), picked, milestoneId);
     reset();
     onOpenChange(false);
   };
