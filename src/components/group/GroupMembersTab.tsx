@@ -31,6 +31,7 @@ const GroupMembersTab = ({ group, viewMode }: { group: GroupConversation; viewMo
   const [members, setMembers] = useState<GroupMember[]>(group.members);
   const [showInvite, setShowInvite] = useState(false);
   const [email, setEmail] = useState("");
+  const [searchExisting, setSearchExisting] = useState("");
   const navigate = useNavigate();
   const isAdmin = viewMode === "admin";
 
@@ -76,7 +77,9 @@ const GroupMembersTab = ({ group, viewMode }: { group: GroupConversation; viewMo
   };
 
   const availableMembers = Object.values(allMembers).filter(
-    (m) => !members.some((existing) => existing.id === m.id)
+    (m) => !members.some((existing) => existing.id === m.id) &&
+           (m.name.toLowerCase().includes(searchExisting.toLowerCase()) || 
+            m.email.toLowerCase().includes(searchExisting.toLowerCase()))
   );
 
   return (
@@ -120,6 +123,17 @@ const GroupMembersTab = ({ group, viewMode }: { group: GroupConversation; viewMo
           
           <div>
             <span className="text-xs font-bold text-foreground mb-2 block">Or add existing members</span>
+            
+            <div className="relative mb-2">
+              <input
+                type="text"
+                placeholder="Search teammates..."
+                value={searchExisting}
+                onChange={(e) => setSearchExisting(e.target.value)}
+                className="w-full rounded-xl bg-muted px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none"
+              />
+            </div>
+
             <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1">
               {availableMembers.length > 0 ? (
                 availableMembers.map((m) => (
@@ -142,7 +156,9 @@ const GroupMembersTab = ({ group, viewMode }: { group: GroupConversation; viewMo
                   </div>
                 ))
               ) : (
-                <p className="text-xs text-muted-foreground text-center py-2">All members are already in this group.</p>
+                <p className="text-xs text-muted-foreground text-center py-2">
+                  {searchExisting ? "No members found." : "All members are already in this group."}
+                </p>
               )}
             </div>
           </div>
