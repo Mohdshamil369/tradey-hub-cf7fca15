@@ -525,7 +525,27 @@ const CreateSubtaskSheet = ({
             />
           </div>
 
-          {/* Assignees with Toggle */}
+          {/* Milestone link */}
+          <div>
+            <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              Link to milestone (optional)
+            </label>
+            <select
+              value={milestoneId ?? ""}
+              onChange={(e) => setMilestoneId(e.target.value || undefined)}
+              className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-[12px] text-foreground outline-none focus:border-primary"
+            >
+              <option value="">No milestone</option>
+              {milestones.map((m) => (
+                <option key={m.id} value={m.id}>{m.title} · {m.date}</option>
+              ))}
+            </select>
+            <p className="mt-1 text-[9px] text-muted-foreground">
+              When all subtasks for a milestone are completed, the milestone is auto-marked done.
+            </p>
+          </div>
+
+
           <div>
             <p className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
               Assign to
