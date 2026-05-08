@@ -1,15 +1,16 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Plus, Users, CheckCircle2, Clock, Play, Circle, Trash2, Edit3,
-  ShieldCheck, User as UserIcon, X, ChevronDown,
+  ShieldCheck, User as UserIcon, X, Flag,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
-  allMembers, subtasks as seedSubtasks, type Subtask, type SubtaskStatus,
+  allMembers, type SubtaskStatus,
   type GroupMember, subtaskStatusLabel, groupConversations,
 } from "@/data/messaging";
 import AssignSheet, { type AssignmentResult, type AssignGroup, type AssignIndividual } from "@/components/trader/AssignSheet";
+import { useJobMilestonesStore, type MMilestone, type MSubtask } from "@/stores/jobMilestonesStore";
 
 interface JobSubtasksTabProps {
   jobId: string;
@@ -29,44 +30,28 @@ const statusStyles: Record<SubtaskStatus, { bg: string; text: string; icon: any 
 const SELF_ID = "u-self";
 
 const JobSubtasksTab = ({ jobId, jobTitle }: JobSubtasksTabProps) => {
-  // Local in-memory list seeded from mock for this job. New subtasks created here
-  // also feel "connected" to groups since we use the same shape.
-  const initial = useMemo(
-    () => seedSubtasks.filter((s) => s.jobId === jobId),
-    [jobId]
-  );
-  const [items, setItems] = useState<Subtask[]>(
-    initial.length > 0
-      ? initial
-      : [
-          // Provide a couple of placeholder subtasks for jobs that have none yet
-          {
-            id: `${jobId}-s1`,
-            jobId,
-            title: "Site walk-through & measurements",
-            description: "Capture room dimensions and pain points before quoting.",
-            assigneeIds: [SELF_ID],
-            status: "pending",
-          },
-          {
-            id: `${jobId}-s2`,
-            jobId,
-            title: "Photograph existing setup",
-            assigneeIds: [],
-            status: "pending",
-          },
-        ]
-  );
+  const ensureJob = useJobMilestonesStore((s) => s.ensureJob);
+  const items = useJobMilestonesStore((s) => s.subtasksByJob[jobId] ?? []);
+  const milestones = useJobMilestonesStore((s) => s.milestonesByJob[jobId] ?? []);
+  const setSubtaskStatus = useJobMilestonesStore((s) => s.setSubtaskStatus);
+  const setSubtaskMilestone = useJobMilestonesStore((s) => s.setSubtaskMilestone);
+  const setSubtaskAssignees = useJobMilestonesStore((s) => s.setSubtaskAssignees);
+  const addSubtask = useJobMilestonesStore((s) => s.addSubtask);
+  const removeSubtask = useJobMilestonesStore((s) => s.deleteSubtask);
+
+  useEffect(() => { ensureJob(jobId); }, [jobId, ensureJob]);
 
   const [isAdminView, setIsAdminView] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [assignFor, setAssignFor] = useState<string | null>(null); // subtask id
+  const [milestoneFor, setMilestoneFor] = useState<string | null>(null); // subtask id
 
   // Visible list — user view shows only subtasks assigned to current user
   const visible = isAdminView ? items : items.filter((s) => s.assigneeIds.includes(SELF_ID));
 
   const memberList: GroupMember[] = Object.values(allMembers);
   const memberById = (id: string) => memberList.find((m) => m.id === id);
+  const milestoneById = (id?: string) => milestones.find((m) => m.id === id);
 
   const total = items.length;
   const done = items.filter((s) => s.status === "completed").length;
@@ -74,55 +59,45 @@ const JobSubtasksTab = ({ jobId, jobTitle }: JobSubtasksTabProps) => {
 
   // ── Mutations ─────────────────────────────────────────────
   const advanceStatus = (id: string) => {
-    setItems((prev) =>
-      prev.map((s) => {
-        if (s.id !== id) return s;
-        const i = statusOrder.indexOf(s.status);
-        const next = statusOrder[Math.min(i + 1, statusOrder.length - 1)];
-        return { ...s, status: next };
-      })
-    );
+    const s = items.find((x) => x.id === id);
+    if (!s) return;
+    const i = statusOrder.indexOf(s.status);
+    const next = statusOrder[Math.min(i + 1, statusOrder.length - 1)];
+    setSubtaskStatus(jobId, id, next);
+    if (next === "completed") {
+      const ms = milestoneById(s.milestoneId);
+      if (ms) toast.success(`Subtask completed · ${ms.title}`);
+    }
   };
 
   const acceptSubtask = (id: string) => {
-    setItems((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, status: "accepted" } : s))
-    );
+    setSubtaskStatus(jobId, id, "accepted");
     toast.success("Subtask accepted");
   };
 
   const completeSubtask = (id: string) => {
-    setItems((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, status: "completed" } : s))
-    );
+    setSubtaskStatus(jobId, id, "completed");
     toast.success("Subtask completed");
   };
 
   const deleteSubtask = (id: string) => {
-    setItems((prev) => prev.filter((s) => s.id !== id));
+    removeSubtask(jobId, id);
     toast("Subtask deleted");
   };
 
-  const createSubtask = (title: string, description: string, assigneeIds: string[]) => {
+  const createSubtask = (title: string, description: string, assigneeIds: string[], milestoneId?: string) => {
     const id = `${jobId}-s${Date.now()}`;
-    setItems((prev) => [
-      ...prev,
-      { id, jobId, title, description, assigneeIds, status: "pending" },
-    ]);
+    addSubtask(jobId, { id, title, description, assigneeIds, status: "pending", milestoneId });
     setCreateOpen(false);
     toast.success("Subtask created");
   };
 
   const handleAssignmentConfirm = (result: AssignmentResult) => {
     if (!assignFor) return;
-    setItems((prev) =>
-      prev.map((s) =>
-        s.id === assignFor ? { ...s, assigneeIds: result.memberIds } : s
-      )
-    );
+    setSubtaskAssignees(jobId, assignFor, result.memberIds);
     setAssignFor(null);
-    const who = result.type === "group" 
-      ? `${result.groupName} (${result.memberNames.length} members)` 
+    const who = result.type === "group"
+      ? `${result.groupName} (${result.memberNames.length} members)`
       : result.memberNames.join(", ");
     toast.success(`Assigned to ${who}`);
   };
@@ -239,6 +214,34 @@ const JobSubtasksTab = ({ jobId, jobTitle }: JobSubtasksTabProps) => {
                       </p>
                     )}
 
+                    {/* Milestone link */}
+                    <div className="mt-2">
+                      {(() => {
+                        const ms = milestoneById(s.milestoneId);
+                        if (ms) {
+                          return (
+                            <button
+                              onClick={() => isAdminView && setMilestoneFor(s.id)}
+                              disabled={!isAdminView}
+                              className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary"
+                            >
+                              <Flag className="h-2.5 w-2.5" /> {ms.title}
+                            </button>
+                          );
+                        }
+                        return isAdminView ? (
+                          <button
+                            onClick={() => setMilestoneFor(s.id)}
+                            className="inline-flex items-center gap-1 rounded-full border border-dashed border-border px-2 py-0.5 text-[9px] font-bold text-muted-foreground"
+                          >
+                            <Flag className="h-2.5 w-2.5" /> Link to milestone
+                          </button>
+                        ) : (
+                          <span className="text-[9px] italic text-muted-foreground">No milestone</span>
+                        );
+                      })()}
+                    </div>
+
                     {/* Assignees */}
                     <div className="mt-2 flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 min-w-0">
@@ -346,6 +349,7 @@ const JobSubtasksTab = ({ jobId, jobTitle }: JobSubtasksTabProps) => {
         onOpenChange={setCreateOpen}
         groups={groups}
         individuals={individuals}
+        milestones={milestones}
         onCreate={createSubtask}
       />
 
@@ -360,7 +364,80 @@ const JobSubtasksTab = ({ jobId, jobTitle }: JobSubtasksTabProps) => {
         confirmHelperText="Selected members will be notified about this subtask."
         onConfirm={handleAssignmentConfirm}
       />
+
+      {/* Milestone picker */}
+      <MilestonePickerSheet
+        open={!!milestoneFor}
+        onOpenChange={(o) => !o && setMilestoneFor(null)}
+        milestones={milestones}
+        currentId={items.find((s) => s.id === milestoneFor)?.milestoneId}
+        onPick={(id) => {
+          if (milestoneFor) {
+            setSubtaskMilestone(jobId, milestoneFor, id);
+            const ms = milestones.find((m) => m.id === id);
+            toast.success(ms ? `Linked to "${ms.title}"` : "Milestone unlinked");
+          }
+          setMilestoneFor(null);
+        }}
+      />
     </div>
+  );
+};
+
+// ── Milestone Picker Sheet ─────────────────────────────────
+const MilestonePickerSheet = ({
+  open, onOpenChange, milestones, currentId, onPick,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  milestones: MMilestone[];
+  currentId?: string;
+  onPick: (id: string | undefined) => void;
+}) => {
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="bottom" className="rounded-t-[28px] px-4 pb-6 pt-2 sm:max-w-[420px] sm:mx-auto">
+        <div className="mx-auto mb-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-base font-bold text-foreground">Link to milestone</h3>
+          <button onClick={() => onOpenChange(false)} className="rounded-full p-1 active:bg-muted">
+            <X className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+        <p className="mb-3 text-[10px] text-muted-foreground">
+          When all subtasks linked to a milestone are completed, the milestone is auto-marked done.
+        </p>
+        <div className="flex flex-col gap-1.5 max-h-[280px] overflow-y-auto pr-1">
+          <button
+            onClick={() => onPick(undefined)}
+            className={`flex items-center justify-between rounded-xl border px-3 py-2.5 text-left transition-all ${
+              !currentId ? "border-primary bg-primary/5" : "border-border bg-card"
+            }`}
+          >
+            <span className="text-[12px] font-bold text-foreground">No milestone</span>
+            {!currentId && <CheckCircle2 className="h-4 w-4 text-primary" />}
+          </button>
+          {milestones.map((m) => {
+            const sel = currentId === m.id;
+            return (
+              <button
+                key={m.id}
+                onClick={() => onPick(m.id)}
+                className={`flex items-center justify-between rounded-xl border px-3 py-2.5 text-left transition-all ${
+                  sel ? "border-primary bg-primary/5" : "border-border bg-card"
+                }`}
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-[12px] font-bold text-foreground">{m.title}</p>
+                  <p className="text-[10px] text-muted-foreground">{m.date} · {m.status}</p>
+                </div>
+                {sel && <CheckCircle2 className="h-4 w-4 text-primary" />}
+              </button>
+            );
+          })}
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 
@@ -370,19 +447,22 @@ const CreateSubtaskSheet = ({
   onOpenChange,
   groups,
   individuals,
+  milestones,
   onCreate,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   groups: AssignGroup[];
   individuals: AssignIndividual[];
-  onCreate: (title: string, description: string, assigneeIds: string[]) => void;
+  milestones: MMilestone[];
+  onCreate: (title: string, description: string, assigneeIds: string[], milestoneId?: string) => void;
 }) => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [picked, setPicked] = useState<string[]>([]);
   const [assignmentMode, setAssignmentMode] = useState<"group" | "individual">("group");
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [milestoneId, setMilestoneId] = useState<string | undefined>(undefined);
 
   const reset = () => {
     setTitle("");
@@ -390,6 +470,7 @@ const CreateSubtaskSheet = ({
     setPicked([]);
     setAssignmentMode("group");
     setSelectedGroupId(null);
+    setMilestoneId(undefined);
   };
 
   const submit = () => {
@@ -397,7 +478,7 @@ const CreateSubtaskSheet = ({
       toast.error("Title is required");
       return;
     }
-    onCreate(title.trim(), desc.trim(), picked);
+    onCreate(title.trim(), desc.trim(), picked, milestoneId);
     reset();
     onOpenChange(false);
   };
@@ -444,7 +525,27 @@ const CreateSubtaskSheet = ({
             />
           </div>
 
-          {/* Assignees with Toggle */}
+          {/* Milestone link */}
+          <div>
+            <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              Link to milestone (optional)
+            </label>
+            <select
+              value={milestoneId ?? ""}
+              onChange={(e) => setMilestoneId(e.target.value || undefined)}
+              className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-[12px] text-foreground outline-none focus:border-primary"
+            >
+              <option value="">No milestone</option>
+              {milestones.map((m) => (
+                <option key={m.id} value={m.id}>{m.title} · {m.date}</option>
+              ))}
+            </select>
+            <p className="mt-1 text-[9px] text-muted-foreground">
+              When all subtasks for a milestone are completed, the milestone is auto-marked done.
+            </p>
+          </div>
+
+
           <div>
             <p className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
               Assign to

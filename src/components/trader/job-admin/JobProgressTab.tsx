@@ -1,52 +1,28 @@
-import { useState } from "react";
-import { CheckCircle2, Circle, Clock, Calendar, Plus, MoreHorizontal } from "lucide-react";
+import { useEffect } from "react";
+import { CheckCircle2, Circle, Clock, Calendar, Plus, ListChecks } from "lucide-react";
 import { toast } from "sonner";
-
-interface Milestone {
-  id: string;
-  title: string;
-  description?: string;
-  date: string;
-  status: "done" | "current" | "upcoming";
-  pct?: number;
-}
-
-const defaultMilestones: Milestone[] = [
-  { id: "ms1", title: "Site survey & colour confirmation", description: "Walk-through with customer, finalise palette.", date: "13 Mar", status: "done" },
-  { id: "ms2", title: "Prep & masking", description: "Cover floors, mask trims and outlets.", date: "14 Mar", status: "done" },
-  { id: "ms3", title: "First coat — all rooms", description: "Roller and cut-in across 4 bedrooms + hallway.", date: "16 – 19 Mar", status: "current", pct: 60 },
-  { id: "ms4", title: "Second coat & touch-ups", date: "21 – 25 Mar", status: "upcoming" },
-  { id: "ms5", title: "Trim, doors & skirting", date: "28 Mar – 1 Apr", status: "upcoming" },
-  { id: "ms6", title: "Final walk-through & sign-off", date: "4 Apr", status: "upcoming" },
-];
-
-const seed: Record<string, Milestone[]> = {
-  j5: defaultMilestones,
-  j4: defaultMilestones,
-};
+import { useJobMilestonesStore } from "@/stores/jobMilestonesStore";
 
 interface JobProgressTabProps {
   jobId: string;
 }
 
 const JobProgressTab = ({ jobId }: JobProgressTabProps) => {
-  const [items, setItems] = useState<Milestone[]>(seed[jobId] ?? defaultMilestones);
+  const ensureJob = useJobMilestonesStore((s) => s.ensureJob);
+  const items = useJobMilestonesStore((s) => s.milestonesByJob[jobId] ?? []);
+  const subtasks = useJobMilestonesStore((s) => s.subtasksByJob[jobId] ?? []);
+  const completeMilestone = useJobMilestonesStore((s) => s.completeMilestone);
+
+  useEffect(() => {
+    ensureJob(jobId);
+  }, [jobId, ensureJob]);
 
   const done = items.filter((m) => m.status === "done").length;
   const total = items.length;
   const overall = total === 0 ? 0 : Math.round((done / total) * 100);
 
   const advance = (id: string) => {
-    setItems((prev) => {
-      const next = [...prev];
-      const idx = next.findIndex((m) => m.id === id);
-      if (idx < 0) return prev;
-      next[idx] = { ...next[idx], status: "done" };
-      // promote next upcoming → current
-      const nextIdx = next.findIndex((m, i) => i > idx && m.status === "upcoming");
-      if (nextIdx > -1) next[nextIdx] = { ...next[nextIdx], status: "current", pct: 0 };
-      return next;
-    });
+    completeMilestone(jobId, id);
     toast.success("Milestone marked complete");
   };
 
@@ -84,6 +60,8 @@ const JobProgressTab = ({ jobId }: JobProgressTabProps) => {
             const isDone = m.status === "done";
             const isCurrent = m.status === "current";
             const Icon = isDone ? CheckCircle2 : isCurrent ? Clock : Circle;
+            const linked = subtasks.filter((s) => s.milestoneId === m.id);
+            const doneCount = linked.filter((s) => s.status === "completed").length;
             return (
               <div key={m.id} className="relative">
                 <div
@@ -119,7 +97,19 @@ const JobProgressTab = ({ jobId }: JobProgressTabProps) => {
                   {m.description && (
                     <p className="mt-1.5 text-[11px] text-foreground/80 leading-relaxed">{m.description}</p>
                   )}
-                  {isCurrent && typeof m.pct === "number" && (
+                  {linked.length > 0 && (
+                    <div className="mt-2 flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground">
+                      <ListChecks className="h-3 w-3" />
+                      <span>{doneCount}/{linked.length} subtasks</span>
+                      <div className="ml-1 h-1 flex-1 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className={`h-full rounded-full transition-all ${isDone ? "bg-[hsl(142,70%,45%)]" : "bg-[hsl(25,90%,55%)]"}`}
+                          style={{ width: `${linked.length === 0 ? 0 : Math.round((doneCount / linked.length) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {isCurrent && linked.length === 0 && typeof m.pct === "number" && (
                     <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
                       <div className="h-full rounded-full bg-[hsl(25,90%,55%)]" style={{ width: `${m.pct}%` }} />
                     </div>
