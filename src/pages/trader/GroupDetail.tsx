@@ -5,8 +5,9 @@ import {
   ArrowLeft, Users, Star, Clock, BarChart3, TrendingUp,
   PoundSterling, CheckCircle2, ChevronDown, Mail, Trash2,
   UserPlus, X, ChevronRight, MapPin, Calendar, Briefcase, Save, Undo2,
-  ArrowDownLeft, ArrowUpRight, Wallet, Search,
+  ArrowDownLeft, ArrowUpRight, Wallet, Search, Plus,
 } from "lucide-react";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Switch } from "@/components/ui/switch";
 import AssignmentCard from "@/components/trader/AssignmentCard";
 import Avatar from "boring-avatars";
