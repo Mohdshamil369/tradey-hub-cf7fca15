@@ -30,7 +30,7 @@ const statusStyles: Record<SubtaskStatus, { bg: string; text: string; icon: any 
 // Self-id mirrors messaging.ts ("u-self")
 const SELF_ID = "u-self";
 
-const JobSubtasksTab = ({ jobId, jobTitle }: JobSubtasksTabProps) => {
+const JobSubtasksTab = ({ jobId, jobTitle, forceOpenCreate }: JobSubtasksTabProps) => {
   const ensureJob = useJobMilestonesStore((s) => s.ensureJob);
   const items = useJobMilestonesStore((s) => s.subtasksByJob[jobId] ?? []);
   const milestones = useJobMilestonesStore((s) => s.milestonesByJob[jobId] ?? []);

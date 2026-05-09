@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Search, FileText, Eye, Edit3, Send, MoreVertical } from "lucide-react";
 import { adminTemplates, FormTemplate } from "./schema";
 import { FormLibrarySheet } from "./FormLibrarySheet";
@@ -54,7 +54,7 @@ const SEED_TEMPLATES: FormTemplate[] = [
   },
 ];
 
-export const JobNotesTab = ({ jobId, isInline = false }: JobNotesTabProps) => {
+export const JobNotesTab = ({ jobId, isInline = false, forceOpenCreate }: JobNotesTabProps) => {
   const [templates, setTemplates] = useState<FormTemplate[]>(SEED_TEMPLATES);
   const [activeFilter, setActiveFilter] = useState<"all" | "published" | "draft">("all");
   const [searchQuery, setSearchQuery] = useState("");
