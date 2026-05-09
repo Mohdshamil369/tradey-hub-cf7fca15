@@ -360,33 +360,60 @@ const GroupDetail = () => {
                     <X className="h-4 w-4 text-muted-foreground" />
                   </button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2">
-                  {dedupedRoster.map((m) => {
-                    const checked = pickedIds.includes(m.id);
-                    return (
-                      <button
-                        key={m.id}
-                        onClick={() => togglePicked(m.id)}
-                        className={`flex items-center gap-3 rounded-2xl border p-3 text-left transition-colors ${
-                          checked ? "border-primary bg-primary/5" : "border-border bg-card"
-                        }`}
-                      >
-                        <Avatar size={36} name={m.name} variant="beam" colors={avatarPalette} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-foreground truncate">{m.name}</p>
-                          <p className="text-[10px] text-muted-foreground truncate">From {m.fromGroup}</p>
-                        </div>
-                        <div className={`flex h-5 w-5 items-center justify-center rounded-md border-2 ${
-                          checked ? "border-primary bg-primary" : "border-border"
-                        }`}>
-                          {checked && <CheckCircle2 className="h-3.5 w-3.5 text-primary-foreground" />}
-                        </div>
+                <div className="px-3 pt-3">
+                  <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2">
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="text"
+                      value={pickSearch}
+                      onChange={(e) => setPickSearch(e.target.value)}
+                      placeholder="Search by name or email"
+                      className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                    />
+                    {pickSearch && (
+                      <button onClick={() => setPickSearch("")} className="text-muted-foreground">
+                        <X className="h-3.5 w-3.5" />
                       </button>
-                    );
-                  })}
-                  {dedupedRoster.length === 0 && (
-                    <p className="text-center text-xs text-muted-foreground py-8">No other members available</p>
-                  )}
+                    )}
+                  </div>
+                </div>
+                <div className="overflow-y-auto p-3 flex flex-col gap-2 max-h-[320px]">
+                  {(() => {
+                    const q = pickSearch.trim().toLowerCase();
+                    const filtered = q
+                      ? dedupedRoster.filter((m) => m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q))
+                      : dedupedRoster;
+                    if (filtered.length === 0) {
+                      return (
+                        <p className="text-center text-xs text-muted-foreground py-8">
+                          {dedupedRoster.length === 0 ? "No other members available" : "No matches"}
+                        </p>
+                      );
+                    }
+                    return filtered.map((m) => {
+                      const checked = pickedIds.includes(m.id);
+                      return (
+                        <button
+                          key={m.id}
+                          onClick={() => togglePicked(m.id)}
+                          className={`flex items-center gap-3 rounded-2xl border p-3 text-left transition-colors ${
+                            checked ? "border-primary bg-primary/5" : "border-border bg-card"
+                          }`}
+                        >
+                          <Avatar size={36} name={m.name} variant="beam" colors={avatarPalette} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-foreground truncate">{m.name}</p>
+                            <p className="text-[10px] text-muted-foreground truncate">From {m.fromGroup}</p>
+                          </div>
+                          <div className={`flex h-5 w-5 items-center justify-center rounded-md border-2 ${
+                            checked ? "border-primary bg-primary" : "border-border"
+                          }`}>
+                            {checked && <CheckCircle2 className="h-3.5 w-3.5 text-primary-foreground" />}
+                          </div>
+                        </button>
+                      );
+                    });
+                  })()}
                 </div>
                 <div className="border-t border-border p-3">
                   <button
