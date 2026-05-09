@@ -43,6 +43,15 @@ const JobSubtasksTab = ({ jobId, jobTitle }: JobSubtasksTabProps) => {
 
   const [isAdminView, setIsAdminView] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
+
+  // Auto-open create sheet when triggered from FAB
+  useEffect(() => {
+    const flag = sessionStorage.getItem(`subtasks_open_create_${jobId}`);
+    if (flag) {
+      sessionStorage.removeItem(`subtasks_open_create_${jobId}`);
+      setCreateOpen(true);
+    }
+  }, [jobId]);
   const [assignFor, setAssignFor] = useState<string | null>(null); // subtask id
   const [milestoneFor, setMilestoneFor] = useState<string | null>(null); // subtask id
 
