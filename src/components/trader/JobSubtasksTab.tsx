@@ -15,6 +15,7 @@ import { useJobMilestonesStore, type MMilestone, type MSubtask } from "@/stores/
 interface JobSubtasksTabProps {
   jobId: string;
   jobTitle: string;
+  forceOpenCreate?: number; // Increment to force open
 }
 
 const statusOrder: SubtaskStatus[] = ["pending", "accepted", "in_progress", "completed"];
@@ -45,6 +46,13 @@ const JobSubtasksTab = ({ jobId, jobTitle }: JobSubtasksTabProps) => {
   const [createOpen, setCreateOpen] = useState(false);
   const [assignFor, setAssignFor] = useState<string | null>(null); // subtask id
   const [milestoneFor, setMilestoneFor] = useState<string | null>(null); // subtask id
+
+  useEffect(() => {
+    if (forceOpenCreate && forceOpenCreate > 0) {
+      setCreateOpen(true);
+      setIsAdminView(true);
+    }
+  }, [forceOpenCreate]);
 
   // Visible list — user view shows only subtasks assigned to current user
   const visible = isAdminView ? items : items.filter((s) => s.assigneeIds.includes(SELF_ID));

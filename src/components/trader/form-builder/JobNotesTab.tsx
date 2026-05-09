@@ -12,6 +12,7 @@ const generateId = () => Math.random().toString(36).substring(2, 9);
 interface JobNotesTabProps {
   jobId: string;
   isInline?: boolean;
+  forceOpenCreate?: number; // Increment to force open
 }
 
 const SEED_TEMPLATES: FormTemplate[] = [
@@ -65,6 +66,12 @@ export const JobNotesTab = ({ jobId, isInline = false }: JobNotesTabProps) => {
   const [previewMode, setPreviewMode] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<FormTemplate | null>(null);
   const [pendingDraft, setPendingDraft] = useState<Partial<FormTemplate> | null>(null);
+
+  useEffect(() => {
+    if (forceOpenCreate && forceOpenCreate > 0) {
+      handleCreateNew();
+    }
+  }, [forceOpenCreate]);
 
   const filteredTemplates = templates.filter((t) => {
     const matchesSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase());

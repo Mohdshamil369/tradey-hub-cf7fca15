@@ -122,6 +122,9 @@ const JobDetail = () => {
   const [pendingQuote, setPendingQuote] = useState<QuoteSheetData | null>(null);
   const [showEstimateSheet, setShowEstimateSheet] = useState(false);
   const [showInvoiceSheet, setShowInvoiceSheet] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [triggerNewNote, setTriggerNewNote] = useState(0);
+  const [triggerNewSubtask, setTriggerNewSubtask] = useState(0);
 
   // ── Workflow State ──
   const [workflow, setWorkflow] = useState<JobWorkflowState>(() => {
@@ -828,7 +831,7 @@ const JobDetail = () => {
         {/* Internal Notes & Forms — available on every job */}
         <div className="mt-2 border-t border-border/30 pt-4">
           <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground mb-4 px-1">Notes [internal]</h3>
-          <JobNotesTab jobId={job.id} isInline={true} />
+          <JobNotesTab jobId={job.id} isInline={true} forceOpenCreate={triggerNewNote} />
         </div>
       </div>
     );
@@ -1314,7 +1317,13 @@ const JobDetail = () => {
           )}
           {activeTab === "details" && renderDetailsTab()}
           {activeTab === "quotes" && renderQuotesTab()}
-          {activeTab === "subtasks" && <JobSubtasksTab jobId={job.id} jobTitle={job.title} />}
+          {activeTab === "subtasks" && (
+            <JobSubtasksTab 
+              jobId={job.id} 
+              jobTitle={job.title} 
+              forceOpenCreate={triggerNewSubtask}
+            />
+          )}
           {activeTab === "purchase-list" && (
             <PurchaseListTab
               items={workflow.purchaseItems}
@@ -1484,6 +1493,78 @@ const JobDetail = () => {
         invoiceData={workflow.invoiceData ?? null}
         onSend={() => { toast.success("Invoice sent to customer!"); setShowInvoiceSheet(false); }}
       />
+
+      {/* Quick Add FAB and Sheet */}
+      {isCommitted && (
+        <div className="absolute bottom-[88px] right-6 z-40">
+          <button
+            onClick={() => setShowQuickAdd(true)}
+            className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform active:scale-95"
+          >
+            <Plus className="h-7 w-7" />
+          </button>
+        </div>
+      )}
+
+      <Sheet open={showQuickAdd} onOpenChange={setShowQuickAdd}>
+        <SheetContent side="bottom" className="rounded-t-[32px] px-6 pb-10 pt-2 sm:max-w-[420px] sm:mx-auto border-none">
+          <div className="mx-auto mb-6 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
+          <h3 className="text-[22px] font-black text-[#1A1C1E] mb-1 tracking-tight">Quick Add</h3>
+          <p className="text-[14px] font-medium text-muted-foreground mb-8">
+            Create new items for this job instantly
+          </p>
+          <div className="flex flex-col gap-4">
+            {[
+              { 
+                icon: StickyNote, 
+                label: "New Note", 
+                desc: "Fill a form or take a site note",
+                action: () => {
+                  setActiveTab("attachments");
+                  setTriggerNewNote(prev => prev + 1);
+                  setShowQuickAdd(false);
+                }
+              },
+              { 
+                icon: FileText, 
+                label: "New Quote", 
+                desc: "Send an estimate or inspection fee",
+                action: () => {
+                  setShowQuoteSheet(true);
+                  setShowQuickAdd(false);
+                }
+              },
+              { 
+                icon: ClipboardList, 
+                label: "New Subtask", 
+                desc: "Break down work for your team",
+                action: () => {
+                  setActiveTab("subtasks");
+                  setTriggerNewSubtask(prev => prev + 1);
+                  setShowQuickAdd(false);
+                }
+              },
+            ].map((option) => (
+              <button
+                key={option.label}
+                onClick={option.action}
+                className="group relative flex items-center gap-4 rounded-[24px] p-4 text-left transition-all active:scale-[0.98] bg-[#F8F9FB] border-2 border-transparent hover:border-border/50"
+              >
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[18px] bg-[#E9ECEF] text-[#495057]">
+                  <option.icon className="h-6 w-6" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-[16px] font-black text-[#1A1C1E]">{option.label}</span>
+                  <p className="text-[12px] font-medium text-muted-foreground mt-0.5 leading-snug opacity-80">
+                    {option.desc}
+                  </p>
+                </div>
+                <ChevronRight className="h-5 w-5 shrink-0 text-[#ADB5BD] transition-transform group-hover:translate-x-0.5" />
+              </button>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
     </MobileLayout>
   );
 };

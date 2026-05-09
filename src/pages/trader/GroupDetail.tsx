@@ -92,6 +92,10 @@ const GroupDetail = () => {
   const [inviteEmail, setInviteEmail] = useState("");
   const [showInvite, setShowInvite] = useState(false);
   const [members, setMembers] = useState(group.members);
+  const [invites, setInvites] = useState([
+    { id: "inv1", email: "pending-worker@example.com", status: "sent", date: "2 hours ago" },
+    { id: "inv2", email: "another-one@example.com", status: "expired", date: "1 day ago" }
+  ]);
 
   // Base pay state
   const [useUniversal, setUseUniversal] = useState(true);
@@ -129,6 +133,22 @@ const GroupDetail = () => {
 
   const bulkUpdate = (categoryId: string, amount: number) => {
     setEntries((prev) => prev.map((e) => (e.categoryId === categoryId ? { ...e, basePay: amount } : e)));
+  };
+
+  const inviteWorker = () => {
+    if (!inviteEmail || !inviteEmail.includes("@")) {
+      toast.error("Please enter a valid email");
+      return;
+    }
+    const newInvite = {
+      id: `inv-${Date.now()}`,
+      email: inviteEmail,
+      status: "sent" as const,
+      date: "Just now"
+    };
+    setInvites([newInvite, ...invites]);
+    setInviteEmail("");
+    toast.success(`Invite sent to ${inviteEmail}`);
   };
 
   const deleteMember = (memberId: string) => {
@@ -304,8 +324,48 @@ const GroupDetail = () => {
                     Payouts
                   </button>
                 </div>
+                </div>
               </div>
             ))}
+
+            {invites.length > 0 && (
+              <div className="mt-4 flex flex-col gap-2.5">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">Sent Invites</p>
+                {invites.map((inv) => (
+                  <div key={inv.id} className="rounded-2xl bg-muted/30 border border-dashed border-border p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                          <Mail className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-foreground truncate">{inv.email}</p>
+                          <p className="text-[10px] text-muted-foreground">{inv.date}</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${
+                          inv.status === "sent" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                        }`}>
+                          {inv.status}
+                        </span>
+                        {inv.status === "sent" && (
+                          <button 
+                            onClick={() => {
+                              setInvites(prev => prev.filter(i => i.id !== inv.id));
+                              toast("Invite cancelled");
+                            }}
+                            className="text-[10px] font-bold text-destructive active:opacity-70"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <Drawer open={showInvite} onOpenChange={setShowInvite}>
               <DrawerTrigger asChild>
