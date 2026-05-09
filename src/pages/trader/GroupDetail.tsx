@@ -5,23 +5,15 @@ import {
   ArrowLeft, Users, Star, Clock, BarChart3, TrendingUp,
   PoundSterling, CheckCircle2, ChevronDown, Mail, Trash2,
   UserPlus, X, ChevronRight, MapPin, Calendar, Briefcase, Save, Undo2,
-  ArrowDownLeft, ArrowUpRight, Wallet, Plus, Search
+  ArrowDownLeft, ArrowUpRight, Wallet, Search,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import AssignmentCard from "@/components/trader/AssignmentCard";
 import Avatar from "boring-avatars";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { allMembers } from "@/data/messaging";
 import { serviceCategories, catAServices, catBServices } from "@/data/services";
 import { EmojiIcon, getEmojiIconColors } from "@/lib/icons";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
 
 const avatarPalette = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD", "#98D8C8"];
 
@@ -91,11 +83,33 @@ const GroupDetail = () => {
   const [activeTab, setActiveTab] = useState("performance");
   const [inviteEmail, setInviteEmail] = useState("");
   const [showInvite, setShowInvite] = useState(false);
+  const [showPickExisting, setShowPickExisting] = useState(false);
+  const [pickedIds, setPickedIds] = useState<string[]>([]);
+  const [pickSearch, setPickSearch] = useState("");
   const [members, setMembers] = useState(group.members);
   const [invites, setInvites] = useState([
     { id: "inv1", email: "pending-worker@example.com", status: "sent", date: "2 hours ago" },
     { id: "inv2", email: "another-one@example.com", status: "expired", date: "1 day ago" }
   ]);
+
+  // Roster of members already added to other groups / trader profile
+  const existingRoster = Object.entries(mockGroups)
+    .filter(([gid]) => gid !== groupId)
+    .flatMap(([gid, g]) => g.members.map((m) => ({ ...m, fromGroup: g.name, fromGroupId: gid })));
+  const dedupedRoster = Array.from(new Map(existingRoster.map((m) => [m.id, m])).values())
+    .filter((m) => !members.some((cm) => cm.id === m.id));
+
+  const togglePicked = (id: string) =>
+    setPickedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+  const addPicked = () => {
+    const toAdd = dedupedRoster.filter((m) => pickedIds.includes(m.id));
+    if (toAdd.length === 0) return;
+    setMembers((prev) => [...prev, ...toAdd.map(({ fromGroup, fromGroupId, ...rest }) => rest)]);
+    toast.success(`Added ${toAdd.length} member${toAdd.length !== 1 ? "s" : ""}`);
+    setPickedIds([]);
+    setShowPickExisting(false);
+  };
 
   // Base pay state
   const [useUniversal, setUseUniversal] = useState(true);
@@ -104,7 +118,6 @@ const GroupDetail = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [expandedCat, setExpandedCat] = useState<string | null>(null);
-  const [searchExisting, setSearchExisting] = useState("");
 
   const hasChanges = JSON.stringify(entries) !== JSON.stringify(savedEntries);
 
@@ -156,28 +169,6 @@ const GroupDetail = () => {
     setMembers((prev) => prev.filter((m) => m.id !== memberId));
     toast.success(`${member?.name || "Member"} removed from group`);
   };
-
-  const addExistingMember = (member: any) => {
-    const newMember = {
-      id: member.id,
-      name: member.name,
-      email: member.email,
-      status: "active" as const,
-      totalJobs: 0,
-      totalHours: 0,
-      totalEarned: 0,
-      avgRating: 0,
-      completionRate: 0
-    };
-    setMembers((prev) => [...prev, newMember]);
-    toast.success(`${member.name} added to group`);
-  };
-
-  const availableTeammates = Object.values(allMembers).filter(
-    (m) => !members.some((existing) => existing.id === m.id) &&
-           (m.name.toLowerCase().includes(searchExisting.toLowerCase()) || 
-            m.email.toLowerCase().includes(searchExisting.toLowerCase()))
-  );
 
   return (
     <MobileLayout role="trader">
@@ -325,7 +316,6 @@ const GroupDetail = () => {
                   </button>
                 </div>
                 </div>
-              </div>
             ))}
 
             {invites.length > 0 && (
@@ -420,29 +410,117 @@ const GroupDetail = () => {
                         </div>
                       )}
                     </div>
+                    <X className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {dedupedRoster.length > 0 && (
+                  <button
+                    onClick={() => setShowPickExisting(true)}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 py-3 text-xs font-semibold text-primary transition-colors active:bg-primary/10"
+                  >
+                    <Users className="h-4 w-4" /> Add from existing ({dedupedRoster.length})
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowInvite(true)}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed border-border py-3.5 text-xs font-semibold text-primary transition-colors active:bg-accent"
+                >
+                  <UserPlus className="h-4 w-4" /> Invite New Worker
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Pick existing members sheet (absolute, contained in mockup) */}
+          {showPickExisting && (
+            <>
+              <div
+                className="absolute inset-0 z-40 bg-black/40"
+                onClick={() => { setShowPickExisting(false); setPickedIds([]); }}
+              />
+              <div className="absolute inset-x-0 bottom-0 z-50 max-h-[85%] overflow-hidden rounded-t-3xl bg-card shadow-2xl flex flex-col">
+                <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                  <div>
+                    <p className="text-sm font-bold text-foreground">Add existing members</p>
+                    <p className="text-[11px] text-muted-foreground">From your other groups</p>
                   </div>
-
-                  <div className="h-px bg-border w-full" />
-
-                  {/* Invite by email */}
-                  <div className="flex flex-col gap-3">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Invite New via Email</p>
-                    <div className="flex gap-2">
-                      <input
-                        type="email"
-                        placeholder="teammate@example.com"
-                        value={inviteEmail}
-                        onChange={(e) => setInviteEmail(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && inviteWorker()}
-                        className="flex-1 rounded-xl bg-muted px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20"
-                      />
-                      <button onClick={inviteWorker} className="rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground">Send</button>
-                    </div>
+                  <button
+                    onClick={() => { setShowPickExisting(false); setPickedIds([]); }}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary"
+                  >
+                    <X className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                </div>
+                <div className="px-3 pt-3">
+                  <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2">
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="text"
+                      value={pickSearch}
+                      onChange={(e) => setPickSearch(e.target.value)}
+                      placeholder="Search by name or email"
+                      className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                    />
+                    {pickSearch && (
+                      <button onClick={() => setPickSearch("")} className="text-muted-foreground">
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
-              </DrawerContent>
-            </Drawer>
-          </div>
+                <div className="overflow-y-auto p-3 flex flex-col gap-2 max-h-[320px]">
+                  {(() => {
+                    const q = pickSearch.trim().toLowerCase();
+                    const filtered = q
+                      ? dedupedRoster.filter((m) => m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q))
+                      : dedupedRoster;
+                    if (filtered.length === 0) {
+                      return (
+                        <p className="text-center text-xs text-muted-foreground py-8">
+                          {dedupedRoster.length === 0 ? "No other members available" : "No matches"}
+                        </p>
+                      );
+                    }
+                    return filtered.map((m) => {
+                      const checked = pickedIds.includes(m.id);
+                      return (
+                        <button
+                          key={m.id}
+                          onClick={() => togglePicked(m.id)}
+                          className={`flex items-center gap-3 rounded-2xl border p-3 text-left transition-colors ${
+                            checked ? "border-primary bg-primary/5" : "border-border bg-card"
+                          }`}
+                        >
+                          <Avatar size={36} name={m.name} variant="beam" colors={avatarPalette} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-foreground truncate">{m.name}</p>
+                            <p className="text-[10px] text-muted-foreground truncate">From {m.fromGroup}</p>
+                          </div>
+                          <div className={`flex h-5 w-5 items-center justify-center rounded-md border-2 ${
+                            checked ? "border-primary bg-primary" : "border-border"
+                          }`}>
+                            {checked && <CheckCircle2 className="h-3.5 w-3.5 text-primary-foreground" />}
+                          </div>
+                        </button>
+                      );
+                    });
+                  })()}
+                </div>
+                <div className="border-t border-border p-3">
+                  <button
+                    onClick={addPicked}
+                    disabled={pickedIds.length === 0}
+                    className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground disabled:opacity-50"
+                  >
+                    Add {pickedIds.length > 0 ? `${pickedIds.length} ` : ""}member{pickedIds.length !== 1 ? "s" : ""}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </TabsContent>
 
         {/* ── Base Pay Tab ── */}

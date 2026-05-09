@@ -9,13 +9,23 @@ import {
 } from "lucide-react";
 import BoringAvatar from "boring-avatars";
 import {
-  GroupConversation, GroupMember, groupConversations, allMembers
+  GroupConversation, GroupMember, groupConversations,
 } from "@/data/messaging";
 import { toast } from "sonner";
 
 const avatarPalette = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD", "#98D8C8"];
 
-// Teammates will be pulled from allMembers in messaging.ts
+// Mock pool of teammates the admin can invite.
+const memberPool: Omit<GroupMember, "role">[] = [
+  { id: "u1", name: "Alex Turner",   initial: "A", email: "alex@buildright.com",   online: true  },
+  { id: "u2", name: "James Cooper",  initial: "J", email: "james@buildright.com",  online: false },
+  { id: "u3", name: "Lena K.",       initial: "L", email: "lena@swiftlogi.com",    online: true  },
+  { id: "u4", name: "Tom Baker",     initial: "T", email: "tom@swiftlogi.com",     online: false },
+  { id: "u5", name: "Sara Mendez",   initial: "S", email: "sara@buildright.com",   online: true  },
+  { id: "u6", name: "Pieter D.",     initial: "P", email: "pieter@nordhaus.com",   online: false },
+  { id: "u7", name: "Sophie Baker",  initial: "S", email: "sophie@buildright.com", online: true  },
+  { id: "u8", name: "Manu R.",       initial: "M", email: "manu@swiftlogi.com",    online: false },
+];
 
 type Step = "details" | "members" | "review";
 
@@ -31,15 +41,13 @@ const CreateGroup = () => {
   const [invitedEmails, setInvitedEmails] = useState<string[]>([]);
   const [emailError, setEmailError] = useState<string | null>(null);
 
-  const pool = Object.values(allMembers);
-
   const filteredPool = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return pool;
-    return pool.filter(
+    if (!q) return memberPool;
+    return memberPool.filter(
       (m) => m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q),
     );
-  }, [search, pool]);
+  }, [search]);
 
   const toggleMember = (id: string) => {
     setSelected((prev) => {
@@ -57,7 +65,7 @@ const CreateGroup = () => {
       setEmailError("Enter a valid email address");
       return;
     }
-    if (invitedEmails.includes(trimmed) || Object.values(allMembers).some((m) => m.email.toLowerCase() === trimmed)) {
+    if (invitedEmails.includes(trimmed) || memberPool.some((m) => m.email.toLowerCase() === trimmed)) {
       setEmailError("Already added");
       return;
     }

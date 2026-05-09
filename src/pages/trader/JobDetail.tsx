@@ -1348,6 +1348,56 @@ const JobDetail = () => {
         {(activeTab === "details" || activeTab === "purchase-list" ||
           (isCommitted && (activeTab === "progress" || activeTab === "subtasks" || activeTab === "finances"))) &&
           renderFooter()}
+
+        {/* Floating quick-add FAB (Google Keep style) */}
+        {!isCancelled && !isCompleted && (() => {
+          const quickActions = [
+            ...(showQuotesTab || showPurchaseListTab
+              ? [{ icon: FileText, label: "New quote", onClick: () => { setShowQuoteSheet(true); } }]
+              : []),
+            ...(showSubtasksTab
+              ? [{ icon: ListChecks, label: "New subtask", onClick: () => { setActiveTab("subtasks"); sessionStorage.setItem(`subtasks_open_create_${jobId}`, "1"); } }]
+              : []),
+            ...(showPurchaseListTab
+              ? [{ icon: ShoppingCart, label: "Add purchase items", onClick: () => { setActiveTab("purchase-list"); setShowQuoteSheet(true); } }]
+              : []),
+            { icon: StickyNote, label: "Add note", onClick: () => { setActiveTab(showAdminTabs ? "docs" : "attachments"); } },
+            { icon: MessageCircle, label: "Message customer", onClick: () => { if (showAdminTabs) setActiveTab("chat"); else navigate(`/chat/${job.customer.name}`); } },
+          ].slice(0, 4);
+
+          return (
+            <>
+              {fabOpen && (
+                <div
+                  className="absolute inset-0 z-30 bg-black/30"
+                  onClick={() => setFabOpen(false)}
+                />
+              )}
+              <div className="absolute bottom-24 right-4 z-40 flex flex-col items-end gap-2.5">
+                {fabOpen && quickActions.map((a, i) => (
+                  <button
+                    key={a.label}
+                    onClick={() => { a.onClick(); setFabOpen(false); }}
+                    style={{ animation: `fadeIn 0.15s ease-out ${i * 30}ms both` }}
+                    className="flex items-center gap-2 rounded-full bg-card pl-3 pr-4 py-2 shadow-lg border border-border active:scale-95 transition-transform"
+                  >
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
+                      <a.icon className="h-3.5 w-3.5 text-primary" />
+                    </span>
+                    <span className="text-xs font-bold text-foreground whitespace-nowrap">{a.label}</span>
+                  </button>
+                ))}
+                <button
+                  onClick={() => setFabOpen((v) => !v)}
+                  className="flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-xl active:scale-95 transition-all"
+                  aria-label="Quick add"
+                >
+                  <Plus className={`h-6 w-6 text-primary-foreground transition-transform ${fabOpen ? "rotate-45" : ""}`} />
+                </button>
+              </div>
+            </>
+          );
+        })()}
       </div>
 
       {/* More actions sheet (committed jobs) */}

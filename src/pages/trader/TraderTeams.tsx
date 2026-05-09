@@ -3,7 +3,7 @@ import MobileLayout from "@/components/layout/MobileLayout";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Plus, Users, Mail, Trash2, Pencil, X,
-  ChevronDown, CheckCircle2, UserPlus, Search
+  ChevronDown, CheckCircle2, UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { serviceCategories } from "@/data/services";
@@ -378,89 +378,85 @@ const TraderTeams = () => {
                     ))}
 
                     {/* Invite below workers */}
-                    <div className="border-t border-border px-4 py-3">
-                      <Drawer open={inviteTeamId === team.id} onOpenChange={(open) => setInviteTeamId(open ? team.id : null)}>
-                        <DrawerTrigger asChild>
-                          <button className="flex w-full items-center justify-center gap-1.5 rounded-2xl border border-dashed border-primary/30 bg-primary/5 py-3 text-xs font-bold text-primary active:bg-accent transition-all">
-                            <UserPlus className="h-4 w-4" /> Add or Invite Workers
-                          </button>
-                        </DrawerTrigger>
-                        <DrawerContent className="mx-auto max-w-[390px]">
-                          <DrawerHeader>
-                            <DrawerTitle>Add to {team.name}</DrawerTitle>
-                          </DrawerHeader>
-                          <div className="flex flex-col gap-5 px-4 pb-10 overflow-y-auto max-h-[70vh]">
-                            {/* Existing teammates search */}
-                            <div className="flex flex-col gap-3">
-                              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Search Existing Teammates</p>
-                              <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <input
-                                  type="text"
-                                  placeholder="Search name or email..."
-                                  value={searchExisting}
-                                  onChange={(e) => setSearchExisting(e.target.value)}
-                                  className="w-full rounded-xl bg-muted pl-10 pr-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20"
-                                />
-                              </div>
-                              <div className="flex flex-col gap-2 max-h-[250px] overflow-y-auto pr-1">
-                                {(() => {
-                                  const available = Object.values(allMembers).filter(
-                                    (m) => !team.workers.some((w) => w.id === m.id) &&
-                                           (m.name.toLowerCase().includes(searchExisting.toLowerCase()) ||
-                                            m.email.toLowerCase().includes(searchExisting.toLowerCase()))
-                                  );
-                                  if (available.length === 0) {
-                                    return <div className="py-6 text-center rounded-xl bg-muted/30 border border-dashed border-border">
-                                      <p className="text-xs text-muted-foreground">
-                                        {searchExisting ? "No matches found." : "All teammates are in this team."}
-                                      </p>
-                                    </div>;
-                                  }
-                                  return available.map((m) => (
-                                    <div key={m.id} className="flex items-center justify-between rounded-xl border border-border p-3 bg-card shadow-sm">
-                                      <div className="flex items-center gap-3">
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                                          {m.initial}
-                                        </div>
-                                        <div className="flex flex-col">
-                                          <span className="text-sm font-bold text-foreground">{m.name}</span>
-                                          <span className="text-[10px] text-muted-foreground">{m.email}</span>
-                                        </div>
-                                      </div>
-                                      <button
-                                        onClick={() => addExistingWorker(team.id, m)}
-                                        className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground active:scale-95 transition-transform"
-                                      >
-                                        Add
-                                      </button>
-                                    </div>
-                                  ));
-                                })()}
-                              </div>
-                            </div>
-
-                            <div className="h-px bg-border w-full" />
-
-                            {/* Invite by email */}
-                            <div className="flex flex-col gap-3">
-                              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Invite New via Email</p>
-                              <div className="flex gap-2">
-                                <input
-                                  type="email"
-                                  placeholder="teammate@example.com"
-                                  value={inviteEmail}
-                                  onChange={(e) => setInviteEmail(e.target.value)}
-                                  onKeyDown={(e) => e.key === "Enter" && inviteWorker(team.id)}
-                                  className="flex-1 rounded-xl bg-muted px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20"
-                                />
-                                <button onClick={() => inviteWorker(team.id)} className="rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground">Send</button>
-                              </div>
-                            </div>
+                    {inviteTeamId === team.id ? (
+                      <div className="border-t border-border px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="flex flex-1 items-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <input
+                              type="email"
+                              value={inviteEmail}
+                              onChange={(e) => setInviteEmail(e.target.value)}
+                              placeholder="worker@email.com"
+                              className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                              autoFocus
+                              onKeyDown={(e) => e.key === "Enter" && inviteWorker(team.id)}
+                            />
                           </div>
-                        </DrawerContent>
-                      </Drawer>
-                    </div>
+                          <button
+                            onClick={() => inviteWorker(team.id)}
+                            disabled={!inviteEmail.trim()}
+                            className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-50"
+                          >
+                            Send
+                          </button>
+                          <button onClick={() => setInviteTeamId(null)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary">
+                            <X className="h-4 w-4 text-muted-foreground" />
+                          </button>
+                        </div>
+
+                        <div className="mt-4">
+                          <p className="mb-2 text-xs font-bold text-foreground">Or add existing workers</p>
+                          <div className="relative mb-2">
+                            <input
+                              type="text"
+                              placeholder="Search workers..."
+                              value={searchExisting}
+                              onChange={(e) => setSearchExisting(e.target.value)}
+                              className="w-full rounded-xl bg-muted px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-2 max-h-40 overflow-y-auto">
+                            {(() => {
+                              const available = Object.values(allMembers).filter(
+                                (m) => !team.workers.some((w) => w.id === m.id) &&
+                                       (m.name.toLowerCase().includes(searchExisting.toLowerCase()) ||
+                                        m.email.toLowerCase().includes(searchExisting.toLowerCase()))
+                              );
+                              if (available.length === 0) {
+                                return <p className="text-xs text-muted-foreground text-center py-2">No workers found.</p>;
+                              }
+                              return available.map((m) => (
+                                <div key={m.id} className="flex items-center justify-between rounded-xl bg-muted/50 p-2">
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                                      {m.initial}
+                                    </div>
+                                    <div className="flex flex-col">
+                                      <span className="text-sm font-bold text-foreground">{m.name}</span>
+                                      <span className="text-[10px] text-muted-foreground">{m.email}</span>
+                                    </div>
+                                  </div>
+                                  <button
+                                    onClick={() => addExistingWorker(team.id, m)}
+                                    className="rounded-lg bg-primary/10 px-3 py-1.5 text-[11px] font-bold text-primary hover:bg-primary/20"
+                                  >
+                                    Add
+                                  </button>
+                                </div>
+                              ));
+                            })()}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setInviteTeamId(team.id)}
+                        className="flex w-full items-center justify-center gap-1.5 border-t border-border px-4 py-3 text-xs font-semibold text-primary"
+                      >
+                        <UserPlus className="h-3.5 w-3.5" /> Invite Worker
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
