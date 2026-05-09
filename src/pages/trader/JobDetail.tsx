@@ -1349,7 +1349,7 @@ const JobDetail = () => {
           (isCommitted && (activeTab === "progress" || activeTab === "subtasks" || activeTab === "finances"))) &&
           renderFooter()}
 
-        {/* Floating quick-add FAB (Google Keep style) */}
+        {/* Floating quick-add FAB */}
         {!isCancelled && !isCompleted && (() => {
           const quickActions = [
             ...(showQuotesTab || showPurchaseListTab
@@ -1367,17 +1367,17 @@ const JobDetail = () => {
 
           return (
             <>
-              {fabOpen && (
+              {showQuickAdd && (
                 <div
                   className="absolute inset-0 z-30 bg-black/30"
-                  onClick={() => setFabOpen(false)}
+                  onClick={() => setShowQuickAdd(false)}
                 />
               )}
               <div className="absolute bottom-24 right-4 z-40 flex flex-col items-end gap-2.5">
-                {fabOpen && quickActions.map((a, i) => (
+                {showQuickAdd && quickActions.map((a, i) => (
                   <button
                     key={a.label}
-                    onClick={() => { a.onClick(); setFabOpen(false); }}
+                    onClick={() => { a.onClick(); setShowQuickAdd(false); }}
                     style={{ animation: `fadeIn 0.15s ease-out ${i * 30}ms both` }}
                     className="flex items-center gap-2 rounded-full bg-card pl-3 pr-4 py-2 shadow-lg border border-border active:scale-95 transition-transform"
                   >
@@ -1388,11 +1388,11 @@ const JobDetail = () => {
                   </button>
                 ))}
                 <button
-                  onClick={() => setFabOpen((v) => !v)}
+                  onClick={() => setShowQuickAdd((v) => !v)}
                   className="flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-xl active:scale-95 transition-all"
                   aria-label="Quick add"
                 >
-                  <Plus className={`h-6 w-6 text-primary-foreground transition-transform ${fabOpen ? "rotate-45" : ""}`} />
+                  <Plus className={`h-6 w-6 text-primary-foreground transition-transform ${showQuickAdd ? "rotate-45" : ""}`} />
                 </button>
               </div>
             </>
@@ -1544,77 +1544,6 @@ const JobDetail = () => {
         onSend={() => { toast.success("Invoice sent to customer!"); setShowInvoiceSheet(false); }}
       />
 
-      {/* Quick Add FAB and Sheet */}
-      {isCommitted && (
-        <div className="absolute bottom-[88px] right-6 z-40">
-          <button
-            onClick={() => setShowQuickAdd(true)}
-            className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform active:scale-95"
-          >
-            <Plus className="h-7 w-7" />
-          </button>
-        </div>
-      )}
-
-      <Sheet open={showQuickAdd} onOpenChange={setShowQuickAdd}>
-        <SheetContent side="bottom" className="rounded-t-[32px] px-6 pb-10 pt-2 sm:max-w-[420px] sm:mx-auto border-none">
-          <div className="mx-auto mb-6 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
-          <h3 className="text-[22px] font-black text-[#1A1C1E] mb-1 tracking-tight">Quick Add</h3>
-          <p className="text-[14px] font-medium text-muted-foreground mb-8">
-            Create new items for this job instantly
-          </p>
-          <div className="flex flex-col gap-4">
-            {[
-              { 
-                icon: StickyNote, 
-                label: "New Note", 
-                desc: "Fill a form or take a site note",
-                action: () => {
-                  setActiveTab("attachments");
-                  setTriggerNewNote(prev => prev + 1);
-                  setShowQuickAdd(false);
-                }
-              },
-              { 
-                icon: FileText, 
-                label: "New Quote", 
-                desc: "Send an estimate or inspection fee",
-                action: () => {
-                  setShowQuoteSheet(true);
-                  setShowQuickAdd(false);
-                }
-              },
-              { 
-                icon: ClipboardList, 
-                label: "New Subtask", 
-                desc: "Break down work for your team",
-                action: () => {
-                  setActiveTab("subtasks");
-                  setTriggerNewSubtask(prev => prev + 1);
-                  setShowQuickAdd(false);
-                }
-              },
-            ].map((option) => (
-              <button
-                key={option.label}
-                onClick={option.action}
-                className="group relative flex items-center gap-4 rounded-[24px] p-4 text-left transition-all active:scale-[0.98] bg-[#F8F9FB] border-2 border-transparent hover:border-border/50"
-              >
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[18px] bg-[#E9ECEF] text-[#495057]">
-                  <option.icon className="h-6 w-6" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className="text-[16px] font-black text-[#1A1C1E]">{option.label}</span>
-                  <p className="text-[12px] font-medium text-muted-foreground mt-0.5 leading-snug opacity-80">
-                    {option.desc}
-                  </p>
-                </div>
-                <ChevronRight className="h-5 w-5 shrink-0 text-[#ADB5BD] transition-transform group-hover:translate-x-0.5" />
-              </button>
-            ))}
-          </div>
-        </SheetContent>
-      </Sheet>
     </MobileLayout>
   );
 };
