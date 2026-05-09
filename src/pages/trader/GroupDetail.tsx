@@ -5,7 +5,7 @@ import {
   ArrowLeft, Users, Star, Clock, BarChart3, TrendingUp,
   PoundSterling, CheckCircle2, ChevronDown, Mail, Trash2,
   UserPlus, X, ChevronRight, MapPin, Calendar, Briefcase, Save, Undo2,
-  ArrowDownLeft, ArrowUpRight, Wallet,
+  ArrowDownLeft, ArrowUpRight, Wallet, Search,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import AssignmentCard from "@/components/trader/AssignmentCard";
