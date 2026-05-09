@@ -83,7 +83,28 @@ const GroupDetail = () => {
   const [activeTab, setActiveTab] = useState("performance");
   const [inviteEmail, setInviteEmail] = useState("");
   const [showInvite, setShowInvite] = useState(false);
+  const [showPickExisting, setShowPickExisting] = useState(false);
+  const [pickedIds, setPickedIds] = useState<string[]>([]);
   const [members, setMembers] = useState(group.members);
+
+  // Roster of members already added to other groups / trader profile
+  const existingRoster = Object.entries(mockGroups)
+    .filter(([gid]) => gid !== groupId)
+    .flatMap(([gid, g]) => g.members.map((m) => ({ ...m, fromGroup: g.name, fromGroupId: gid })));
+  const dedupedRoster = Array.from(new Map(existingRoster.map((m) => [m.id, m])).values())
+    .filter((m) => !members.some((cm) => cm.id === m.id));
+
+  const togglePicked = (id: string) =>
+    setPickedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+  const addPicked = () => {
+    const toAdd = dedupedRoster.filter((m) => pickedIds.includes(m.id));
+    if (toAdd.length === 0) return;
+    setMembers((prev) => [...prev, ...toAdd.map(({ fromGroup, fromGroupId, ...rest }) => rest)]);
+    toast.success(`Added ${toAdd.length} member${toAdd.length !== 1 ? "s" : ""}`);
+    setPickedIds([]);
+    setShowPickExisting(false);
+  };
 
   // Base pay state
   const [useUniversal, setUseUniversal] = useState(true);
@@ -299,14 +320,85 @@ const GroupDetail = () => {
                 </div>
               </div>
             ) : (
-              <button
-                onClick={() => setShowInvite(true)}
-                className="flex w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed border-border py-3.5 text-xs font-semibold text-primary transition-colors active:bg-accent"
-              >
-                <UserPlus className="h-4 w-4" /> Invite Worker
-              </button>
+              <div className="flex flex-col gap-2">
+                {dedupedRoster.length > 0 && (
+                  <button
+                    onClick={() => setShowPickExisting(true)}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 py-3 text-xs font-semibold text-primary transition-colors active:bg-primary/10"
+                  >
+                    <Users className="h-4 w-4" /> Add from existing ({dedupedRoster.length})
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowInvite(true)}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed border-border py-3.5 text-xs font-semibold text-primary transition-colors active:bg-accent"
+                >
+                  <UserPlus className="h-4 w-4" /> Invite New Worker
+                </button>
+              </div>
             )}
           </div>
+
+          {/* Pick existing members sheet (absolute, contained in mockup) */}
+          {showPickExisting && (
+            <>
+              <div
+                className="absolute inset-0 z-40 bg-black/40"
+                onClick={() => { setShowPickExisting(false); setPickedIds([]); }}
+              />
+              <div className="absolute inset-x-0 bottom-0 z-50 max-h-[85%] overflow-hidden rounded-t-3xl bg-card shadow-2xl flex flex-col">
+                <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                  <div>
+                    <p className="text-sm font-bold text-foreground">Add existing members</p>
+                    <p className="text-[11px] text-muted-foreground">From your other groups</p>
+                  </div>
+                  <button
+                    onClick={() => { setShowPickExisting(false); setPickedIds([]); }}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary"
+                  >
+                    <X className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2">
+                  {dedupedRoster.map((m) => {
+                    const checked = pickedIds.includes(m.id);
+                    return (
+                      <button
+                        key={m.id}
+                        onClick={() => togglePicked(m.id)}
+                        className={`flex items-center gap-3 rounded-2xl border p-3 text-left transition-colors ${
+                          checked ? "border-primary bg-primary/5" : "border-border bg-card"
+                        }`}
+                      >
+                        <Avatar size={36} name={m.name} variant="beam" colors={avatarPalette} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-foreground truncate">{m.name}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">From {m.fromGroup}</p>
+                        </div>
+                        <div className={`flex h-5 w-5 items-center justify-center rounded-md border-2 ${
+                          checked ? "border-primary bg-primary" : "border-border"
+                        }`}>
+                          {checked && <CheckCircle2 className="h-3.5 w-3.5 text-primary-foreground" />}
+                        </div>
+                      </button>
+                    );
+                  })}
+                  {dedupedRoster.length === 0 && (
+                    <p className="text-center text-xs text-muted-foreground py-8">No other members available</p>
+                  )}
+                </div>
+                <div className="border-t border-border p-3">
+                  <button
+                    onClick={addPicked}
+                    disabled={pickedIds.length === 0}
+                    className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground disabled:opacity-50"
+                  >
+                    Add {pickedIds.length > 0 ? `${pickedIds.length} ` : ""}member{pickedIds.length !== 1 ? "s" : ""}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </TabsContent>
 
         {/* ── Base Pay Tab ── */}
