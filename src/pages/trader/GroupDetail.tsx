@@ -85,6 +85,7 @@ const GroupDetail = () => {
   const [showInvite, setShowInvite] = useState(false);
   const [showPickExisting, setShowPickExisting] = useState(false);
   const [pickedIds, setPickedIds] = useState<string[]>([]);
+  const [pickSearch, setPickSearch] = useState("");
   const [members, setMembers] = useState(group.members);
 
   // Roster of members already added to other groups / trader profile
