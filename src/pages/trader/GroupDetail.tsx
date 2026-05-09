@@ -83,7 +83,28 @@ const GroupDetail = () => {
   const [activeTab, setActiveTab] = useState("performance");
   const [inviteEmail, setInviteEmail] = useState("");
   const [showInvite, setShowInvite] = useState(false);
+  const [showPickExisting, setShowPickExisting] = useState(false);
+  const [pickedIds, setPickedIds] = useState<string[]>([]);
   const [members, setMembers] = useState(group.members);
+
+  // Roster of members already added to other groups / trader profile
+  const existingRoster = Object.entries(mockGroups)
+    .filter(([gid]) => gid !== groupId)
+    .flatMap(([gid, g]) => g.members.map((m) => ({ ...m, fromGroup: g.name, fromGroupId: gid })));
+  const dedupedRoster = Array.from(new Map(existingRoster.map((m) => [m.id, m])).values())
+    .filter((m) => !members.some((cm) => cm.id === m.id));
+
+  const togglePicked = (id: string) =>
+    setPickedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+  const addPicked = () => {
+    const toAdd = dedupedRoster.filter((m) => pickedIds.includes(m.id));
+    if (toAdd.length === 0) return;
+    setMembers((prev) => [...prev, ...toAdd.map(({ fromGroup, fromGroupId, ...rest }) => rest)]);
+    toast.success(`Added ${toAdd.length} member${toAdd.length !== 1 ? "s" : ""}`);
+    setPickedIds([]);
+    setShowPickExisting(false);
+  };
 
   // Base pay state
   const [useUniversal, setUseUniversal] = useState(true);
