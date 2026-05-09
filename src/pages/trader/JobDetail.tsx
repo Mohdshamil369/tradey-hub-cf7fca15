@@ -122,6 +122,7 @@ const JobDetail = () => {
   const [pendingQuote, setPendingQuote] = useState<QuoteSheetData | null>(null);
   const [showEstimateSheet, setShowEstimateSheet] = useState(false);
   const [showInvoiceSheet, setShowInvoiceSheet] = useState(false);
+  const [fabOpen, setFabOpen] = useState(false);
 
   // ── Workflow State ──
   const [workflow, setWorkflow] = useState<JobWorkflowState>(() => {
