@@ -155,14 +155,13 @@ const GroupDetail = () => {
       return;
     }
     // Check for duplicate
-    if (invites.some(inv => inv.email.toLowerCase() === inviteEmail.toLowerCase() && inv.status === "sent")) {
+    if (invites.some(inv => inv.email.toLowerCase() === inviteEmail.toLowerCase())) {
       toast.error("An invite is already pending for this email");
       return;
     }
     const newInvite = {
       id: `inv-${Date.now()}`,
       email: inviteEmail,
-      status: "sent" as const,
       date: "Just now"
     };
     setInvites([newInvite, ...invites]);
@@ -170,21 +169,7 @@ const GroupDetail = () => {
     toast.success(`Invite sent to ${inviteEmail}`);
   };
 
-  const resendInvite = (invId: string) => {
-    setInvites(prev => prev.map(inv => 
-      inv.id === invId ? { ...inv, status: "sent" as const, date: "Just now" } : inv
-    ));
-    toast.success("Invite resent");
-  };
-
-  const pendingCount = invites.filter(i => i.status === "sent").length;
-
-  const inviteStatusConfig: Record<string, { bg: string; dot: string; label: string }> = {
-    sent: { bg: "bg-amber-500/10 text-amber-600", dot: "bg-amber-500", label: "Pending" },
-    accepted: { bg: "bg-emerald-500/10 text-emerald-600", dot: "bg-emerald-500", label: "Accepted" },
-    declined: { bg: "bg-red-500/10 text-red-600", dot: "bg-red-500", label: "Declined" },
-    expired: { bg: "bg-muted text-muted-foreground", dot: "bg-muted-foreground", label: "Expired" },
-  };
+  const pendingCount = invites.length;
 
   const deleteMember = (memberId: string) => {
     const member = members.find((m) => m.id === memberId);
