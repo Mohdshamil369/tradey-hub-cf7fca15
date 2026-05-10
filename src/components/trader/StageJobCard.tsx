@@ -209,7 +209,7 @@ const StageJobCard = ({ job, stage, category, onClick, onCta, onReassign, onAssi
           </button>
         </div>
       )}
-      {job.revoked && (
+      {job.cancelled && (
         <div className="border-t border-border/50 bg-muted/20 px-3.5 py-2.5 flex items-center justify-end">
           <button
             onClick={() => onClick?.()}
