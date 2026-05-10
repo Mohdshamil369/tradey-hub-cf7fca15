@@ -339,67 +339,34 @@ const GroupDetail = () => {
                   </div>
                   <p className="text-[10px] text-muted-foreground">{invites.length} total</p>
                 </div>
-                {invites.map((inv) => {
-                  const cfg = inviteStatusConfig[inv.status];
-                  return (
-                    <div key={inv.id} className={`rounded-2xl border p-3.5 transition-all ${
-                      inv.status === "sent" ? "bg-amber-500/[0.03] border-amber-500/20" :
-                      inv.status === "accepted" ? "bg-emerald-500/[0.03] border-emerald-500/20" :
-                      inv.status === "declined" ? "bg-red-500/[0.03] border-red-500/20" :
-                      "bg-muted/30 border-dashed border-border"
-                    }`}>
-                      <div className="flex items-center gap-3">
-                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                          inv.status === "sent" ? "bg-amber-500/10" :
-                          inv.status === "accepted" ? "bg-emerald-500/10" :
-                          inv.status === "declined" ? "bg-red-500/10" :
-                          "bg-muted"
-                        }`}>
-                          <Mail className={`h-4 w-4 ${
-                            inv.status === "sent" ? "text-amber-600" :
-                            inv.status === "accepted" ? "text-emerald-600" :
-                            inv.status === "declined" ? "text-red-600" :
-                            "text-muted-foreground"
-                          }`} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-bold text-foreground truncate">{inv.email}</p>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${cfg.bg}`}>
-                              <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
-                              {cfg.label}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground">· {inv.date}</span>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-1.5 shrink-0">
-                          {inv.status === "sent" && (
-                            <button 
-                              onClick={() => {
-                                setInvites(prev => prev.filter(i => i.id !== inv.id));
-                                toast("Invite cancelled");
-                              }}
-                              className="rounded-lg border border-destructive/20 bg-destructive/5 px-2.5 py-1 text-[10px] font-bold text-destructive active:opacity-70 transition-all"
-                            >
-                              Cancel
-                            </button>
-                          )}
-                          {(inv.status === "expired" || inv.status === "declined") && (
-                            <button 
-                              onClick={() => resendInvite(inv.id)}
-                              className="rounded-lg border border-primary/20 bg-primary/5 px-2.5 py-1 text-[10px] font-bold text-primary active:opacity-70 transition-all"
-                            >
-                              Resend
-                            </button>
-                          )}
-                          {inv.status === "accepted" && (
-                            <span className="text-[10px] font-semibold text-emerald-600">✓ Joined</span>
-                          )}
+                {invites.map((inv) => (
+                  <div key={inv.id} className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.03] p-3.5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10">
+                        <Mail className="h-4 w-4 text-amber-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-bold text-foreground truncate">{inv.email}</p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-bold text-amber-600">
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                            Invite sent
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">· {inv.date}</span>
                         </div>
                       </div>
+                      <button
+                        onClick={() => {
+                          setInvites(prev => prev.filter(i => i.id !== inv.id));
+                          toast("Invite cancelled");
+                        }}
+                        className="rounded-lg border border-destructive/20 bg-destructive/5 px-2.5 py-1 text-[10px] font-bold text-destructive active:opacity-70 transition-all"
+                      >
+                        Cancel
+                      </button>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             )}
 
