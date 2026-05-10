@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { CheckCircle2, ShoppingCart, User, UserCog, AlertCircle, Clock, ArrowRightLeft, Plus, FileText } from "lucide-react";
+import { useMemo, useState } from "react";
+import { CheckCircle2, ShoppingCart, User, UserCog, AlertCircle, Clock, ArrowRightLeft, Plus, FileText, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import type { PurchaseItem, PurchaseItemStatus, PurchaseBatch } from "@/data/jobWorkflowState";
 
@@ -40,6 +40,7 @@ const PurchaseListTab = ({
   onAddItemsClick,
   viewerRole = "admin",
 }: PurchaseListTabProps) => {
+  const [expandedBatches, setExpandedBatches] = useState<Record<string, boolean>>({});
   const purchased = items.filter((i) => isPurchased(i.status)).length;
   const total = items.length;
   const progress = total === 0 ? 0 : Math.round((purchased / total) * 100);
@@ -291,14 +292,20 @@ const PurchaseListTab = ({
             const accent = batchAccent(idx);
             const bProgress = bItems.length === 0 ? 0 : Math.round((done / bItems.length) * 100);
             const dateLabel = fmtDate(batch.createdAt);
+            const expanded = expandedBatches[batch.id] ?? true;
             return (
               <section
                 key={batch.id}
                 className={`rounded-2xl border ${accent.ring} bg-background/40 p-2.5`}
               >
-                {/* Batch header */}
-                <header className="flex items-center justify-between gap-2 px-1 pb-2">
+                {/* Batch header — clickable to collapse/expand */}
+                <button
+                  type="button"
+                  onClick={() => setExpandedBatches((p) => ({ ...p, [batch.id]: !expanded }))}
+                  className="w-full flex items-center justify-between gap-2 px-1 pb-2 text-left"
+                >
                   <div className="flex items-center gap-2 min-w-0">
+                    <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${expanded ? "" : "-rotate-90"}`} />
                     <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${accent.chip}`}>
                       <FileText className="h-3 w-3" />
                       {batch.label}
@@ -313,10 +320,12 @@ const PurchaseListTab = ({
                       <div className={`h-full rounded-full transition-all ${accent.bar}`} style={{ width: `${bProgress}%` }} />
                     </div>
                   </div>
-                </header>
-                <div className="flex flex-col gap-2">
-                  {bItems.map(renderItem)}
-                </div>
+                </button>
+                {expanded && (
+                  <div className="flex flex-col gap-2">
+                    {bItems.map(renderItem)}
+                  </div>
+                )}
               </section>
             );
           })}
