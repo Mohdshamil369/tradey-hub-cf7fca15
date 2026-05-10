@@ -88,13 +88,10 @@ const GroupDetail = () => {
   const [pickedIds, setPickedIds] = useState<string[]>([]);
   const [pickSearch, setPickSearch] = useState("");
   const [members, setMembers] = useState(group.members);
-  const [invites, setInvites] = useState<{id: string; email: string; status: "sent" | "accepted" | "declined" | "expired"; date: string}[]>([
-    { id: "inv1", email: "pending-worker@example.com", status: "sent", date: "2 hours ago" },
-    { id: "inv2", email: "another-one@example.com", status: "expired", date: "1 day ago" },
-    { id: "inv3", email: "accepted-user@example.com", status: "accepted", date: "3 days ago" },
-    { id: "inv4", email: "declined-user@example.com", status: "declined", date: "2 days ago" },
+  const [invites, setInvites] = useState<{id: string; email: string; date: string}[]>([
+    { id: "inv1", email: "pending-worker@example.com", date: "2 hours ago" },
+    { id: "inv2", email: "another-one@example.com", date: "1 day ago" },
   ]);
-  const [inviteFilter, setInviteFilter] = useState<"all" | "sent" | "accepted" | "declined" | "expired">("all");
 
   // Roster of members already added to other groups / trader profile
   const existingRoster = Object.entries(mockGroups)
