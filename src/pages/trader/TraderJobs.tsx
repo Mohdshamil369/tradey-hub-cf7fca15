@@ -792,7 +792,7 @@ const TraderJobs = () => {
     upcoming: { label: "Upcoming", className: "bg-blue-500/10 text-blue-600" },
     in_progress: { label: "In Progress", className: "bg-primary/10 text-primary" },
     completed: { label: "Completed", className: "bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)]" },
-    cancelled: { label: "Cancelled", className: "bg-destructive/10 text-destructive" },
+    cancelled: { label: "Revoked", className: "bg-destructive/10 text-destructive" },
   };
 
   /** Resolve current workflow stage for a committed job (sessionStorage override → demo seed). */

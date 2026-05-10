@@ -358,11 +358,11 @@ const GroupDetail = () => {
                       <button
                         onClick={() => {
                           setInvites(prev => prev.filter(i => i.id !== inv.id));
-                          toast("Invite cancelled");
+                          toast("Invite revoked");
                         }}
                         className="rounded-lg border border-destructive/20 bg-destructive/5 px-2.5 py-1 text-[10px] font-bold text-destructive active:opacity-70 transition-all"
                       >
-                        Cancel
+                        Revoke
                       </button>
                     </div>
                   </div>

@@ -68,7 +68,7 @@ const StageJobCard = ({ job, stage, category, onClick, onCta, onReassign, onAssi
     <div className={`rounded-2xl bg-card border border-border card-shadow overflow-hidden ${job.cancelled ? "opacity-75" : ""}`}>
       {job.cancelled && (
         <div className="bg-destructive/10 text-destructive px-3.5 py-1.5 text-[10px] font-bold border-b border-destructive/20">
-          Cancelled
+          Revoked
         </div>
       )}
       {/* Header — clickable to open detail */}

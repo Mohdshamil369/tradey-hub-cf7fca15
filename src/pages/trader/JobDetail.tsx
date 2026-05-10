@@ -1411,7 +1411,7 @@ const JobDetail = () => {
               { icon: FileText,  label: "Extend / revise estimate", desc: "Send an updated quote to the customer", action: () => { setShowMoreActions(false); setShowQuoteSheet(true); } },
               { icon: Calendar,  label: "Reschedule",               desc: "Pick a new time window with the customer", action: () => { setShowMoreActions(false); toast.info("Reschedule — coming soon"); } },
               { icon: ClipboardList, label: "Request more info",     desc: "Ask the customer for photos or details",   action: () => { setShowMoreActions(false); toast.success("Request sent to customer"); } },
-              { icon: Ban,       label: "Cancel job",                desc: "End this engagement (may incur penalty)",  action: () => { setShowMoreActions(false); toast("Cancellation flow — confirm in settings"); }, danger: true },
+              { icon: Ban,       label: "Revoke job",                desc: "End this engagement (may incur penalty)",  action: () => { setShowMoreActions(false); toast("Job revocation flow — confirm in settings"); }, danger: true },
             ].map((a) => (
               <button
                 key={a.label}
