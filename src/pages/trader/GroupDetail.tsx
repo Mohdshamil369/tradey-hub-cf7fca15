@@ -88,13 +88,10 @@ const GroupDetail = () => {
   const [pickedIds, setPickedIds] = useState<string[]>([]);
   const [pickSearch, setPickSearch] = useState("");
   const [members, setMembers] = useState(group.members);
-  const [invites, setInvites] = useState<{id: string; email: string; status: "sent" | "accepted" | "declined" | "expired"; date: string}[]>([
-    { id: "inv1", email: "pending-worker@example.com", status: "sent", date: "2 hours ago" },
-    { id: "inv2", email: "another-one@example.com", status: "expired", date: "1 day ago" },
-    { id: "inv3", email: "accepted-user@example.com", status: "accepted", date: "3 days ago" },
-    { id: "inv4", email: "declined-user@example.com", status: "declined", date: "2 days ago" },
+  const [invites, setInvites] = useState<{id: string; email: string; date: string}[]>([
+    { id: "inv1", email: "pending-worker@example.com", date: "2 hours ago" },
+    { id: "inv2", email: "another-one@example.com", date: "1 day ago" },
   ]);
-  const [inviteFilter, setInviteFilter] = useState<"all" | "sent" | "accepted" | "declined" | "expired">("all");
 
   // Roster of members already added to other groups / trader profile
   const existingRoster = Object.entries(mockGroups)
@@ -158,14 +155,13 @@ const GroupDetail = () => {
       return;
     }
     // Check for duplicate
-    if (invites.some(inv => inv.email.toLowerCase() === inviteEmail.toLowerCase() && inv.status === "sent")) {
+    if (invites.some(inv => inv.email.toLowerCase() === inviteEmail.toLowerCase())) {
       toast.error("An invite is already pending for this email");
       return;
     }
     const newInvite = {
       id: `inv-${Date.now()}`,
       email: inviteEmail,
-      status: "sent" as const,
       date: "Just now"
     };
     setInvites([newInvite, ...invites]);
@@ -173,21 +169,7 @@ const GroupDetail = () => {
     toast.success(`Invite sent to ${inviteEmail}`);
   };
 
-  const resendInvite = (invId: string) => {
-    setInvites(prev => prev.map(inv => 
-      inv.id === invId ? { ...inv, status: "sent" as const, date: "Just now" } : inv
-    ));
-    toast.success("Invite resent");
-  };
-
-  const pendingCount = invites.filter(i => i.status === "sent").length;
-
-  const inviteStatusConfig: Record<string, { bg: string; dot: string; label: string }> = {
-    sent: { bg: "bg-amber-500/10 text-amber-600", dot: "bg-amber-500", label: "Pending" },
-    accepted: { bg: "bg-emerald-500/10 text-emerald-600", dot: "bg-emerald-500", label: "Accepted" },
-    declined: { bg: "bg-red-500/10 text-red-600", dot: "bg-red-500", label: "Declined" },
-    expired: { bg: "bg-muted text-muted-foreground", dot: "bg-muted-foreground", label: "Expired" },
-  };
+  const pendingCount = invites.length;
 
   const deleteMember = (memberId: string) => {
     const member = members.find((m) => m.id === memberId);
@@ -357,67 +339,34 @@ const GroupDetail = () => {
                   </div>
                   <p className="text-[10px] text-muted-foreground">{invites.length} total</p>
                 </div>
-                {invites.map((inv) => {
-                  const cfg = inviteStatusConfig[inv.status];
-                  return (
-                    <div key={inv.id} className={`rounded-2xl border p-3.5 transition-all ${
-                      inv.status === "sent" ? "bg-amber-500/[0.03] border-amber-500/20" :
-                      inv.status === "accepted" ? "bg-emerald-500/[0.03] border-emerald-500/20" :
-                      inv.status === "declined" ? "bg-red-500/[0.03] border-red-500/20" :
-                      "bg-muted/30 border-dashed border-border"
-                    }`}>
-                      <div className="flex items-center gap-3">
-                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                          inv.status === "sent" ? "bg-amber-500/10" :
-                          inv.status === "accepted" ? "bg-emerald-500/10" :
-                          inv.status === "declined" ? "bg-red-500/10" :
-                          "bg-muted"
-                        }`}>
-                          <Mail className={`h-4 w-4 ${
-                            inv.status === "sent" ? "text-amber-600" :
-                            inv.status === "accepted" ? "text-emerald-600" :
-                            inv.status === "declined" ? "text-red-600" :
-                            "text-muted-foreground"
-                          }`} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-bold text-foreground truncate">{inv.email}</p>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${cfg.bg}`}>
-                              <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
-                              {cfg.label}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground">· {inv.date}</span>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-1.5 shrink-0">
-                          {inv.status === "sent" && (
-                            <button 
-                              onClick={() => {
-                                setInvites(prev => prev.filter(i => i.id !== inv.id));
-                                toast("Invite cancelled");
-                              }}
-                              className="rounded-lg border border-destructive/20 bg-destructive/5 px-2.5 py-1 text-[10px] font-bold text-destructive active:opacity-70 transition-all"
-                            >
-                              Cancel
-                            </button>
-                          )}
-                          {(inv.status === "expired" || inv.status === "declined") && (
-                            <button 
-                              onClick={() => resendInvite(inv.id)}
-                              className="rounded-lg border border-primary/20 bg-primary/5 px-2.5 py-1 text-[10px] font-bold text-primary active:opacity-70 transition-all"
-                            >
-                              Resend
-                            </button>
-                          )}
-                          {inv.status === "accepted" && (
-                            <span className="text-[10px] font-semibold text-emerald-600">✓ Joined</span>
-                          )}
+                {invites.map((inv) => (
+                  <div key={inv.id} className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.03] p-3.5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10">
+                        <Mail className="h-4 w-4 text-amber-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-bold text-foreground truncate">{inv.email}</p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-bold text-amber-600">
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                            Invite sent
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">· {inv.date}</span>
                         </div>
                       </div>
+                      <button
+                        onClick={() => {
+                          setInvites(prev => prev.filter(i => i.id !== inv.id));
+                          toast("Invite cancelled");
+                        }}
+                        className="rounded-lg border border-destructive/20 bg-destructive/5 px-2.5 py-1 text-[10px] font-bold text-destructive active:opacity-70 transition-all"
+                      >
+                        Cancel
+                      </button>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             )}
 
@@ -461,58 +410,23 @@ const GroupDetail = () => {
                       </div>
                     </div>
 
-                    {/* Past invites history inside drawer */}
+                    {/* Pending invites list */}
                     {invites.length > 0 && (
                       <div className="flex flex-col gap-2">
-                        <div className="flex items-center justify-between">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Invite History</p>
-                          <p className="text-[10px] text-muted-foreground">{invites.length} total · {pendingCount} pending</p>
-                        </div>
-                        <div className="flex gap-1.5 flex-wrap">
-                          {(["all", "sent", "accepted", "declined", "expired"] as const).map((f) => (
-                            <button
-                              key={f}
-                              onClick={() => setInviteFilter(f)}
-                              className={`rounded-full px-2.5 py-1 text-[10px] font-bold transition-colors ${
-                                inviteFilter === f ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                              }`}
-                            >
-                              {f === "all" ? "All" : inviteStatusConfig[f].label}
-                              <span className="ml-1 opacity-70">
-                                {f === "all" ? invites.length : invites.filter(i => i.status === f).length}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Pending Invites ({invites.length})</p>
                         <div className="flex flex-col gap-1.5 max-h-[240px] overflow-y-auto">
-                          {invites
-                            .filter(inv => inviteFilter === "all" || inv.status === inviteFilter)
-                            .map((inv) => {
-                              const cfg = inviteStatusConfig[inv.status];
-                              return (
-                                <div key={inv.id} className="flex items-center gap-2.5 rounded-xl border border-border/50 bg-card p-2.5">
-                                  <span className={`flex h-2 w-2 shrink-0 rounded-full ${cfg.dot}`} />
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-[11px] font-semibold text-foreground truncate">{inv.email}</p>
-                                    <p className="text-[9px] text-muted-foreground">Sent {inv.date}</p>
-                                  </div>
-                                  <span className={`rounded-full px-1.5 py-0.5 text-[8px] font-bold ${cfg.bg}`}>
-                                    {cfg.label}
-                                  </span>
-                                  {(inv.status === "expired" || inv.status === "declined") && (
-                                    <button
-                                      onClick={() => resendInvite(inv.id)}
-                                      className="rounded-md bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary"
-                                    >
-                                      Resend
-                                    </button>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          {invites.filter(inv => inviteFilter === "all" || inv.status === inviteFilter).length === 0 && (
-                            <p className="text-center text-[11px] text-muted-foreground py-4">No {inviteFilter} invites</p>
-                          )}
+                          {invites.map((inv) => (
+                            <div key={inv.id} className="flex items-center gap-2.5 rounded-xl border border-border/50 bg-card p-2.5">
+                              <span className="flex h-2 w-2 shrink-0 rounded-full bg-amber-500" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[11px] font-semibold text-foreground truncate">{inv.email}</p>
+                                <p className="text-[9px] text-muted-foreground">Sent {inv.date}</p>
+                              </div>
+                              <span className="rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[8px] font-bold text-amber-600">
+                                Invite sent
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
