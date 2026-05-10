@@ -40,6 +40,7 @@ const PurchaseListTab = ({
   onAddItemsClick,
   viewerRole = "admin",
 }: PurchaseListTabProps) => {
+  const [expandedBatches, setExpandedBatches] = useState<Record<string, boolean>>({});
   const purchased = items.filter((i) => isPurchased(i.status)).length;
   const total = items.length;
   const progress = total === 0 ? 0 : Math.round((purchased / total) * 100);
