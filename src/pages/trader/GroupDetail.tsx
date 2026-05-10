@@ -410,58 +410,23 @@ const GroupDetail = () => {
                       </div>
                     </div>
 
-                    {/* Past invites history inside drawer */}
+                    {/* Pending invites list */}
                     {invites.length > 0 && (
                       <div className="flex flex-col gap-2">
-                        <div className="flex items-center justify-between">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Invite History</p>
-                          <p className="text-[10px] text-muted-foreground">{invites.length} total · {pendingCount} pending</p>
-                        </div>
-                        <div className="flex gap-1.5 flex-wrap">
-                          {(["all", "sent", "accepted", "declined", "expired"] as const).map((f) => (
-                            <button
-                              key={f}
-                              onClick={() => setInviteFilter(f)}
-                              className={`rounded-full px-2.5 py-1 text-[10px] font-bold transition-colors ${
-                                inviteFilter === f ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                              }`}
-                            >
-                              {f === "all" ? "All" : inviteStatusConfig[f].label}
-                              <span className="ml-1 opacity-70">
-                                {f === "all" ? invites.length : invites.filter(i => i.status === f).length}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Pending Invites ({invites.length})</p>
                         <div className="flex flex-col gap-1.5 max-h-[240px] overflow-y-auto">
-                          {invites
-                            .filter(inv => inviteFilter === "all" || inv.status === inviteFilter)
-                            .map((inv) => {
-                              const cfg = inviteStatusConfig[inv.status];
-                              return (
-                                <div key={inv.id} className="flex items-center gap-2.5 rounded-xl border border-border/50 bg-card p-2.5">
-                                  <span className={`flex h-2 w-2 shrink-0 rounded-full ${cfg.dot}`} />
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-[11px] font-semibold text-foreground truncate">{inv.email}</p>
-                                    <p className="text-[9px] text-muted-foreground">Sent {inv.date}</p>
-                                  </div>
-                                  <span className={`rounded-full px-1.5 py-0.5 text-[8px] font-bold ${cfg.bg}`}>
-                                    {cfg.label}
-                                  </span>
-                                  {(inv.status === "expired" || inv.status === "declined") && (
-                                    <button
-                                      onClick={() => resendInvite(inv.id)}
-                                      className="rounded-md bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary"
-                                    >
-                                      Resend
-                                    </button>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          {invites.filter(inv => inviteFilter === "all" || inv.status === inviteFilter).length === 0 && (
-                            <p className="text-center text-[11px] text-muted-foreground py-4">No {inviteFilter} invites</p>
-                          )}
+                          {invites.map((inv) => (
+                            <div key={inv.id} className="flex items-center gap-2.5 rounded-xl border border-border/50 bg-card p-2.5">
+                              <span className="flex h-2 w-2 shrink-0 rounded-full bg-amber-500" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[11px] font-semibold text-foreground truncate">{inv.email}</p>
+                                <p className="text-[9px] text-muted-foreground">Sent {inv.date}</p>
+                              </div>
+                              <span className="rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[8px] font-bold text-amber-600">
+                                Invite sent
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
