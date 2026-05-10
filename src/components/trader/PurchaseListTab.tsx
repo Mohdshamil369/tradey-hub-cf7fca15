@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { CheckCircle2, ShoppingCart, User, UserCog, AlertCircle, Clock, ArrowRightLeft, Plus, FileText } from "lucide-react";
+import { useMemo, useState } from "react";
+import { CheckCircle2, ShoppingCart, User, UserCog, AlertCircle, Clock, ArrowRightLeft, Plus, FileText, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import type { PurchaseItem, PurchaseItemStatus, PurchaseBatch } from "@/data/jobWorkflowState";
 
