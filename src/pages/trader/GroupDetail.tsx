@@ -94,6 +94,7 @@ const GroupDetail = () => {
     { id: "inv3", email: "accepted-user@example.com", status: "accepted", date: "3 days ago" },
     { id: "inv4", email: "declined-user@example.com", status: "declined", date: "2 days ago" },
   ]);
+  const [inviteFilter, setInviteFilter] = useState<"all" | "sent" | "accepted" | "declined" | "expired">("all");
 
   // Roster of members already added to other groups / trader profile
   const existingRoster = Object.entries(mockGroups)
