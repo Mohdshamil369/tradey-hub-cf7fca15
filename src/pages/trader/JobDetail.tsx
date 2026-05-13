@@ -9,7 +9,7 @@ import {
   Image, Mic, ClipboardList, Package, Wrench, Ban, RotateCcw, Plus, Sparkles,
   Camera, Calendar, User, Users, Briefcase, Heart, Share2, CheckCircle2,
   Image as ImageIcon, MoreHorizontal, PoundSterling, FolderOpen,
-  PlayCircle, Truck, UserCog,
+  PlayCircle, Truck, UserCog, Download, List, FileDown,
 } from "lucide-react";
 import Avatar from "boring-avatars";
 import { toast } from "sonner";
