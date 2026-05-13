@@ -689,7 +689,7 @@ const JobDetail = () => {
               {batches.map((b, idx) => (
                 <button
                   key={b.id}
-                  onClick={() => setPdfQuoteId(b.id)}
+                  onClick={() => setPdfQuote(b)}
                   className={`w-full grid grid-cols-[1fr_auto_auto] gap-2 items-center px-3 py-2.5 text-left active:bg-muted/40 transition-colors ${
                     idx !== batches.length - 1 ? "border-b border-border/20" : ""
                   }`}
@@ -720,7 +720,7 @@ const JobDetail = () => {
               {batches.map((b) => (
                 <button
                   key={b.id}
-                  onClick={() => setPdfQuoteId(b.id)}
+                  onClick={() => setPdfQuote(b)}
                   className="group rounded-xl border border-border/40 bg-card overflow-hidden active:scale-[0.98] transition-all"
                 >
                   <div className="relative aspect-[3/4] bg-gradient-to-br from-muted/40 to-muted/10 p-2 flex flex-col">
