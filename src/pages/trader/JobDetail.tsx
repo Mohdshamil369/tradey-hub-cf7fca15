@@ -1664,7 +1664,132 @@ const JobDetail = () => {
         onSend={() => { toast.success("Invoice sent to customer!"); setShowInvoiceSheet(false); }}
       />
 
-    </MobileLayout>
+      {/* Quote PDF Viewer */}
+      <Sheet open={!!pdfQuote} onOpenChange={(o) => !o && setPdfQuote(null)}>
+        <SheetContent side="bottom" className="absolute h-[88%] rounded-t-3xl p-0 flex flex-col">
+          {pdfQuote && (() => {
+            const matsTotal = pdfQuote.materials.reduce((s, m) => s + m.quantity * m.unitPrice, 0);
+            const labTotal = pdfQuote.labour.reduce((s, l) => s + l.count * l.hours * l.rate, 0);
+            const fileName = `${pdfQuote.label.replace(/\s+/g, "_")}_${job.id}.pdf`;
+            return (
+              <>
+                {/* PDF chrome header */}
+                <div className="px-4 pt-4 pb-3 border-b border-border/30 bg-muted/30">
+                  <div className="flex items-center gap-2">
+                    <div className="h-9 w-9 rounded-lg bg-destructive/10 flex items-center justify-center">
+                      <FileText className="h-4 w-4 text-destructive" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-bold text-foreground truncate">{fileName}</p>
+                      <p className="text-[10px] text-muted-foreground">PDF · {pdfQuote.sentAt}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* PDF page */}
+                <ScrollArea className="flex-1 bg-muted/20">
+                  <div className="p-3">
+                    <div className="bg-white rounded-md shadow-md mx-auto max-w-md p-5 text-[11px] text-[#1a1a1a]" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+                      <div className="flex items-start justify-between border-b border-gray-200 pb-3 mb-3">
+                        <div>
+                          <p className="text-[16px] font-extrabold tracking-tight">QUOTE</p>
+                          <p className="text-[9px] text-gray-500 uppercase tracking-wider">{pdfQuote.label}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[9px] text-gray-500">Date</p>
+                          <p className="text-[10px] font-semibold">{pdfQuote.sentAt}</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div>
+                          <p className="text-[8px] uppercase tracking-wider text-gray-400">Bill To</p>
+                          <p className="text-[10px] font-semibold mt-0.5">{job.customer.name}</p>
+                        </div>
+                        <div>
+                          <p className="text-[8px] uppercase tracking-wider text-gray-400">Job</p>
+                          <p className="text-[10px] font-semibold mt-0.5 truncate">{job.title}</p>
+                        </div>
+                      </div>
+
+                      {pdfQuote.materials.length > 0 && (
+                        <>
+                          <p className="text-[9px] font-bold uppercase tracking-wider text-gray-500 border-b border-gray-200 pb-1 mb-1.5">Materials</p>
+                          <table className="w-full mb-3">
+                            <tbody>
+                              {pdfQuote.materials.map((m, i) => (
+                                <tr key={i} className="border-b border-gray-100">
+                                  <td className="py-1 text-[10px]">{m.description}</td>
+                                  <td className="py-1 text-[10px] text-gray-500 text-right whitespace-nowrap">{m.quantity} × £{m.unitPrice.toFixed(2)}</td>
+                                  <td className="py-1 text-[10px] font-semibold text-right whitespace-nowrap pl-2">£{(m.quantity * m.unitPrice).toFixed(2)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </>
+                      )}
+
+                      {pdfQuote.labour.length > 0 && (
+                        <>
+                          <p className="text-[9px] font-bold uppercase tracking-wider text-gray-500 border-b border-gray-200 pb-1 mb-1.5">Labour</p>
+                          <table className="w-full mb-3">
+                            <tbody>
+                              {pdfQuote.labour.map((l, i) => (
+                                <tr key={i} className="border-b border-gray-100">
+                                  <td className="py-1 text-[10px]">{l.role}</td>
+                                  <td className="py-1 text-[10px] text-gray-500 text-right whitespace-nowrap">{l.count}× {l.hours}h @ £{l.rate}/hr</td>
+                                  <td className="py-1 text-[10px] font-semibold text-right whitespace-nowrap pl-2">£{(l.count * l.hours * l.rate).toFixed(2)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </>
+                      )}
+
+                      <div className="border-t-2 border-gray-900 pt-2 mt-3 space-y-1">
+                        <div className="flex justify-between text-[10px] text-gray-600">
+                          <span>Materials</span><span>£{matsTotal.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-[10px] text-gray-600">
+                          <span>Labour</span><span>£{labTotal.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-[13px] font-extrabold pt-1 border-t border-gray-200">
+                          <span>TOTAL</span><span>£{pdfQuote.total.toFixed(2)}</span>
+                        </div>
+                      </div>
+
+                      {pdfQuote.note && (
+                        <div className="mt-3 pt-2 border-t border-gray-200">
+                          <p className="text-[8px] uppercase tracking-wider text-gray-400">Notes</p>
+                          <p className="text-[10px] mt-1 text-gray-700">{pdfQuote.note}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </ScrollArea>
+
+                {/* Action bar */}
+                <div className="border-t border-border/30 p-3 flex gap-2 bg-background">
+                  <button
+                    onClick={() => toast.success("Share sheet opened")}
+                    className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card py-2.5 text-[11px] font-bold text-foreground active:scale-[0.98] transition-all"
+                  >
+                    <Share2 className="h-3.5 w-3.5" /> Share
+                  </button>
+                  <button
+                    onClick={() => toast.success(`${fileName} downloaded`)}
+                    className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-primary py-2.5 text-[11px] font-bold text-primary-foreground active:scale-[0.98] transition-all"
+                  >
+                    <Download className="h-3.5 w-3.5" /> Download
+                  </button>
+                </div>
+              </>
+            );
+          })()}
+        </SheetContent>
+      </Sheet>
+
+
   );
 };
 
