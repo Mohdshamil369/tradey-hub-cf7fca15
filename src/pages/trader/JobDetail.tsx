@@ -587,140 +587,177 @@ const JobDetail = () => {
   const renderQuotesTab = () => {
     if (job.quote) {
       const q = job.quote;
-      const materialsTotal = q.materials ? q.materials.reduce((sum, m) => sum + m.quantity * m.unitPrice, 0) : 0;
-      const labourTotal = (q.labourHours ?? 0) * (q.labourRate ?? 0);
-      const isPending = q.status === "pending";
-      const isWithdrawable = q.status === "pending" || q.status === "accepted";
+      const baseMaterials = q.materials ?? [];
+      const baseLabour = q.labourTypes ?? (q.labourHours ? [{ role: "Labour", count: 1, hours: q.labourHours, rate: q.labourRate ?? 0 }] : []);
+
+      // Build batches: prefer workflow.purchaseBatches when present, else single from job.quote.
+      type QBatch = {
+        id: string;
+        label: string;
+        sentAt: string;
+        total: number;
+        status: "pending" | "accepted" | "declined" | "expired";
+        materials: { description: string; quantity: number; unitPrice: number }[];
+        labour: { role: string; count: number; hours: number; rate: number }[];
+        note?: string;
+      };
+
+      const wfBatches = workflow.purchaseBatches ?? [];
+      const batches: QBatch[] = wfBatches.length > 0
+        ? wfBatches.map((b, i) => {
+            const isLatest = i === wfBatches.length - 1;
+            const mats = workflow.purchaseItems
+              .filter(it => it.batchId === b.id)
+              .map(it => ({ description: it.name, quantity: it.quantity, unitPrice: it.expectedPrice }));
+            return {
+              id: b.id,
+              label: b.label,
+              sentAt: new Date(b.createdAt).toLocaleDateString(),
+              total: b.total ?? (mats.reduce((s, m) => s + m.quantity * m.unitPrice, 0) + baseLabour.reduce((s, l) => s + l.count * l.hours * l.rate, 0)),
+              status: isLatest ? q.status : "accepted",
+              materials: mats.length ? mats : baseMaterials,
+              labour: isLatest ? baseLabour : [],
+              note: b.note,
+            };
+          })
+        : [{
+            id: "q1",
+            label: "Initial Quote",
+            sentAt: q.sentAt,
+            total: q.total,
+            status: q.status,
+            materials: baseMaterials,
+            labour: baseLabour,
+          }];
+
+      const statusBadge = (s: QBatch["status"]) => {
+        const map = {
+          pending: { bg: "bg-[hsl(25,90%,55%)]/10", text: "text-[hsl(25,90%,55%)]", label: "Awaiting" },
+          accepted: { bg: "bg-[hsl(142,70%,45%)]/10", text: "text-[hsl(142,70%,45%)]", label: "Accepted" },
+          declined: { bg: "bg-destructive/10", text: "text-destructive", label: "Declined" },
+          expired: { bg: "bg-muted", text: "text-muted-foreground", label: "Expired" },
+        }[s];
+        return (
+          <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${map.bg} ${map.text}`}>
+            {map.label}
+          </span>
+        );
+      };
 
       return (
-        <div className="flex flex-col gap-4 pb-4">
-          {/* Status Banner */}
-          <div className={`rounded-xl p-4 border ${
-            q.status === "pending" ? "bg-[hsl(25,90%,55%)]/5 border-[hsl(25,90%,55%)]/20" :
-            q.status === "accepted" ? "bg-[hsl(142,70%,45%)]/5 border-[hsl(142,70%,45%)]/20" :
-            q.status === "declined" ? "bg-destructive/5 border-destructive/20" :
-            "bg-muted/50 border-border"
-          }`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[9px] font-bold uppercase tracking-[2px] text-muted-foreground">Quote Status</p>
-                <p className={`mt-1 text-sm font-bold ${
-                  q.status === "pending" ? "text-[hsl(25,90%,55%)]" :
-                  q.status === "accepted" ? "text-[hsl(142,70%,45%)]" :
-                  q.status === "declined" ? "text-destructive" :
-                  "text-muted-foreground"
-                }`}>
-                  {q.status === "pending" ? "Awaiting Response" : q.status === "accepted" ? "Accepted" : q.status === "declined" ? "Declined" : "Expired"}
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">Sent {q.sentAt}</p>
-              </div>
-              <p className="text-2xl font-extrabold text-foreground">£{q.total.toFixed(0)}</p>
+        <div className="flex flex-col gap-3 pb-4">
+          {/* View toggle */}
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-bold text-foreground">Sent Quotes ({batches.length})</p>
+              <p className="text-[9px] text-muted-foreground">Tap a quote to view details</p>
+            </div>
+            <div className="inline-flex rounded-full bg-muted p-0.5">
+              <button
+                onClick={() => setQuoteView("compact")}
+                className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold transition-all ${
+                  quoteView === "compact" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                }`}
+              >
+                <List className="h-3 w-3" /> List
+              </button>
+              <button
+                onClick={() => setQuoteView("pdf")}
+                className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold transition-all ${
+                  quoteView === "pdf" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                }`}
+              >
+                <FileText className="h-3 w-3" /> PDF
+              </button>
             </div>
           </div>
 
-          {/* Materials */}
-          <div>
-            <div className="flex items-center gap-1.5 mb-2 px-1">
-              <Package className="h-3.5 w-3.5 text-primary" />
-              <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground">Materials ({q.materialsCount})</h3>
+          {quoteView === "compact" ? (
+            /* Compact invoice-print style list */
+            <div className="rounded-xl border border-border/40 bg-card overflow-hidden">
+              <div className="grid grid-cols-[1fr_auto_auto] gap-2 px-3 py-2 bg-muted/30 border-b border-border/30">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Quote</span>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Status</span>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground text-right">Total</span>
+              </div>
+              {batches.map((b, idx) => (
+                <button
+                  key={b.id}
+                  onClick={() => setPdfQuoteId(b.id)}
+                  className={`w-full grid grid-cols-[1fr_auto_auto] gap-2 items-center px-3 py-2.5 text-left active:bg-muted/40 transition-colors ${
+                    idx !== batches.length - 1 ? "border-b border-border/20" : ""
+                  }`}
+                >
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold text-foreground truncate">{b.label}</p>
+                    <p className="text-[9px] text-muted-foreground">
+                      {b.sentAt} · {b.materials.length} mat · {b.labour.length} lab
+                    </p>
+                  </div>
+                  {statusBadge(b.status)}
+                  <div className="flex items-center gap-1">
+                    <span className="text-[12px] font-extrabold text-foreground">£{b.total.toFixed(0)}</span>
+                    <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                  </div>
+                </button>
+              ))}
+              <div className="grid grid-cols-[1fr_auto] gap-2 px-3 py-2 bg-primary/5 border-t border-border/30">
+                <span className="text-[10px] font-bold text-foreground">Combined Total</span>
+                <span className="text-[12px] font-extrabold text-primary">
+                  £{batches.reduce((s, b) => s + b.total, 0).toFixed(2)}
+                </span>
+              </div>
             </div>
-            {q.materials && q.materials.length > 0 ? (
-              <div className="flex flex-col gap-1.5">
-                {q.materials.map((item, idx) => (
-                  <div key={idx} className="rounded-xl border border-border/30 bg-card px-3 py-2.5">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-[11px] font-semibold text-foreground">{item.description || `Item ${idx + 1}`}</p>
-                        <p className="text-[10px] text-muted-foreground">{item.quantity} × £{item.unitPrice.toFixed(2)}</p>
-                      </div>
-                      <p className="text-[12px] font-bold text-foreground">£{(item.quantity * item.unitPrice).toFixed(2)}</p>
+          ) : (
+            /* PDF cards view */
+            <div className="grid grid-cols-2 gap-2.5">
+              {batches.map((b) => (
+                <button
+                  key={b.id}
+                  onClick={() => setPdfQuoteId(b.id)}
+                  className="group rounded-xl border border-border/40 bg-card overflow-hidden active:scale-[0.98] transition-all"
+                >
+                  <div className="relative aspect-[3/4] bg-gradient-to-br from-muted/40 to-muted/10 p-2 flex flex-col">
+                    <div className="absolute top-1.5 right-1.5">{statusBadge(b.status)}</div>
+                    <div className="flex-1 flex flex-col items-center justify-center gap-1.5">
+                      <FileText className="h-7 w-7 text-primary/60" />
+                      <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">PDF</p>
+                    </div>
+                    {/* Faux page lines */}
+                    <div className="space-y-1">
+                      {[...Array(4)].map((_, i) => (
+                        <div key={i} className="h-0.5 bg-border/40 rounded-full" style={{ width: `${100 - i * 12}%` }} />
+                      ))}
                     </div>
                   </div>
-                ))}
-                <div className="flex items-center justify-between px-3 py-1.5">
-                  <p className="text-[10px] text-muted-foreground">Subtotal</p>
-                  <p className="text-[12px] font-bold text-foreground">£{materialsTotal.toFixed(2)}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-xl border border-dashed border-border/30 bg-muted/10 p-3 text-center">
-                <p className="text-[10px] text-muted-foreground">{q.materialsCount} items included</p>
-              </div>
-            )}
-          </div>
-
-          {/* Labour */}
-          <div>
-            <div className="flex items-center gap-1.5 mb-2 px-1">
-              <Wrench className="h-3.5 w-3.5 text-primary" />
-              <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground">Labour</h3>
-            </div>
-            {q.labourTypes && q.labourTypes.length > 0 ? (
-              <div className="flex flex-col gap-1.5">
-                {q.labourTypes.map((line, index) => (
-                  <div key={index} className="rounded-xl border border-border/30 bg-card px-3 py-2.5">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-[11px] font-semibold text-foreground">{line.role}</p>
-                        <p className="text-[10px] text-muted-foreground">{line.count}× {line.hours}h @ £{line.rate}/hr</p>
-                      </div>
-                      <p className="text-[12px] font-bold text-foreground">£{(line.count * line.hours * line.rate).toFixed(2)}</p>
+                  <div className="px-2.5 py-2 border-t border-border/30">
+                    <p className="text-[10px] font-bold text-foreground truncate">{b.label}</p>
+                    <div className="flex items-center justify-between mt-0.5">
+                      <span className="text-[9px] text-muted-foreground">{b.sentAt}</span>
+                      <span className="text-[10px] font-extrabold text-primary">£{b.total.toFixed(0)}</span>
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-xl border border-border/30 bg-card px-3 py-2.5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[11px] font-semibold text-foreground">Labour</p>
-                    <p className="text-[10px] text-muted-foreground">{q.labourHours ?? 0}h @ £{q.labourRate ?? 0}/hr</p>
-                  </div>
-                  <p className="text-[12px] font-bold text-foreground">£{labourTotal.toFixed(2)}</p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Total */}
-          <div className="rounded-xl bg-primary/5 border border-primary/10 p-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-foreground">Total Quote</span>
-              <span className="text-xl font-extrabold text-primary">£{q.total.toFixed(2)}</span>
-            </div>
-          </div>
-
-          {q.assignedTo && typeof q.assignedTo === "object" && "name" in q.assignedTo && (
-            <div className="rounded-xl border border-border/30 bg-card px-3 py-2.5">
-              <p className="text-[9px] font-bold uppercase tracking-[2px] text-muted-foreground mb-1">Assigned To</p>
-              <p className="text-[11px] font-semibold text-foreground">{(q.assignedTo as any).name}</p>
-              <p className="text-[10px] text-muted-foreground">{(q.assignedTo as any).type} • {(q.assignedTo as any).memberCount} members</p>
-            </div>
-          )}
-
-          {q.message && (
-            <div className="rounded-xl border border-border/30 bg-card px-3 py-2.5">
-              <p className="text-[9px] font-bold uppercase tracking-[2px] text-muted-foreground mb-1">Notes</p>
-              <p className="text-[11px] text-foreground leading-relaxed">{q.message}</p>
+                </button>
+              ))}
             </div>
           )}
 
           {/* CTAs */}
           <div className="flex flex-col gap-2 mt-1">
-            {isWithdrawable && (
-              <button
-                onClick={() => { toast("Quote withdrawn"); navigate("/trader/jobs"); }}
-                className="flex items-center justify-center gap-2 rounded-xl border border-destructive/30 bg-destructive/5 py-3 text-[12px] font-bold text-destructive active:scale-[0.98] transition-all"
-              >
-                <Ban className="h-3.5 w-3.5" /> Withdraw Quote
-              </button>
-            )}
             <button
               onClick={() => setShowQuoteSheet(true)}
               className="flex items-center justify-center gap-2 rounded-xl bg-primary py-3 text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
             >
-              <Plus className="h-3.5 w-3.5" /> Create New Quote
+              <Plus className="h-3.5 w-3.5" /> Send Another Quote
             </button>
+            {(q.status === "pending" || q.status === "accepted") && (
+              <button
+                onClick={() => { toast("Latest quote withdrawn"); navigate("/trader/jobs"); }}
+                className="flex items-center justify-center gap-2 rounded-xl border border-destructive/30 bg-destructive/5 py-2.5 text-[11px] font-bold text-destructive active:scale-[0.98] transition-all"
+              >
+                <Ban className="h-3 w-3" /> Withdraw Latest
+              </button>
+            )}
           </div>
         </div>
       );
