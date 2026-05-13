@@ -126,7 +126,13 @@ const JobDetail = () => {
   const [triggerNewNote, setTriggerNewNote] = useState(0);
   const [triggerNewSubtask, setTriggerNewSubtask] = useState(0);
   const [quoteView, setQuoteView] = useState<"compact" | "pdf">("compact");
-  const [pdfQuoteId, setPdfQuoteId] = useState<string | null>(null);
+  const [pdfQuote, setPdfQuote] = useState<{
+    id: string; label: string; sentAt: string; total: number;
+    status: "pending" | "accepted" | "declined" | "expired";
+    materials: { description: string; quantity: number; unitPrice: number }[];
+    labour: { role: string; count: number; hours: number; rate: number }[];
+    note?: string;
+  } | null>(null);
 
   // ── Workflow State ──
   const [workflow, setWorkflow] = useState<JobWorkflowState>(() => {
