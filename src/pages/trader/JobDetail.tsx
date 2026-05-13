@@ -125,6 +125,8 @@ const JobDetail = () => {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [triggerNewNote, setTriggerNewNote] = useState(0);
   const [triggerNewSubtask, setTriggerNewSubtask] = useState(0);
+  const [quoteView, setQuoteView] = useState<"compact" | "pdf">("compact");
+  const [pdfQuoteId, setPdfQuoteId] = useState<string | null>(null);
 
   // ── Workflow State ──
   const [workflow, setWorkflow] = useState<JobWorkflowState>(() => {
