@@ -1789,7 +1789,7 @@ const JobDetail = () => {
         </SheetContent>
       </Sheet>
 
-
+    </MobileLayout>
   );
 };
 
