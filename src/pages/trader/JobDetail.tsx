@@ -759,31 +759,106 @@ const JobDetail = () => {
     }
 
     return (
-      <div className="flex flex-col items-center justify-center py-12 gap-4">
-        <div className="h-14 w-14 rounded-2xl bg-accent flex items-center justify-center">
-          <FileText className="h-7 w-7 text-muted-foreground/50" />
+      <div className="flex flex-col gap-4 py-4">
+        <div className="flex flex-col items-center justify-center gap-3 pb-1">
+          <div className="h-14 w-14 rounded-2xl bg-accent flex items-center justify-center">
+            <FileText className="h-7 w-7 text-muted-foreground/50" />
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-bold text-foreground mb-1">
+              {job.category === "inspection" ? "Create Inspection Quote" : "Create an Estimate"}
+            </p>
+            <p className="text-[11px] text-muted-foreground max-w-[240px] mx-auto">
+              {job.category === "inspection"
+                ? "Set your inspection fee and add any material/labour costs after visiting the site."
+                : "Add materials, labour costs, and notes to send a detailed estimate to the customer."}
+            </p>
+          </div>
+          <button
+            onClick={() => setShowQuoteSheet(true)}
+            className={`mt-1 flex items-center gap-2 rounded-xl px-5 py-3 text-[12px] font-bold shadow-lg active:scale-[0.98] transition-all ${
+              job.category === "inspection"
+                ? "bg-[hsl(25,90%,55%)] text-white shadow-orange-500/20"
+                : "bg-primary text-primary-foreground shadow-primary/20"
+            }`}
+          >
+            <FileText className="h-4 w-4" />
+            {job.category === "inspection" ? "Create Inspection Quote" : "Create Estimate"}
+          </button>
         </div>
-        <div className="text-center">
-          <p className="text-sm font-bold text-foreground mb-1">
-            {job.category === "inspection" ? "Create Inspection Quote" : "Create an Estimate"}
-          </p>
-          <p className="text-[11px] text-muted-foreground max-w-[240px] mx-auto">
-            {job.category === "inspection"
-              ? "Set your inspection fee and add any material/labour costs after visiting the site."
-              : "Add materials, labour costs, and notes to send a detailed estimate to the customer."}
-          </p>
+
+        {/* Sample preview — shows how a quote will look */}
+        <div className="relative mt-2">
+          <div className="absolute -top-2.5 left-3 z-10 rounded-full bg-muted px-2 py-0.5 text-[9px] font-bold uppercase tracking-[1.5px] text-muted-foreground border border-border/40">
+            Preview · Sample
+          </div>
+          <div className="rounded-2xl border border-dashed border-border/60 bg-muted/10 p-3 space-y-3 opacity-90">
+            <div className="rounded-xl p-3 border bg-[hsl(25,90%,55%)]/5 border-[hsl(25,90%,55%)]/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-[2px] text-muted-foreground">Quote Status</p>
+                  <p className="mt-1 text-sm font-bold text-[hsl(25,90%,55%)]">Awaiting Response</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Sent just now</p>
+                </div>
+                <p className="text-2xl font-extrabold text-foreground">£420</p>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-1.5 mb-2 px-1">
+                <Package className="h-3.5 w-3.5 text-primary" />
+                <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground">Materials (2)</h3>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <div className="rounded-xl border border-border/30 bg-card px-3 py-2.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[11px] font-semibold text-foreground">Copper pipe (2m)</p>
+                      <p className="text-[10px] text-muted-foreground">3 × £18.00</p>
+                    </div>
+                    <p className="text-[12px] font-bold text-foreground">£54.00</p>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border/30 bg-card px-3 py-2.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[11px] font-semibold text-foreground">Mixer tap unit</p>
+                      <p className="text-[10px] text-muted-foreground">1 × £96.00</p>
+                    </div>
+                    <p className="text-[12px] font-bold text-foreground">£96.00</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-1.5 mb-2 px-1">
+                <Wrench className="h-3.5 w-3.5 text-primary" />
+                <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground">Labour</h3>
+              </div>
+              <div className="rounded-xl border border-border/30 bg-card px-3 py-2.5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] font-semibold text-foreground">Plumber</p>
+                    <p className="text-[10px] text-muted-foreground">6h @ £45/hr</p>
+                  </div>
+                  <p className="text-[12px] font-bold text-foreground">£270.00</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-primary/5 border border-primary/10 p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-bold text-foreground">Total Quote</span>
+                <span className="text-xl font-extrabold text-primary">£420.00</span>
+              </div>
+            </div>
+
+            <p className="text-center text-[10px] text-muted-foreground italic pt-1">
+              This is just a preview — your real quote will appear here once created.
+            </p>
+          </div>
         </div>
-        <button
-          onClick={() => setShowQuoteSheet(true)}
-          className={`mt-2 flex items-center gap-2 rounded-xl px-5 py-3 text-[12px] font-bold shadow-lg active:scale-[0.98] transition-all ${
-            job.category === "inspection"
-              ? "bg-[hsl(25,90%,55%)] text-white shadow-orange-500/20"
-              : "bg-primary text-primary-foreground shadow-primary/20"
-          }`}
-        >
-          <FileText className="h-4 w-4" />
-          {job.category === "inspection" ? "Create Inspection Quote" : "Create Estimate"}
-        </button>
       </div>
     );
   };
