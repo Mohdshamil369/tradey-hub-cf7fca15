@@ -805,33 +805,6 @@ const JobDetail = () => {
 
     return (
       <div className="flex flex-col gap-4 py-4">
-        <div className="flex flex-col items-center justify-center gap-3 pb-1">
-          <div className="h-14 w-14 rounded-2xl bg-accent flex items-center justify-center">
-            <FileText className="h-7 w-7 text-muted-foreground/50" />
-          </div>
-          <div className="text-center">
-            <p className="text-sm font-bold text-foreground mb-1">
-              {job.category === "inspection" ? "Create Inspection Quote" : "Create an Estimate"}
-            </p>
-            <p className="text-[11px] text-muted-foreground max-w-[240px] mx-auto">
-              {job.category === "inspection"
-                ? "Set your inspection fee and add any material/labour costs after visiting the site."
-                : "Add materials, labour costs, and notes to send a detailed estimate to the customer."}
-            </p>
-          </div>
-          <button
-            onClick={() => setShowQuoteSheet(true)}
-            className={`mt-1 flex items-center gap-2 rounded-xl px-5 py-3 text-[12px] font-bold shadow-lg active:scale-[0.98] transition-all ${
-              job.category === "inspection"
-                ? "bg-[hsl(25,90%,55%)] text-white shadow-orange-500/20"
-                : "bg-primary text-primary-foreground shadow-primary/20"
-            }`}
-          >
-            <FileText className="h-4 w-4" />
-            {job.category === "inspection" ? "Create Inspection Quote" : "Create Estimate"}
-          </button>
-        </div>
-
         {/* Sample preview — shows the multi-batch quote experience */}
         <div className="relative mt-2">
           <div className="absolute -top-2.5 left-3 z-10 rounded-full bg-muted px-2 py-0.5 text-[9px] font-bold uppercase tracking-[1.5px] text-muted-foreground border border-border/40">
