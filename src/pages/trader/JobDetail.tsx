@@ -864,76 +864,94 @@ const JobDetail = () => {
               </div>
             </div>
 
-            {quoteView === "compact" ? (
-              <div className="rounded-xl border border-border/40 bg-card overflow-hidden">
-                <div className="grid grid-cols-[1fr_auto_auto] gap-2 px-3 py-2 bg-muted/30 border-b border-border/30">
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Quote</span>
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Status</span>
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground text-right">Total</span>
+            {(() => {
+              const sampleBatches = [
+                {
+                  id: "s1", label: "Initial Quote", sentAt: "12 May", total: 420, status: "accepted" as const,
+                  materials: [
+                    { description: "Copper pipe (2m)", quantity: 3, unitPrice: 18 },
+                    { description: "Mixer tap unit", quantity: 1, unitPrice: 96 },
+                  ],
+                  labour: [{ role: "Plumber", count: 1, hours: 6, rate: 45 }],
+                },
+                {
+                  id: "s2", label: "Quote #2 (extra fittings)", sentAt: "14 May", total: 86, status: "pending" as const,
+                  materials: [{ description: "Isolation valve", quantity: 2, unitPrice: 43 }],
+                  labour: [],
+                  note: "Additional fittings discovered during work.",
+                },
+              ];
+              const statusMap = {
+                pending: { bg: "bg-[hsl(25,90%,55%)]/10", text: "text-[hsl(25,90%,55%)]", label: "Awaiting" },
+                accepted: { bg: "bg-[hsl(142,70%,45%)]/10", text: "text-[hsl(142,70%,45%)]", label: "Accepted" },
+              };
+              return quoteView === "compact" ? (
+                <div className="rounded-xl border border-border/40 bg-card overflow-hidden">
+                  <div className="grid grid-cols-[1fr_auto_auto] gap-2 px-3 py-2 bg-muted/30 border-b border-border/30">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Quote</span>
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Status</span>
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground text-right">Total</span>
+                  </div>
+                  {sampleBatches.map((b, idx, arr) => {
+                    const m = statusMap[b.status];
+                    return (
+                      <button
+                        key={b.id}
+                        onClick={() => setPdfQuote(b)}
+                        className={`w-full grid grid-cols-[1fr_auto_auto] gap-2 items-center px-3 py-2.5 text-left active:bg-muted/40 transition-colors ${idx !== arr.length - 1 ? "border-b border-border/20" : ""}`}
+                      >
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-bold text-foreground truncate">{b.label}</p>
+                          <p className="text-[9px] text-muted-foreground">{b.sentAt} · {b.materials.length} mat · {b.labour.length} lab</p>
+                        </div>
+                        <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${m.bg} ${m.text}`}>{m.label}</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[12px] font-extrabold text-foreground">£{b.total}</span>
+                          <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                        </div>
+                      </button>
+                    );
+                  })}
+                  <div className="grid grid-cols-[1fr_auto] gap-2 px-3 py-2 bg-primary/5 border-t border-border/30">
+                    <span className="text-[10px] font-bold text-foreground">Combined Total</span>
+                    <span className="text-[12px] font-extrabold text-primary">£506.00</span>
+                  </div>
                 </div>
-                {[
-                  { id: "s1", label: "Initial Quote", date: "12 May", status: "accepted" as const, total: 420, mat: 2, lab: 1 },
-                  { id: "s2", label: "Quote #2 (extra fittings)", date: "14 May", status: "pending" as const, total: 86, mat: 1, lab: 0 },
-                ].map((b, idx, arr) => {
-                  const map = {
-                    pending: { bg: "bg-[hsl(25,90%,55%)]/10", text: "text-[hsl(25,90%,55%)]", label: "Awaiting" },
-                    accepted: { bg: "bg-[hsl(142,70%,45%)]/10", text: "text-[hsl(142,70%,45%)]", label: "Accepted" },
-                  }[b.status];
-                  return (
-                    <div key={b.id} className={`grid grid-cols-[1fr_auto_auto] gap-2 items-center px-3 py-2.5 ${idx !== arr.length - 1 ? "border-b border-border/20" : ""}`}>
-                      <div className="min-w-0">
-                        <p className="text-[11px] font-bold text-foreground truncate">{b.label}</p>
-                        <p className="text-[9px] text-muted-foreground">{b.date} · {b.mat} mat · {b.lab} lab</p>
-                      </div>
-                      <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${map.bg} ${map.text}`}>{map.label}</span>
-                      <div className="flex items-center gap-1">
-                        <span className="text-[12px] font-extrabold text-foreground">£{b.total}</span>
-                        <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                      </div>
-                    </div>
-                  );
-                })}
-                <div className="grid grid-cols-[1fr_auto] gap-2 px-3 py-2 bg-primary/5 border-t border-border/30">
-                  <span className="text-[10px] font-bold text-foreground">Combined Total</span>
-                  <span className="text-[12px] font-extrabold text-primary">£506.00</span>
+              ) : (
+                <div className="grid grid-cols-2 gap-2.5">
+                  {sampleBatches.map((b) => {
+                    const m = statusMap[b.status];
+                    return (
+                      <button
+                        key={b.id}
+                        onClick={() => setPdfQuote(b)}
+                        className="rounded-xl border border-border/40 bg-card overflow-hidden text-left active:scale-[0.98] transition-all"
+                      >
+                        <div className="relative aspect-[3/4] bg-gradient-to-br from-muted/40 to-muted/10 p-2 flex flex-col">
+                          <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${m.bg} ${m.text}`}>{m.label}</div>
+                          <div className="flex-1 flex flex-col items-center justify-center gap-1.5">
+                            <FileText className="h-7 w-7 text-primary/60" />
+                            <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">PDF</p>
+                          </div>
+                          <div className="space-y-1">
+                            {[...Array(4)].map((_, i) => (
+                              <div key={i} className="h-0.5 bg-border/40 rounded-full" style={{ width: `${100 - i * 12}%` }} />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="px-2.5 py-2 border-t border-border/30">
+                          <p className="text-[10px] font-bold text-foreground truncate">{b.label}</p>
+                          <div className="flex items-center justify-between mt-0.5">
+                            <span className="text-[9px] text-muted-foreground">{b.sentAt}</span>
+                            <span className="text-[10px] font-extrabold text-primary">£{b.total}</span>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-2.5">
-                {[
-                  { id: "s1", label: "Initial Quote", date: "12 May", status: "accepted" as const, total: 420 },
-                  { id: "s2", label: "Quote #2", date: "14 May", status: "pending" as const, total: 86 },
-                ].map((b) => {
-                  const map = {
-                    pending: { bg: "bg-[hsl(25,90%,55%)]/10", text: "text-[hsl(25,90%,55%)]", label: "Awaiting" },
-                    accepted: { bg: "bg-[hsl(142,70%,45%)]/10", text: "text-[hsl(142,70%,45%)]", label: "Accepted" },
-                  }[b.status];
-                  return (
-                    <div key={b.id} className="rounded-xl border border-border/40 bg-card overflow-hidden">
-                      <div className="relative aspect-[3/4] bg-gradient-to-br from-muted/40 to-muted/10 p-2 flex flex-col">
-                        <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${map.bg} ${map.text}`}>{map.label}</div>
-                        <div className="flex-1 flex flex-col items-center justify-center gap-1.5">
-                          <FileText className="h-7 w-7 text-primary/60" />
-                          <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">PDF</p>
-                        </div>
-                        <div className="space-y-1">
-                          {[...Array(4)].map((_, i) => (
-                            <div key={i} className="h-0.5 bg-border/40 rounded-full" style={{ width: `${100 - i * 12}%` }} />
-                          ))}
-                        </div>
-                      </div>
-                      <div className="px-2.5 py-2 border-t border-border/30">
-                        <p className="text-[10px] font-bold text-foreground truncate">{b.label}</p>
-                        <div className="flex items-center justify-between mt-0.5">
-                          <span className="text-[9px] text-muted-foreground">{b.date}</span>
-                          <span className="text-[10px] font-extrabold text-primary">£{b.total}</span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+              );
+            })()}
 
             <p className="text-center text-[10px] text-muted-foreground italic pt-1">
               Preview — your real quotes will appear here. Send multiple as the job evolves.
