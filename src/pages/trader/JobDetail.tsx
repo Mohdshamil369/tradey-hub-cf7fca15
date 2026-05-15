@@ -832,75 +832,111 @@ const JobDetail = () => {
           </button>
         </div>
 
-        {/* Sample preview — shows how a quote will look */}
+        {/* Sample preview — shows the multi-batch quote experience */}
         <div className="relative mt-2">
           <div className="absolute -top-2.5 left-3 z-10 rounded-full bg-muted px-2 py-0.5 text-[9px] font-bold uppercase tracking-[1.5px] text-muted-foreground border border-border/40">
             Preview · Sample
           </div>
-          <div className="rounded-2xl border border-dashed border-border/60 bg-muted/10 p-3 space-y-3 opacity-90">
-            <div className="rounded-xl p-3 border bg-[hsl(25,90%,55%)]/5 border-[hsl(25,90%,55%)]/20">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[9px] font-bold uppercase tracking-[2px] text-muted-foreground">Quote Status</p>
-                  <p className="mt-1 text-sm font-bold text-[hsl(25,90%,55%)]">Awaiting Response</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Sent just now</p>
-                </div>
-                <p className="text-2xl font-extrabold text-foreground">£420</p>
+          <div className="rounded-2xl border border-dashed border-border/60 bg-muted/10 p-3 space-y-3 opacity-95">
+            {/* View toggle preview */}
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-bold text-foreground">Sent Quotes (2)</p>
+                <p className="text-[9px] text-muted-foreground">Toggle between list & PDF view</p>
+              </div>
+              <div className="inline-flex rounded-full bg-muted p-0.5">
+                <button
+                  onClick={() => setQuoteView("compact")}
+                  className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold transition-all ${
+                    quoteView === "compact" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                  }`}
+                >
+                  <List className="h-3 w-3" /> List
+                </button>
+                <button
+                  onClick={() => setQuoteView("pdf")}
+                  className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold transition-all ${
+                    quoteView === "pdf" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                  }`}
+                >
+                  <FileText className="h-3 w-3" /> PDF
+                </button>
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center gap-1.5 mb-2 px-1">
-                <Package className="h-3.5 w-3.5 text-primary" />
-                <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground">Materials (2)</h3>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <div className="rounded-xl border border-border/30 bg-card px-3 py-2.5">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-[11px] font-semibold text-foreground">Copper pipe (2m)</p>
-                      <p className="text-[10px] text-muted-foreground">3 × £18.00</p>
+            {quoteView === "compact" ? (
+              <div className="rounded-xl border border-border/40 bg-card overflow-hidden">
+                <div className="grid grid-cols-[1fr_auto_auto] gap-2 px-3 py-2 bg-muted/30 border-b border-border/30">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Quote</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Status</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground text-right">Total</span>
+                </div>
+                {[
+                  { id: "s1", label: "Initial Quote", date: "12 May", status: "accepted" as const, total: 420, mat: 2, lab: 1 },
+                  { id: "s2", label: "Quote #2 (extra fittings)", date: "14 May", status: "pending" as const, total: 86, mat: 1, lab: 0 },
+                ].map((b, idx, arr) => {
+                  const map = {
+                    pending: { bg: "bg-[hsl(25,90%,55%)]/10", text: "text-[hsl(25,90%,55%)]", label: "Awaiting" },
+                    accepted: { bg: "bg-[hsl(142,70%,45%)]/10", text: "text-[hsl(142,70%,45%)]", label: "Accepted" },
+                  }[b.status];
+                  return (
+                    <div key={b.id} className={`grid grid-cols-[1fr_auto_auto] gap-2 items-center px-3 py-2.5 ${idx !== arr.length - 1 ? "border-b border-border/20" : ""}`}>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-bold text-foreground truncate">{b.label}</p>
+                        <p className="text-[9px] text-muted-foreground">{b.date} · {b.mat} mat · {b.lab} lab</p>
+                      </div>
+                      <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${map.bg} ${map.text}`}>{map.label}</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[12px] font-extrabold text-foreground">£{b.total}</span>
+                        <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                      </div>
                     </div>
-                    <p className="text-[12px] font-bold text-foreground">£54.00</p>
-                  </div>
+                  );
+                })}
+                <div className="grid grid-cols-[1fr_auto] gap-2 px-3 py-2 bg-primary/5 border-t border-border/30">
+                  <span className="text-[10px] font-bold text-foreground">Combined Total</span>
+                  <span className="text-[12px] font-extrabold text-primary">£506.00</span>
                 </div>
-                <div className="rounded-xl border border-border/30 bg-card px-3 py-2.5">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-[11px] font-semibold text-foreground">Mixer tap unit</p>
-                      <p className="text-[10px] text-muted-foreground">1 × £96.00</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2.5">
+                {[
+                  { id: "s1", label: "Initial Quote", date: "12 May", status: "accepted" as const, total: 420 },
+                  { id: "s2", label: "Quote #2", date: "14 May", status: "pending" as const, total: 86 },
+                ].map((b) => {
+                  const map = {
+                    pending: { bg: "bg-[hsl(25,90%,55%)]/10", text: "text-[hsl(25,90%,55%)]", label: "Awaiting" },
+                    accepted: { bg: "bg-[hsl(142,70%,45%)]/10", text: "text-[hsl(142,70%,45%)]", label: "Accepted" },
+                  }[b.status];
+                  return (
+                    <div key={b.id} className="rounded-xl border border-border/40 bg-card overflow-hidden">
+                      <div className="relative aspect-[3/4] bg-gradient-to-br from-muted/40 to-muted/10 p-2 flex flex-col">
+                        <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${map.bg} ${map.text}`}>{map.label}</div>
+                        <div className="flex-1 flex flex-col items-center justify-center gap-1.5">
+                          <FileText className="h-7 w-7 text-primary/60" />
+                          <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">PDF</p>
+                        </div>
+                        <div className="space-y-1">
+                          {[...Array(4)].map((_, i) => (
+                            <div key={i} className="h-0.5 bg-border/40 rounded-full" style={{ width: `${100 - i * 12}%` }} />
+                          ))}
+                        </div>
+                      </div>
+                      <div className="px-2.5 py-2 border-t border-border/30">
+                        <p className="text-[10px] font-bold text-foreground truncate">{b.label}</p>
+                        <div className="flex items-center justify-between mt-0.5">
+                          <span className="text-[9px] text-muted-foreground">{b.date}</span>
+                          <span className="text-[10px] font-extrabold text-primary">£{b.total}</span>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-[12px] font-bold text-foreground">£96.00</p>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
-            </div>
-
-            <div>
-              <div className="flex items-center gap-1.5 mb-2 px-1">
-                <Wrench className="h-3.5 w-3.5 text-primary" />
-                <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground">Labour</h3>
-              </div>
-              <div className="rounded-xl border border-border/30 bg-card px-3 py-2.5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[11px] font-semibold text-foreground">Plumber</p>
-                    <p className="text-[10px] text-muted-foreground">6h @ £45/hr</p>
-                  </div>
-                  <p className="text-[12px] font-bold text-foreground">£270.00</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-xl bg-primary/5 border border-primary/10 p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-foreground">Total Quote</span>
-                <span className="text-xl font-extrabold text-primary">£420.00</span>
-              </div>
-            </div>
+            )}
 
             <p className="text-center text-[10px] text-muted-foreground italic pt-1">
-              This is just a preview — your real quote will appear here once created.
+              Preview — your real quotes will appear here. Send multiple as the job evolves.
             </p>
           </div>
         </div>
